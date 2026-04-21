@@ -129,6 +129,22 @@
 
     .nav-actions { display: flex; align-items: center; gap: 10px; }
 
+    /* Language toggle */
+    .lang-toggle {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700; letter-spacing: .04em;
+      transition: color .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+    .lang-toggle:hover { color: var(--text); border-color: #555; }
+
     /* Theme toggle */
     .theme-toggle {
       width: 36px; height: 36px;
@@ -293,6 +309,7 @@
       .card-body { grid-template-columns: 1fr; }
       .project-links { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
       .card-image { height: 160px; }
+      .nav-actions { gap: 6px; }
     }
   </style>
 </head>
@@ -301,12 +318,14 @@
 <nav>
   <div class="nav-logo">samaBR <span>/ portfolio</span></div>
   <div class="nav-actions">
+    <button class="lang-toggle" id="langToggle" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-      <!-- moon (shown in dark mode) -->
       <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
       </svg>
-      <!-- sun (shown in light mode) -->
       <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"/>
         <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
@@ -323,9 +342,9 @@
 </nav>
 
 <div class="hero">
-  <div class="hero-eyebrow">Open Source · Free Tools</div>
-  <h1>Tools for<br><span class="accent">video editors</span></h1>
-  <p class="hero-desc">Plugins and utilities built to speed up music-synced editing in Adobe Premiere Pro, After Effects, and Windows.</p>
+  <div class="hero-eyebrow" data-i18n="eyebrow">Open Source · Free Tools</div>
+  <h1 data-i18n="h1">Tools for<br><span class="accent">video editors</span></h1>
+  <p class="hero-desc" data-i18n="desc">Plugins and utilities built to speed up music-synced editing in Adobe Premiere Pro, After Effects, and Windows.</p>
 </div>
 
 <div class="projects">
@@ -337,9 +356,9 @@
     </div>
     <div class="card-body">
       <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#d53a3a"></span>Plugin · Adobe Premiere Pro</div>
+        <div class="project-tag"><span class="tag-dot" style="background:#d53a3a"></span><span data-i18n="tag-premiere">Plugin · Adobe Premiere Pro</span></div>
         <h2 style="color:#d53a3a">BeatMarker Premiere</h2>
-        <p>Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.</p>
+        <p data-i18n="desc-premiere">Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.</p>
         <div class="project-stats">
           <span class="stat" id="stars-premiere">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -354,7 +373,7 @@
           <span class="badge">Windows</span>
           <span class="badge">Mac</span>
           <span class="badge">CEP Panel</span>
-          <span class="badge">Free</span>
+          <span class="badge" data-i18n="free">Free</span>
         </div>
       </div>
       <div class="project-links">
@@ -371,9 +390,9 @@
     </div>
     <div class="card-body">
       <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#c0392b"></span>Plugin · Adobe After Effects</div>
+        <div class="project-tag"><span class="tag-dot" style="background:#c0392b"></span><span data-i18n="tag-ae">Plugin · Adobe After Effects</span></div>
         <h2 style="color:#c0392b">BeatMarker AE</h2>
-        <p>Beat detection plugin for Adobe After Effects — auto-generates colored beat markers on audio layers for music-synced editing.</p>
+        <p data-i18n="desc-ae">Beat detection plugin for Adobe After Effects — auto-generates colored beat markers on audio layers for music-synced editing.</p>
         <div class="project-stats">
           <span class="stat" id="stars-ae">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -388,7 +407,7 @@
           <span class="badge">Windows</span>
           <span class="badge">CEP Panel</span>
           <span class="badge">AE 2026</span>
-          <span class="badge">Free</span>
+          <span class="badge" data-i18n="free">Free</span>
         </div>
       </div>
       <div class="project-links">
@@ -403,11 +422,11 @@
     <div class="card-image">
       <img src="docs/screenshots/MonoStereoToogle/plugin-screen.png" alt="Mono Stereo Toggle screenshot" loading="lazy" />
     </div>
-    <div class="card-body" style="grid-template-columns: 1fr auto; padding: 28px 32px;">
+    <div class="card-body">
       <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#4a9eff"></span>Utility · Windows 11</div>
+        <div class="project-tag"><span class="tag-dot" style="background:#4a9eff"></span><span data-i18n="tag-mst">Utility · Windows 11</span></div>
         <h2 style="color:#4a9eff">Mono Stereo Toggle</h2>
-        <p>A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.</p>
+        <p data-i18n="desc-mst">A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.</p>
         <div class="project-stats">
           <span class="stat" id="stars-mst">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -420,8 +439,8 @@
         </div>
         <div class="platform-badges">
           <span class="badge">Windows 11</span>
-          <span class="badge">Desktop App</span>
-          <span class="badge">Free</span>
+          <span class="badge" data-i18n="desktop-app">Desktop App</span>
+          <span class="badge" data-i18n="free">Free</span>
         </div>
       </div>
       <div class="project-links">
@@ -434,23 +453,94 @@
 </div>
 
 <footer>
-  <p>Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source</p>
+  <p data-i18n="footer">Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source</p>
 </footer>
 
 <script>
-  /* ── THEME TOGGLE ── */
-  const root = document.documentElement;
-  const btn  = document.getElementById('themeToggle');
-  const saved = localStorage.getItem('theme') || 'dark';
-  root.setAttribute('data-theme', saved);
+  /* ── TRANSLATIONS ── */
+  const i18n = {
+    en: {
+      'eyebrow':       'Open Source · Free Tools',
+      'h1':            'Tools for<br><span class="accent">video editors</span>',
+      'desc':          'Plugins and utilities built to speed up music-synced editing in Adobe Premiere Pro, After Effects, and Windows.',
+      'tag-premiere':  'Plugin · Adobe Premiere Pro',
+      'desc-premiere': 'Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.',
+      'tag-ae':        'Plugin · Adobe After Effects',
+      'desc-ae':       'Beat detection plugin for Adobe After Effects — auto-generates colored beat markers on audio layers for music-synced editing.',
+      'tag-mst':       'Utility · Windows 11',
+      'desc-mst':      'A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.',
+      'free':          'Free',
+      'desktop-app':   'Desktop App',
+      'footer':        'Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source',
+      'star':          'star', 'stars': 'stars',
+      'download':      'download', 'downloads': 'downloads',
+    },
+    pt: {
+      'eyebrow':       'Código Aberto · Ferramentas Gratuitas',
+      'h1':            'Ferramentas para<br><span class="accent">editores de vídeo</span>',
+      'desc':          'Plugins e utilitários criados para agilizar a edição sincronizada com música no Adobe Premiere Pro, After Effects e Windows.',
+      'tag-premiere':  'Plugin · Adobe Premiere Pro',
+      'desc-premiere': 'Plugin de detecção de batidas para o Adobe Premiere Pro — gera automaticamente marcadores coloridos nos clipes para edição sincronizada com a música.',
+      'tag-ae':        'Plugin · Adobe After Effects',
+      'desc-ae':       'Plugin de detecção de batidas para o Adobe After Effects — gera automaticamente marcadores coloridos nas camadas de áudio para edição sincronizada com a música.',
+      'tag-mst':       'Utilitário · Windows 11',
+      'desc-mst':      'Um utilitário leve para Windows 11 que permite alternar instantaneamente a saída de áudio entre os modos Mono e Estéreo — a mesma configuração encontrada em Configurações do Windows → Sistema → Som.',
+      'free':          'Grátis',
+      'desktop-app':   'App Desktop',
+      'footer':        'Feito por <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Código Aberto',
+      'star':          'estrela', 'stars': 'estrelas',
+      'download':      'download', 'downloads': 'downloads',
+    }
+  };
 
-  btn.addEventListener('click', () => {
+  /* ── APPLY LANGUAGE ── */
+  function applyLang(lang) {
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+    document.getElementById('langLabel').textContent = lang === 'pt' ? 'EN' : 'PT';
+    const t = i18n[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key] !== undefined) el.innerHTML = t[key];
+    });
+    // re-render stats with correct lang
+    if (window._statsCache) {
+      renderStats(lang, window._statsCache);
+    }
+    localStorage.setItem('lang', lang);
+  }
+
+  function renderStats(lang, cache) {
+    const t = i18n[lang];
+    for (const [repo, data] of Object.entries(cache)) {
+      const { stars, downloads, starsEl, dlEl } = data;
+      const starWord  = stars     === 1 ? t.star  : t.stars;
+      const dlWord    = downloads === 1 ? t.download : t.downloads;
+      starsEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> ${stars} ${starWord}`;
+      dlEl.innerHTML    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ${downloads.toLocaleString()} ${dlWord}`;
+    }
+  }
+
+  /* ── THEME TOGGLE ── */
+  const root      = document.documentElement;
+  const themeBtn  = document.getElementById('themeToggle');
+  root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+  themeBtn.addEventListener('click', () => {
     const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
   });
 
+  /* ── LANG TOGGLE ── */
+  let currentLang = localStorage.getItem('lang') || (navigator.language.startsWith('pt') ? 'pt' : 'en');
+  applyLang(currentLang);
+  document.getElementById('langToggle').addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'pt' : 'en';
+    applyLang(currentLang);
+  });
+
   /* ── GITHUB STATS ── */
+  window._statsCache = {};
+
   async function fetchStats(repo, starsEl, dlEl) {
     try {
       const [repoRes, relRes] = await Promise.all([
@@ -459,14 +549,12 @@
       ]);
       const repoData = await repoRes.json();
       const releases = await relRes.json();
-
-      const stars = repoData.stargazers_count ?? 0;
+      const stars     = repoData.stargazers_count ?? 0;
       const downloads = Array.isArray(releases)
         ? releases.reduce((sum, r) => sum + r.assets.reduce((s, a) => s + a.download_count, 0), 0)
         : 0;
-
-      starsEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> ${stars} star${stars !== 1 ? 's' : ''}`;
-      dlEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ${downloads.toLocaleString()} download${downloads !== 1 ? 's' : ''}`;
+      window._statsCache[repo] = { stars, downloads, starsEl, dlEl };
+      renderStats(currentLang, window._statsCache);
     } catch (_) {}
   }
 
