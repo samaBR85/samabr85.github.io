@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,8 +17,6 @@
 
   <!-- SEO -->
   <meta name="keywords" content="Adobe Premiere plugin, After Effects plugin, beat marker, BPM detection, video editor tools, music sync editing, CEP panel, Windows utility, free plugins, open source" />
-  <meta name="author" content="samaBR" />
-  <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://samabr85.github.io/" />
 
   <!-- Structured Data (JSON-LD) -->
@@ -61,7 +59,7 @@
         "operatingSystem": "Windows 11",
         "applicationCategory": "UtilitiesApplication",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "url": "https://github.com/samaBR85/MonoStereoToggle",
+        "url": "https://samabr85.github.io/MonoStereoToggle/",
         "description": "A lightweight Windows 11 utility to instantly switch audio output between Mono and Stereo modes."
       }
     ]
@@ -72,18 +70,26 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7511353031974828" crossorigin="anonymous"></script>
 
   <style>
-    :root {
+    /* ── THEMES ── */
+    :root[data-theme="dark"] {
       --bg:     #0e0e0e;
       --bg2:    #161616;
       --bg3:    #1e1e1e;
       --border: #2a2a2a;
       --text:   #e8e8e8;
       --muted:  #888;
-      --red:    #c0392b;
-      --blue:   #2455b0;
-      --yellow: #b07d10;
-      --teal:   #0e7c7c;
       --green:  #34c759;
+      --shadow: rgba(0,0,0,0.4);
+    }
+    :root[data-theme="light"] {
+      --bg:     #f4f4f5;
+      --bg2:    #ffffff;
+      --bg3:    #e8e8eb;
+      --border: #d4d4d8;
+      --text:   #18181b;
+      --muted:  #71717a;
+      --green:  #16a34a;
+      --shadow: rgba(0,0,0,0.08);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -98,6 +104,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background .25s, color .25s;
     }
 
     a { color: inherit; text-decoration: none; }
@@ -110,11 +117,35 @@
       border-bottom: 1px solid var(--border);
       padding: 0 24px; height: 56px;
       display: flex; align-items: center; justify-content: space-between;
+      transition: background .25s, border-color .25s;
+    }
+    :root[data-theme="light"] nav {
+      background: rgba(244,244,245,0.92);
     }
     .nav-logo {
       font-size: 17px; font-weight: 800; letter-spacing: .02em;
     }
     .nav-logo span { color: var(--muted); font-weight: 400; }
+
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+
+    /* Theme toggle */
+    .theme-toggle {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover { color: var(--text); border-color: #555; }
+    .icon-sun, .icon-moon { width: 16px; height: 16px; }
+    :root[data-theme="dark"]  .icon-sun  { display: none; }
+    :root[data-theme="light"] .icon-moon { display: none; }
+
     .nav-gh {
       display: flex; align-items: center; gap: 8px;
       font-size: 13px; color: var(--muted);
@@ -149,23 +180,46 @@
       flex: 1;
       max-width: 900px; margin: 0 auto; width: 100%;
       padding: 64px 24px;
-      display: flex; flex-direction: column; gap: 24px;
+      display: flex; flex-direction: column; gap: 28px;
     }
 
     .project-card {
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 32px;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .project-card:hover {
+      border-color: #555;
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px var(--shadow);
+    }
+
+    /* Card image */
+    .card-image {
+      width: 100%; height: 200px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg3);
+      position: relative;
+    }
+    .card-image img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      transition: transform .4s;
+    }
+    .project-card:hover .card-image img { transform: scale(1.03); }
+
+    /* Card body */
+    .card-body {
+      padding: 28px 32px;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 16px;
       align-items: start;
-      transition: border-color .2s, transform .2s;
-    }
-    .project-card:hover {
-      border-color: #444;
-      transform: translateY(-2px);
     }
 
     .project-tag {
@@ -176,7 +230,7 @@
     }
     .tag-dot {
       width: 7px; height: 7px; border-radius: 50%;
-      background: var(--green); flex-shrink: 0;
+      flex-shrink: 0;
     }
 
     .project-card h2 {
@@ -186,6 +240,25 @@
     .project-card p {
       font-size: 14px; color: var(--muted); line-height: 1.7;
       max-width: 560px;
+    }
+
+    /* Stats row */
+    .project-stats {
+      display: flex; gap: 16px; margin-top: 14px;
+    }
+    .stat {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--muted); font-weight: 600;
+    }
+    .stat svg { opacity: .7; }
+
+    .platform-badges {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;
+    }
+    .badge {
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      border-radius: 20px; border: 1px solid var(--border);
+      color: var(--muted);
     }
 
     .project-links {
@@ -206,15 +279,6 @@
     }
     .btn-ghost:hover { color: var(--text); border-color: #555; }
 
-    .platform-badges {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px;
-    }
-    .badge {
-      font-size: 11px; font-weight: 600; padding: 3px 10px;
-      border-radius: 20px; border: 1px solid var(--border);
-      color: var(--muted);
-    }
-
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
@@ -226,8 +290,9 @@
     footer a:hover { color: var(--text); }
 
     @media (max-width: 600px) {
-      .project-card { grid-template-columns: 1fr; }
+      .card-body { grid-template-columns: 1fr; }
       .project-links { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+      .card-image { height: 160px; }
     }
   </style>
 </head>
@@ -235,10 +300,26 @@
 
 <nav>
   <div class="nav-logo">samaBR <span>/ portfolio</span></div>
-  <a class="nav-gh" href="https://github.com/samaBR85" target="_blank">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-    GitHub
-  </a>
+  <div class="nav-actions">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <!-- moon (shown in dark mode) -->
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <!-- sun (shown in light mode) -->
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+    <a class="nav-gh" href="https://github.com/samaBR85" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
 </nav>
 
 <div class="hero">
@@ -251,56 +332,99 @@
 
   <!-- BeatMarker Premiere -->
   <div class="project-card">
-    <div>
-      <div class="project-tag"><span class="tag-dot"></span>Plugin · Adobe Premiere Pro</div>
-      <h2>BeatMarker Premiere</h2>
-      <p>Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.</p>
-      <div class="platform-badges">
-        <span class="badge">Windows</span>
-        <span class="badge">Mac</span>
-        <span class="badge">CEP Panel</span>
-        <span class="badge">Free</span>
-      </div>
+    <div class="card-image">
+      <img src="https://samabr85.github.io/BeatMarker-PremierePlugin/screenshots/og-image.png" alt="BeatMarker Premiere screenshot" loading="lazy" />
     </div>
-    <div class="project-links">
-      <a class="btn btn-primary" href="https://samabr85.github.io/BeatMarker-PremierePlugin/" target="_blank">↗ Site</a>
-      <a class="btn btn-ghost" href="https://github.com/samaBR85/BeatMarker-PremierePlugin" target="_blank">GitHub</a>
+    <div class="card-body">
+      <div>
+        <div class="project-tag"><span class="tag-dot" style="background:#d53a3a"></span>Plugin · Adobe Premiere Pro</div>
+        <h2 style="color:#d53a3a">BeatMarker Premiere</h2>
+        <p>Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.</p>
+        <div class="project-stats">
+          <span class="stat" id="stars-premiere">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            —
+          </span>
+          <span class="stat" id="dl-premiere">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            —
+          </span>
+        </div>
+        <div class="platform-badges">
+          <span class="badge">Windows</span>
+          <span class="badge">Mac</span>
+          <span class="badge">CEP Panel</span>
+          <span class="badge">Free</span>
+        </div>
+      </div>
+      <div class="project-links">
+        <a class="btn btn-primary" href="https://samabr85.github.io/BeatMarker-PremierePlugin/" target="_blank">↗ Site</a>
+        <a class="btn btn-ghost" href="https://github.com/samaBR85/BeatMarker-PremierePlugin" target="_blank">GitHub</a>
+      </div>
     </div>
   </div>
 
   <!-- BeatMarker AE -->
   <div class="project-card">
-    <div>
-      <div class="project-tag"><span class="tag-dot"></span>Plugin · Adobe After Effects</div>
-      <h2>BeatMarker AE</h2>
-      <p>Beat detection plugin for Adobe After Effects — auto-generates colored beat markers on audio layers for music-synced editing.</p>
-      <div class="platform-badges">
-        <span class="badge">Windows</span>
-        <span class="badge">CEP Panel</span>
-        <span class="badge">AE 2026</span>
-        <span class="badge">Free</span>
-      </div>
+    <div class="card-image">
+      <img src="https://samabr85.github.io/BeatMarker-AEPlugin/screenshots/og-image.png" alt="BeatMarker AE screenshot" loading="lazy" />
     </div>
-    <div class="project-links">
-      <a class="btn btn-primary" href="https://samabr85.github.io/BeatMarker-AEPlugin/" target="_blank">↗ Site</a>
-      <a class="btn btn-ghost" href="https://github.com/samaBR85/BeatMarker-AEPlugin" target="_blank">GitHub</a>
+    <div class="card-body">
+      <div>
+        <div class="project-tag"><span class="tag-dot" style="background:#c0392b"></span>Plugin · Adobe After Effects</div>
+        <h2 style="color:#c0392b">BeatMarker AE</h2>
+        <p>Beat detection plugin for Adobe After Effects — auto-generates colored beat markers on audio layers for music-synced editing.</p>
+        <div class="project-stats">
+          <span class="stat" id="stars-ae">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            —
+          </span>
+          <span class="stat" id="dl-ae">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            —
+          </span>
+        </div>
+        <div class="platform-badges">
+          <span class="badge">Windows</span>
+          <span class="badge">CEP Panel</span>
+          <span class="badge">AE 2026</span>
+          <span class="badge">Free</span>
+        </div>
+      </div>
+      <div class="project-links">
+        <a class="btn btn-primary" href="https://samabr85.github.io/BeatMarker-AEPlugin/" target="_blank">↗ Site</a>
+        <a class="btn btn-ghost" href="https://github.com/samaBR85/BeatMarker-AEPlugin" target="_blank">GitHub</a>
+      </div>
     </div>
   </div>
 
   <!-- Mono Stereo Toggle -->
   <div class="project-card">
-    <div>
-      <div class="project-tag"><span class="tag-dot"></span>Utility · Windows 11</div>
-      <h2>Mono Stereo Toggle</h2>
-      <p>A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.</p>
-      <div class="platform-badges">
-        <span class="badge">Windows 11</span>
-        <span class="badge">Desktop App</span>
-        <span class="badge">Free</span>
+    <div class="card-body" style="grid-template-columns: 1fr auto; padding: 28px 32px;">
+      <div>
+        <div class="project-tag"><span class="tag-dot" style="background:#4a9eff"></span>Utility · Windows 11</div>
+        <h2 style="color:#4a9eff">Mono Stereo Toggle</h2>
+        <p>A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.</p>
+        <div class="project-stats">
+          <span class="stat" id="stars-mst">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            —
+          </span>
+          <span class="stat" id="dl-mst">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            —
+          </span>
+        </div>
+        <div class="platform-badges">
+          <span class="badge">Windows 11</span>
+          <span class="badge">Desktop App</span>
+          <span class="badge">Free</span>
+        </div>
       </div>
-    </div>
-    <div class="project-links">
-      <a class="btn btn-ghost" href="https://github.com/samaBR85/MonoStereoToggle" target="_blank">GitHub</a>
+      <div class="project-links">
+        <a class="btn btn-primary" href="https://samabr85.github.io/MonoStereoToggle/" target="_blank">↗ Site</a>
+        <a class="btn btn-ghost" href="https://github.com/samaBR85/MonoStereoToggle" target="_blank">GitHub</a>
+      </div>
     </div>
   </div>
 
@@ -309,6 +433,44 @@
 <footer>
   <p>Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source</p>
 </footer>
+
+<script>
+  /* ── THEME TOGGLE ── */
+  const root = document.documentElement;
+  const btn  = document.getElementById('themeToggle');
+  const saved = localStorage.getItem('theme') || 'dark';
+  root.setAttribute('data-theme', saved);
+
+  btn.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+
+  /* ── GITHUB STATS ── */
+  async function fetchStats(repo, starsEl, dlEl) {
+    try {
+      const [repoRes, relRes] = await Promise.all([
+        fetch(`https://api.github.com/repos/samaBR85/${repo}`),
+        fetch(`https://api.github.com/repos/samaBR85/${repo}/releases`)
+      ]);
+      const repoData = await repoRes.json();
+      const releases = await relRes.json();
+
+      const stars = repoData.stargazers_count ?? 0;
+      const downloads = Array.isArray(releases)
+        ? releases.reduce((sum, r) => sum + r.assets.reduce((s, a) => s + a.download_count, 0), 0)
+        : 0;
+
+      starsEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> ${stars} star${stars !== 1 ? 's' : ''}`;
+      dlEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ${downloads.toLocaleString()} download${downloads !== 1 ? 's' : ''}`;
+    } catch (_) {}
+  }
+
+  fetchStats('BeatMarker-PremierePlugin', document.getElementById('stars-premiere'), document.getElementById('dl-premiere'));
+  fetchStats('BeatMarker-AEPlugin',       document.getElementById('stars-ae'),       document.getElementById('dl-ae'));
+  fetchStats('MonoStereoToggle',          document.getElementById('stars-mst'),      document.getElementById('dl-mst'));
+</script>
 
 </body>
 </html>
