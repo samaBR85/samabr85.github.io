@@ -569,6 +569,7 @@
         fetch(`https://api.github.com/repos/samaBR85/${repo}`),
         fetch(`https://api.github.com/repos/samaBR85/${repo}/releases`)
       ]);
+      if (!repoRes.ok || !relRes.ok) return; // rate limit ou erro — mantém o "—"
       const repoData = await repoRes.json();
       const releases = await relRes.json();
       const stars     = repoData.stargazers_count ?? 0;
