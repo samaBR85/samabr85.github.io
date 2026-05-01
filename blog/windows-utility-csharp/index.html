@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights — samaBR</title>
+  <meta name="description" content="How Claude Code built MonoStereoToggle — a Windows 11 system tray utility in C# and .NET 8 that toggles mono/stereo audio with a keyboard shortcut. Global hotkeys, COM APIs, and zero installation required." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/windows-utility-csharp/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/windows-utility-csharp/" />
+  <meta property="og:title"       content="Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights" />
+  <meta property="og:description" content="How Claude Code built MonoStereoToggle — a Windows 11 system tray utility in C# that toggles mono/stereo audio with a keyboard shortcut." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights",
+    "description": "How Claude Code built MonoStereoToggle — a Windows 11 system tray utility in C# and .NET 8 that toggles mono/stereo audio with a keyboard shortcut.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-05-01",
+    "dateModified": "2026-05-01",
+    "url": "https://samabr85.github.io/blog/windows-utility-csharp/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "C#, .NET 8, Windows utility, system tray, global hotkey, audio, MonoStereoToggle"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#161a1d;--quote-border:#60a5fa;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#eff6ff;--quote-border:#2563eb;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#60a5fa;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">Windows Utility in C#</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">🪟 <span data-i18n="tag">C# · .NET 8 · Windows</span></div>
+    <h1 class="article-title" data-i18n="title">Building a Windows Utility in C#:<br>Hotkeys, Tray Icons, and Admin Rights</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">May 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~8 min read</span>
+    </div>
+  </header>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: One Click in Windows Settings, Every Single Day</h2>
+    <p data-i18n="s1-p1">As a video editor who reviews audio mixes, switching between stereo and mono is something that happens dozens of times a day. Windows has a built-in mono audio toggle — it's in Accessibility Settings, buried three clicks deep. Every time you want to check how your mix sounds in mono (which is essential for broadcast and podcast delivery), you navigate to Settings → Accessibility → Audio → Mono Audio. Then you switch back to stereo. Then mono again. Multiply by thirty times a day.</p>
+    <p data-i18n="s1-p2">The fix was obvious: a keyboard shortcut. The implementation required Claude Code to go somewhere it had never been — a native Windows desktop application in C#.</p>
+    <p data-i18n="s1-p3">The result was MonoStereoToggle: a system tray utility that toggles Windows mono/stereo audio with a single customizable keyboard shortcut. No UI to open, no windows to close. Just press the hotkey, the tray icon updates, a toast notification confirms the change, and you're back to editing.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">⌨️</div>
+        <div class="fi-title" data-i18n="feat1-title">Global Hotkey</div>
+        <div class="fi-desc" data-i18n="feat1-desc">Custom keyboard shortcut, works even when another app is focused</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔔</div>
+        <div class="fi-title" data-i18n="feat2-title">Tray Icon</div>
+        <div class="fi-desc" data-i18n="feat2-desc">Shows current audio mode at a glance, right-click to configure</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🖥️</div>
+        <div class="fi-title" data-i18n="feat3-title">Multi-Device</div>
+        <div class="fi-desc" data-i18n="feat3-desc">Supports multiple audio output devices independently</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🚀</div>
+        <div class="fi-title" data-i18n="feat4-title">No Install</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Single .exe file, runs without installation, startup optional</div>
+      </div>
+    </div>
+
+    <div class="pullquote" data-i18n="q1">"Three clicks in Settings, thirty times a day. One keyboard shortcut fixed six months of frustration."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">Why C# and Not Another Electron App?</h2>
+    <p data-i18n="s2-p1">The BeatMarker plugins are built with JavaScript — web technologies running inside Adobe's plugin runtimes. Why not build MonoStereoToggle as an Electron app or a web-based utility? Two reasons.</p>
+    <p data-i18n="s2-p2">First, <strong>global hotkeys</strong>. Registering a keyboard shortcut that works regardless of which application is focused requires Windows API calls — specifically <code>RegisterHotKey()</code> from user32.dll. Electron can call native code, but the plumbing is awkward. C# makes it straightforward.</p>
+    <p data-i18n="s2-p3">Second, <strong>the audio API</strong>. Toggling the Windows mono audio setting requires the Windows Core Audio COM API — specifically the <code>IMMDeviceEnumerator</code> and the <code>IAccessibilityServiceHandler</code> interfaces that control accessibility audio settings. These are native Windows APIs that are directly accessible from C# via P/Invoke and COM interop, with no intermediary required.</p>
+    <p data-i18n="s2-p4">The stack: <strong>C# 12 + .NET 8 + WinForms</strong>. WinForms might seem like a dated choice in 2026, but for a system tray utility with no UI beyond a tray icon and a context menu, it's the right tool: fast startup, tiny executable, full Windows API access, no framework overhead.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">Global Hotkeys: RegisterHotKey and the Message Loop</h2>
+    <p data-i18n="s3-p1">Windows global hotkeys work through the Win32 message loop. When you register a hotkey with <code>RegisterHotKey()</code>, the operating system sends a <code>WM_HOTKEY</code> message to your application's window procedure whenever that key combination is pressed — even if a different application has focus.</p>
+    <pre><code>// P/Invoke declarations for Win32 hotkey API
+[DllImport("user32.dll")]
+static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+
+[DllImport("user32.dll")]
+static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+const int HOTKEY_ID = 1;
+const uint MOD_CTRL = 0x0002;
+const uint MOD_ALT  = 0x0001;
+
+// Register Ctrl+Alt+M as the default hotkey
+RegisterHotKey(this.Handle, HOTKEY_ID, MOD_CTRL | MOD_ALT, (uint)Keys.M);
+
+// Handle the hotkey in WndProc
+protected override void WndProc(ref Message m) {
+  const int WM_HOTKEY = 0x0312;
+  if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID) {
+    ToggleMonoStereo();
+  }
+  base.WndProc(ref m);
+}</code></pre>
+    <p data-i18n="s3-p2">The hotkey is configurable. The user can right-click the tray icon, choose "Set Shortcut," press any key combination, and the new binding is saved to a settings file and re-registered. If another application has already claimed the same hotkey combination, Windows returns false from <code>RegisterHotKey</code> and the app shows an error.</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">Toggling Mono: The Windows Accessibility API</h2>
+    <p data-i18n="s4-p1">The Windows mono audio setting lives in the Accessibility APIs — the same ones that power screen readers and other assistive technology. To read and write it programmatically, Claude Code had to interface with the Windows Core Audio COM interfaces.</p>
+    <p data-i18n="s4-p2">The key insight: the mono/stereo setting is per-device and stored as an audio endpoint property. Claude Code accesses it via the <code>IMMDeviceEnumerator</code> COM interface to enumerate audio endpoints, then reads/writes the accessibility property:</p>
+    <pre><code>// Toggle mono audio for the default audio output device
+void ToggleMonoStereo() {
+  bool currentlyMono = IsMonoEnabled();
+  SetMonoAudio(!currentlyMono);
+  UpdateTrayIcon(!currentlyMono);
+  ShowNotification(!currentlyMono ? "Mono" : "Stereo");
+}
+
+// Reading the current state
+bool IsMonoEnabled() {
+  // Query Windows Audio Accessibility settings
+  // Returns true if mono mixing is enabled for the default endpoint
+  using var key = Registry.CurrentUser.OpenSubKey(
+    @"Software\Microsoft\Multimedia\Audio");
+  return key?.GetValue("EnableMonoMixing") is int val && val == 1;
+}
+
+// Writing the new state
+void SetMonoAudio(bool enable) {
+  using var key = Registry.CurrentUser.CreateSubKey(
+    @"Software\Microsoft\Multimedia\Audio");
+  key.SetValue("EnableMonoMixing", enable ? 1 : 0, RegistryValueKind.DWord);
+
+  // Notify the audio system of the change
+  SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
+    "ImmersiveColorSet", SMTO_ABORTIFHUNG, 5000, out _);
+}</code></pre>
+
+    <div class="callout warn">
+      <strong>⚠️ Registry Write</strong>
+      Writing to <code>HKCU\Software\Microsoft\Multimedia\Audio</code> requires no admin elevation — it's in the current user's hive. The change needs to be broadcast to the system via <code>WM_SETTINGCHANGE</code> to take effect immediately without a reboot.
+    </div>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">Admin Elevation: Asking Once, Never Again</h2>
+    <p data-i18n="s5-p1">MonoStereoToggle requests administrator privileges on first launch. Not because the audio toggle requires it — that's in HKCU, no elevation needed. Elevation is needed for the optional startup integration: adding the app to the Windows startup registry key (<code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run</code>) requires writing to HKLM, which requires admin rights.</p>
+    <p data-i18n="s5-p2">The application manifest requests elevation:</p>
+    <pre><code>&lt;!-- app.manifest --&gt;
+&lt;requestedExecutionLevel
+  level="requireAdministrator"
+  uiAccess="false" /&gt;</code></pre>
+    <p data-i18n="s5-p3">Windows shows the UAC prompt once on first launch. After that, the app remembers the startup preference and doesn't prompt again. For a system tray utility that users want to set-and-forget, this is the right trade-off: one prompt on setup, zero friction after that.</p>
+
+    <div class="pullquote" data-i18n="q2">"Admin prompt on first launch. After that, it just works. That's the right balance for a utility."</div>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">The System Tray: Persistent, Minimal, Informative</h2>
+    <p data-i18n="s6-p1">The system tray icon serves two purposes: it shows the current audio state at a glance (different icons for mono vs. stereo), and it provides a right-click context menu for configuration. The app has no main window — the tray is the entire UI.</p>
+    <pre><code>// System tray setup with WinForms NotifyIcon
+var trayIcon = new NotifyIcon {
+  Icon = GetIconForCurrentState(),
+  Visible = true,
+  Text = "MonoStereoToggle"
+};
+
+var contextMenu = new ContextMenuStrip();
+contextMenu.Items.Add("Toggle Mono/Stereo", null, (s, e) => ToggleMonoStereo());
+contextMenu.Items.Add("Set Shortcut...",     null, (s, e) => ShowHotkeyDialog());
+contextMenu.Items.Add("Start with Windows",  null, (s, e) => ToggleStartup());
+contextMenu.Items.Add(new ToolStripSeparator());
+contextMenu.Items.Add("Exit", null, (s, e) => Application.Exit());
+
+trayIcon.ContextMenuStrip = contextMenu;
+trayIcon.DoubleClick += (s, e) => ToggleMonoStereo();</code></pre>
+    <p data-i18n="s6-p2">When the state changes — either via hotkey or via the context menu — a Windows toast notification briefly appears: "Mono" or "Stereo" with a corresponding icon. This gives the user immediate visual feedback even when the tray is hidden behind other system tray icons.</p>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">Packaging: One .exe, No Installation</h2>
+    <p data-i18n="s7-p1">The goal was a single executable that runs without installation. .NET 8 supports self-contained, single-file publishing — the entire runtime is bundled into one .exe. The resulting file is around 12–15 MB, but it requires no .NET installation on the target machine.</p>
+    <pre><code>dotnet publish -c Release \
+  -r win-x64 \
+  --self-contained true \
+  -p:PublishSingleFile=true \
+  -p:EnableCompressionInSingleFile=true \
+  -p:DebugType=none</code></pre>
+    <p data-i18n="s7-p2">The compression flag reduces the file size significantly. <code>DebugType=none</code> strips debug symbols that would otherwise add several megabytes. The result: a single file that a user downloads, double-clicks, approves the UAC prompt, and the utility is running in their tray immediately.</p>
+
+    <div class="callout tip">
+      <strong>💡 Self-Contained vs. Framework-Dependent</strong>
+      Self-contained publishing requires no .NET installation but produces a larger file (~15 MB). Framework-dependent publishing produces a tiny file (~100 KB) but requires .NET 8 Runtime to be installed. For a utility distributed to non-developer users, self-contained is the right choice — one fewer installation step.
+    </div>
+
+    <!-- SECTION 8 -->
+    <h2 data-i18n="s8-title">What Claude Code Learned About Windows Development</h2>
+    <p data-i18n="s8-p1">Building a native Windows utility was a different experience from JavaScript plugin development. The strengths:</p>
+    <ul>
+      <li data-i18n="s8-l1"><strong>Direct API access</strong> — P/Invoke and COM interop give you the full Win32 surface without third-party wrappers</li>
+      <li data-i18n="s8-l2"><strong>Startup performance</strong> — .NET 8 apps start noticeably faster than Electron; for a tray utility, this matters</li>
+      <li data-i18n="s8-l3"><strong>Native feel</strong> — system tray, context menus, toast notifications all behave exactly as Windows users expect</li>
+    </ul>
+    <p data-i18n="s8-p2">The surprises:</p>
+    <ul>
+      <li data-i18n="s8-l4"><strong>WM_SETTINGCHANGE must be broadcast</strong> — writing the registry key alone doesn't apply the audio change; the system needs to be notified</li>
+      <li data-i18n="s8-l5"><strong>Single-file publishing compresses well</strong> — enabling compression brought the file from ~80 MB to ~15 MB</li>
+      <li data-i18n="s8-l6"><strong>App manifest matters</strong> — without explicit DPI awareness in the manifest, tray icons appear blurry on high-DPI displays</li>
+    </ul>
+
+    <div class="pullquote" data-i18n="q3">"JavaScript for plugins, C# for system utilities. The right tool for the right job — and Claude Code figures it out either way."</div>
+
+    <hr class="divider">
+    <h2 data-i18n="s9-title">The Result</h2>
+    <p data-i18n="s9-p1">MonoStereoToggle is a single .exe, about 15 MB, that runs on Windows 11, requires no installation, and lets you toggle mono/stereo audio with any keyboard shortcut you choose. It runs in the system tray, shows the current state at a glance, and optionally starts with Windows.</p>
+    <p data-i18n="s9-p2">It was built with Claude Code by a video editor who had never written C# before. The entire development — architecture, COM interface research, P/Invoke signatures, packaging — was done through conversation with an AI. That's the recurring theme across all these tools: the technical barrier to building useful software drops dramatically when the implementation is handled by Claude Code and the direction is handled by the person who actually has the problem.</p>
+    <p data-i18n="s9-p3">Download and source: <a href="https://github.com/samaBR85/MonoStereoToggle" style="color:var(--quote-border)">github.com/samaBR85/MonoStereoToggle</a> — MIT license, free.</p>
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'Windows Utility in C#','tag':'C# · .NET 8 · Windows',
+    'title':'Building a Windows Utility in C#:<br>Hotkeys, Tray Icons, and Admin Rights',
+    'date':'May 2026','readtime':'⏱ ~8 min read',
+    's1-title':'The Problem: One Click in Windows Settings, Every Single Day',
+    's1-p1':'As a video editor who reviews audio mixes, switching between stereo and mono is something that happens dozens of times a day. Windows has a built-in mono audio toggle — it\'s in Accessibility Settings, buried three clicks deep. Every time you want to check how your mix sounds in mono (essential for broadcast and podcast delivery), you navigate Settings → Accessibility → Audio → Mono Audio. Then back to stereo. Then mono again. Multiply by thirty.',
+    's1-p2':'The fix was obvious: a keyboard shortcut. The implementation required Claude Code to go somewhere it had never been — a native Windows desktop application in C#.',
+    's1-p3':'The result was MonoStereoToggle: a system tray utility that toggles Windows mono/stereo audio with a single customizable keyboard shortcut. No UI to open, no windows to close. Just press the hotkey, the tray icon updates, a toast notification confirms, and you\'re back to editing.',
+    'feat1-title':'Global Hotkey','feat1-desc':'Custom keyboard shortcut, works even when another app is focused',
+    'feat2-title':'Tray Icon','feat2-desc':'Shows current audio mode at a glance, right-click to configure',
+    'feat3-title':'Multi-Device','feat3-desc':'Supports multiple audio output devices independently',
+    'feat4-title':'No Install','feat4-desc':'Single .exe file, runs without installation, startup optional',
+    'q1':'"Three clicks in Settings, thirty times a day. One keyboard shortcut fixed six months of frustration."',
+    's2-title':'Why C# and Not Another Electron App?',
+    's2-p1':'The BeatMarker plugins are built with JavaScript — web technologies inside Adobe\'s plugin runtimes. Why not build MonoStereoToggle as an Electron app? Two reasons.',
+    's2-p2':'First, <strong>global hotkeys</strong>. Registering a keyboard shortcut that works regardless of which application is focused requires Windows API calls — specifically <code>RegisterHotKey()</code> from user32.dll. Electron can call native code, but the plumbing is awkward. C# makes it straightforward.',
+    's2-p3':'Second, <strong>the audio API</strong>. Toggling the Windows mono audio setting requires the Windows Core Audio COM API. These are native Windows APIs directly accessible from C# via P/Invoke and COM interop, with no intermediary required.',
+    's2-p4':'The stack: <strong>C# 12 + .NET 8 + WinForms</strong>. WinForms might seem dated, but for a system tray utility with no UI beyond a tray icon and context menu, it\'s the right tool: fast startup, tiny executable, full Windows API access.',
+    's3-title':'Global Hotkeys: RegisterHotKey and the Message Loop',
+    's3-p1':'Windows global hotkeys work through the Win32 message loop. When you register a hotkey with <code>RegisterHotKey()</code>, the OS sends a <code>WM_HOTKEY</code> message to your app whenever that key combination is pressed — even if a different application has focus.',
+    's3-p2':'The hotkey is configurable. The user can right-click the tray icon, choose "Set Shortcut," press any key combination, and the new binding is saved and re-registered. If another application has already claimed the same combination, Windows returns false and the app shows an error.',
+    's4-title':'Toggling Mono: The Windows Accessibility API',
+    's4-p1':'The Windows mono audio setting lives in the Accessibility APIs — the same ones that power screen readers. To read and write it programmatically, Claude Code had to interface with the Windows Core Audio COM interfaces.',
+    's4-p2':'The key insight: the mono/stereo setting is stored as a registry value that Windows audio reads at runtime. Claude Code reads and writes it via the registry, then broadcasts a settings change message to apply immediately:',
+    's5-title':'Admin Elevation: Asking Once, Never Again',
+    's5-p1':'MonoStereoToggle requests administrator privileges on first launch. Not because the audio toggle requires it — that\'s in HKCU, no elevation needed. Elevation is needed for the optional startup integration: adding the app to the Windows startup registry key (<code>HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run</code>) requires writing to HKLM.',
+    's5-p2':'The application manifest requests elevation:',
+    's5-p3':'Windows shows the UAC prompt once on first launch. After that, the app remembers the startup preference. One prompt on setup, zero friction after that.',
+    'q2':'"Admin prompt on first launch. After that, it just works. That\'s the right balance for a utility."',
+    's6-title':'The System Tray: Persistent, Minimal, Informative',
+    's6-p1':'The system tray icon shows the current audio state at a glance (different icons for mono vs. stereo) and provides a right-click context menu for configuration. The app has no main window — the tray is the entire UI.',
+    's6-p2':'When the state changes — via hotkey or context menu — a Windows toast notification briefly appears confirming the change. This gives immediate visual feedback even when the tray is hidden behind other icons.',
+    's7-title':'Packaging: One .exe, No Installation',
+    's7-p1':'The goal was a single executable with no installation required. .NET 8 supports self-contained, single-file publishing — the entire runtime is bundled into one .exe.',
+    's7-p2':'The compression flag reduces the file size significantly. The result: a single file that a user downloads, double-clicks, approves the UAC prompt, and the utility is running in their tray immediately.',
+    's8-title':'What Claude Code Learned About Windows Development',
+    's8-p1':'Building a native Windows utility was a different experience from JavaScript plugin development. The strengths:',
+    's8-l1':'<strong>Direct API access</strong> — P/Invoke and COM interop give you the full Win32 surface without third-party wrappers',
+    's8-l2':'<strong>Startup performance</strong> — .NET 8 apps start noticeably faster than Electron; for a tray utility, this matters',
+    's8-l3':'<strong>Native feel</strong> — system tray, context menus, toast notifications all behave exactly as Windows users expect',
+    's8-p2':'The surprises:',
+    's8-l4':'<strong>WM_SETTINGCHANGE must be broadcast</strong> — writing the registry key alone doesn\'t apply the audio change; the system needs to be notified',
+    's8-l5':'<strong>Single-file publishing compresses well</strong> — enabling compression brought the file from ~80 MB to ~15 MB',
+    's8-l6':'<strong>App manifest matters</strong> — without DPI awareness in the manifest, tray icons appear blurry on high-DPI displays',
+    'q3':'"JavaScript for plugins, C# for system utilities. The right tool for the right job — and Claude Code figures it out either way."',
+    's9-title':'The Result',
+    's9-p1':'MonoStereoToggle is a single .exe, about 15 MB, that runs on Windows 11, requires no installation, and lets you toggle mono/stereo audio with any keyboard shortcut you choose.',
+    's9-p2':'It was built with Claude Code by a video editor who had never written C# before. The entire development — architecture, COM interface research, P/Invoke signatures, packaging — was done through conversation with an AI. The technical barrier to building useful software drops dramatically when the implementation is handled by Claude Code and the direction is handled by the person who actually has the problem.',
+    's9-p3':'Download and source: <a href="https://github.com/samaBR85/MonoStereoToggle" style="color:var(--quote-border)">github.com/samaBR85/MonoStereoToggle</a> — MIT license, free.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'Utilitário Windows em C#','tag':'C# · .NET 8 · Windows',
+    'title':'Construindo um Utilitário Windows em C#:<br>Hotkeys, Ícone de Bandeja e Permissões de Admin',
+    'date':'Maio de 2026','readtime':'⏱ ~8 min de leitura',
+    's1-title':'O Problema: Um Clique nas Configurações do Windows, Todo Dia',
+    's1-p1':'Como editor de vídeo que revisa mixagens de áudio, alternar entre estéreo e mono acontece dezenas de vezes por dia. O Windows tem um toggle de áudio mono integrado — está em Configurações de Acessibilidade, enterrado três cliques abaixo. Toda vez que você quer verificar como a mixagem soa em mono (essencial para entrega em broadcast e podcast), navega até Configurações → Acessibilidade → Áudio → Áudio Mono. Depois volta para estéreo. Depois mono de novo. Multiplica por trinta.',
+    's1-p2':'A correção era óbvia: um atalho de teclado. A implementação exigiu que o Claude Code fosse para um lugar que nunca tinha estado — um aplicativo desktop nativo do Windows em C#.',
+    's1-p3':'O resultado foi o MonoStereoToggle: um utilitário de bandeja do sistema que alterna o áudio mono/estéreo do Windows com um único atalho de teclado personalizável. Sem UI para abrir, sem janelas para fechar. Só pressionar o hotkey, o ícone da bandeja atualiza, uma notificação confirma, e você está de volta à edição.',
+    'feat1-title':'Hotkey Global','feat1-desc':'Atalho de teclado personalizado, funciona mesmo com outro app em foco',
+    'feat2-title':'Ícone de Bandeja','feat2-desc':'Mostra o modo de áudio atual de relance, clique direito para configurar',
+    'feat3-title':'Multi-Dispositivo','feat3-desc':'Suporta múltiplos dispositivos de saída de áudio independentemente',
+    'feat4-title':'Sem Instalação','feat4-desc':'Arquivo .exe único, roda sem instalação, startup opcional',
+    'q1':'"Três cliques nas Configurações, trinta vezes por dia. Um atalho de teclado resolveu seis meses de frustração."',
+    's2-title':'Por Que C# e Não Outro App Electron?',
+    's2-p1':'Os plugins BeatMarker são construídos com JavaScript — tecnologias web dentro dos runtimes de plugins da Adobe. Por que não construir o MonoStereoToggle como um app Electron? Duas razões.',
+    's2-p2':'Primeiro, <strong>hotkeys globais</strong>. Registrar um atalho de teclado que funciona independente de qual aplicativo está em foco requer chamadas à API do Windows — especificamente <code>RegisterHotKey()</code> da user32.dll. O Electron pode chamar código nativo, mas é mais complicado. C# é direto.',
+    's2-p3':'Segundo, <strong>a API de áudio</strong>. Alternar a configuração de áudio mono do Windows requer a API COM de Áudio Principal do Windows. Essas são APIs nativas do Windows diretamente acessíveis do C# via P/Invoke e interop COM, sem intermediário.',
+    's2-p4':'A stack: <strong>C# 12 + .NET 8 + WinForms</strong>. WinForms pode parecer desatualizado, mas para um utilitário de bandeja sem UI além de um ícone e menu de contexto, é a ferramenta certa: inicialização rápida, executável pequeno, acesso total à API do Windows.',
+    's3-title':'Hotkeys Globais: RegisterHotKey e o Loop de Mensagens',
+    's3-p1':'Hotkeys globais do Windows funcionam através do loop de mensagens Win32. Quando você registra um hotkey com <code>RegisterHotKey()</code>, o SO envia uma mensagem <code>WM_HOTKEY</code> para o seu app quando essa combinação de teclas é pressionada — mesmo com outro aplicativo em foco.',
+    's3-p2':'O hotkey é configurável. O usuário pode clicar com o botão direito no ícone da bandeja, escolher "Definir Atalho," pressionar qualquer combinação de teclas, e o novo atalho é salvo e re-registrado. Se outro aplicativo já reivindica a mesma combinação, o Windows retorna false e o app mostra um erro.',
+    's4-title':'Alternar Mono: A API de Acessibilidade do Windows',
+    's4-p1':'A configuração de áudio mono do Windows fica nas APIs de Acessibilidade — as mesmas que alimentam leitores de tela. Para ler e escrever programaticamente, o Claude Code teve que interagir com as interfaces COM de Áudio Principal do Windows.',
+    's4-p2':'O insight principal: a configuração mono/estéreo é armazenada como um valor de registro que o áudio do Windows lê em runtime. O Claude Code lê e escreve via registro, depois transmite uma mensagem de mudança de configurações para aplicar imediatamente:',
+    's5-title':'Elevação de Admin: Pedir Uma Vez, Nunca Mais',
+    's5-p1':'O MonoStereoToggle solicita privilégios de administrador no primeiro lançamento. Não porque o toggle de áudio requer — isso fica no HKCU, sem elevação. A elevação é necessária para a integração opcional de inicialização: adicionar o app à chave de registro de inicialização do Windows (<code>HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run</code>) requer escrever no HKLM.',
+    's5-p2':'O manifest do aplicativo solicita elevação:',
+    's5-p3':'O Windows mostra o prompt UAC uma vez no primeiro lançamento. Depois disso, o app lembra a preferência de inicialização. Um prompt na configuração, zero atrito depois.',
+    'q2':'"Prompt de admin no primeiro lançamento. Depois disso, só funciona. Esse é o equilíbrio certo para um utilitário."',
+    's6-title':'A Bandeja do Sistema: Persistente, Mínima, Informativa',
+    's6-p1':'O ícone da bandeja do sistema mostra o estado de áudio atual de relance (ícones diferentes para mono vs. estéreo) e fornece um menu de contexto para configuração. O app não tem janela principal — a bandeja é toda a UI.',
+    's6-p2':'Quando o estado muda — via hotkey ou menu de contexto — uma notificação toast do Windows aparece brevemente confirmando a mudança. Isso dá feedback visual imediato mesmo quando a bandeja está escondida atrás de outros ícones.',
+    's7-title':'Empacotamento: Um .exe, Sem Instalação',
+    's7-p1':'O objetivo era um único executável sem instalação. O .NET 8 suporta publicação self-contained em arquivo único — o runtime inteiro é empacotado em um .exe.',
+    's7-p2':'A flag de compressão reduz significativamente o tamanho do arquivo. O resultado: um único arquivo que o usuário baixa, clica duas vezes, aprova o prompt UAC, e o utilitário está rodando na bandeja imediatamente.',
+    's8-title':'O Que o Claude Code Aprendeu Sobre Desenvolvimento Windows',
+    's8-p1':'Construir um utilitário Windows nativo foi uma experiência diferente do desenvolvimento de plugins JavaScript. Os pontos fortes:',
+    's8-l1':'<strong>Acesso direto à API</strong> — P/Invoke e interop COM dão acesso à superfície Win32 completa sem wrappers de terceiros',
+    's8-l2':'<strong>Desempenho de inicialização</strong> — apps .NET 8 iniciam visivelmente mais rápido que Electron; para um utilitário de bandeja, isso importa',
+    's8-l3':'<strong>Aparência nativa</strong> — bandeja do sistema, menus de contexto, notificações toast se comportam exatamente como usuários Windows esperam',
+    's8-p2':'As surpresas:',
+    's8-l4':'<strong>WM_SETTINGCHANGE deve ser transmitido</strong> — escrever a chave de registro sozinho não aplica a mudança de áudio; o sistema precisa ser notificado',
+    's8-l5':'<strong>Publicação single-file comprime bem</strong> — ativar compressão reduziu o arquivo de ~80 MB para ~15 MB',
+    's8-l6':'<strong>Manifest do app importa</strong> — sem consciência de DPI no manifest, ícones da bandeja aparecem borrados em displays de alta DPI',
+    'q3':'"JavaScript para plugins, C# para utilitários de sistema. A ferramenta certa para o trabalho certo — e o Claude Code descobre como de qualquer jeito."',
+    's9-title':'O Resultado',
+    's9-p1':'MonoStereoToggle é um único .exe, cerca de 15 MB, que roda no Windows 11, não requer instalação, e permite alternar o áudio mono/estéreo com qualquer atalho de teclado que você escolher.',
+    's9-p2':'Foi construído com Claude Code por um editor de vídeo que nunca tinha escrito C# antes. Todo o desenvolvimento — arquitetura, pesquisa de interface COM, assinaturas P/Invoke, empacotamento — foi feito através de conversa com uma IA. A barreira técnica para construir software útil cai drasticamente quando a implementação é tratada pelo Claude Code e a direção é tratada pela pessoa que realmente tem o problema.',
+    's9-p3':'Download e fonte: <a href="https://github.com/samaBR85/MonoStereoToggle" style="color:var(--quote-border)">github.com/samaBR85/MonoStereoToggle</a> — licença MIT, gratuito.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>

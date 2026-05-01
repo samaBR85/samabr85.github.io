@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — samaBR</title>
+  <meta name="description" content="A video editor who builds open source tools with Claude Code — the story behind BeatMarker and MonoStereoToggle." />
+  <meta name="author" content="samaBR" />
+  <link rel="canonical" href="https://samabr85.github.io/about/" />
+  <meta property="og:type" content="profile" />
+  <meta property="og:url" content="https://samabr85.github.io/about/" />
+  <meta property="og:title" content="About — samaBR" />
+  <meta property="og:description" content="A video editor who builds open source tools with Claude Code." />
+  <meta property="og:image" content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --red:#d53a3a;--blue:#4a9eff;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --red:#c0392b;--blue:#2563eb;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .about-header{margin-bottom:56px}
+    .eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .about-title{font-size:clamp(32px,6vw,52px);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px}
+    .about-title .accent{color:var(--green)}
+    .about-lead{font-size:18px;color:var(--muted);line-height:1.7;max-width:580px}
+
+    section{margin-bottom:56px}
+    h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    p{margin-bottom:16px;line-height:1.8}
+    strong{font-weight:700}
+
+    /* Timeline */
+    .timeline{display:flex;flex-direction:column;gap:0}
+    .tl-item{display:flex;gap:20px;position:relative}
+    .tl-item:not(:last-child)::before{content:'';position:absolute;left:19px;top:40px;bottom:0;width:1px;background:var(--border)}
+    .tl-dot{width:38px;height:38px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;margin-top:2px}
+    .tl-content{padding:0 0 32px}
+    .tl-date{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+    .tl-title{font-size:16px;font-weight:700;margin-bottom:4px}
+    .tl-desc{font-size:14px;color:var(--muted)}
+
+    /* Stack grid */
+    .stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .stack-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+    .stack-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .stack-name{font-size:15px;font-weight:700}
+    .stack-desc{font-size:12px;color:var(--muted);margin-top:4px}
+
+    /* Contact */
+    .contact-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+    .contact-link{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid var(--border);font-size:14px;font-weight:600;color:var(--muted);transition:color .2s,border-color .2s,background .2s}
+    .contact-link:hover{color:var(--text);border-color:#555}
+    .contact-link.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+    .contact-link.primary:hover{opacity:.85}
+
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a{color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    @media(max-width:600px){.stack-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">samaBR <span>/ about</span></div>
+  <div class="nav-actions">
+    <button class="lang-toggle" id="langToggle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeToggle">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <a class="nav-back" href="../">← <span data-i18n="back">Portfolio</span></a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="../">samaBR</a><span>/</span><span data-i18n="breadcrumb">About</span>
+  </div>
+
+  <header class="about-header">
+    <div class="eyebrow" data-i18n="eyebrow">Video Editor · Open Source · Brazil</div>
+    <h1 class="about-title" data-i18n="title">Tools built by an editor,<br><span class="accent">for editors</span></h1>
+    <p class="about-lead" data-i18n="lead">I'm samaBR — a video editor who got tired of doing repetitive things by hand and started building tools to fix that. I'm not a developer. I use Claude Code to build, and I ship what I need.</p>
+  </header>
+
+  <!-- Story -->
+  <section>
+    <h2 data-i18n="s1-title">The Story</h2>
+    <p data-i18n="s1-p1">I've been editing video for years — music videos, reels, trailers. The kind of work where everything has to land on the beat. And for years, I placed markers by hand. Every. Single. Song.</p>
+    <p data-i18n="s1-p2">At some point I got tired of it. I knew there had to be a way to automate BPM detection and marker creation inside Premiere Pro. I looked for plugins — found a few, none of them did exactly what I wanted. So I decided to build one.</p>
+    <p data-i18n="s1-p3">The problem: I don't write code. I know what I want to build, I understand the workflow, but I don't speak JavaScript fluently enough to write a plugin from scratch. That's where <strong>Claude Code</strong> came in. I described what I needed, it built it, things crashed, we figured out why together, and iterated until it worked.</p>
+    <p data-i18n="s1-p4">That process produced three tools. All open source. All free. All solving real problems I had in my own editing workflow.</p>
+  </section>
+
+  <!-- Timeline -->
+  <section>
+    <h2 data-i18n="s2-title">Timeline</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot">🔴</div>
+        <div class="tl-content">
+          <div class="tl-date">April 2026 — v1.0</div>
+          <div class="tl-title">BeatMarker Premiere</div>
+          <div class="tl-desc" data-i18n="tl1-desc">First plugin. WAV only, basic BPM detection, colored markers on source clips. The workflow problem that started everything.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🔵</div>
+        <div class="tl-content">
+          <div class="tl-date">April 2026 — v1.0</div>
+          <div class="tl-title">BeatMarker AE</div>
+          <div class="tl-desc" data-i18n="tl2-desc">Same concept for After Effects — but totally different architecture. CEP instead of UXP, ExtendScript bridge, AE 2026 install path discovery.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🔵</div>
+        <div class="tl-content">
+          <div class="tl-date">April 2026 — v1.1</div>
+          <div class="tl-title">BeatMarker Premiere v1.1</div>
+          <div class="tl-desc" data-i18n="tl3-desc">Added confidence indicator, beat selection (toggle individual beats 1–4), and phase shift with selective beats.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🟡</div>
+        <div class="tl-content">
+          <div class="tl-date">April 2026 — v1.2</div>
+          <div class="tl-title">BeatMarker Premiere v1.2 + MP3</div>
+          <div class="tl-desc" data-i18n="tl4-desc">MP3 support — the hardest problem of the whole project. WASM crashed everything. The solution was pure JS decoding with precise timing calibration.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🎧</div>
+        <div class="tl-content">
+          <div class="tl-date">May 2026 — v1.0</div>
+          <div class="tl-title">MonoStereoToggle</div>
+          <div class="tl-desc" data-i18n="tl5-desc">A completely different kind of tool — a Windows 11 utility in C# to toggle mono/stereo audio with a global hotkey. Built because checking audio mix in mono shouldn't take 8 clicks.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stack -->
+  <section>
+    <h2 data-i18n="s3-title">How It's Built</h2>
+    <p data-i18n="s3-lead">Every tool here was built with Claude Code as the primary developer. I act as the product owner — I define what it should do, test it, report what broke, and decide when it's done.</p>
+    <div class="stack-grid" style="margin-top:20px">
+      <div class="stack-card">
+        <div class="stack-label">AI</div>
+        <div class="stack-name">Claude Code</div>
+        <div class="stack-desc" data-i18n="stack-ai">Anthropic's AI coding tool. Does the actual programming.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-label">Hosting</div>
+        <div class="stack-name">GitHub Pages</div>
+        <div class="stack-desc" data-i18n="stack-hosting">Free static hosting. Every site is a public repo.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-label">Premiere Plugin</div>
+        <div class="stack-name">UXP + HTML/JS</div>
+        <div class="stack-desc" data-i18n="stack-uxp">Adobe's modern extension runtime. Distributed as .ccx.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-label">AE Plugin</div>
+        <div class="stack-name">CEP + ExtendScript</div>
+        <div class="stack-desc" data-i18n="stack-cep">Adobe's legacy CEP platform — still the only viable option for AE 2026.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-label">Windows App</div>
+        <div class="stack-name">C# / .NET 8</div>
+        <div class="stack-desc" data-i18n="stack-csharp">WinForms + Windows API for system-level audio control.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-label">Audio Analysis</div>
+        <div class="stack-name">music-tempo</div>
+        <div class="stack-desc" data-i18n="stack-audio">Pure JS BPM detection. Custom WAV/MP3 decoders on top.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section>
+    <h2 data-i18n="s4-title">Contact & Links</h2>
+    <p data-i18n="s4-p1">Everything is open source. Bug reports, suggestions, and pull requests are welcome on GitHub. I'm not active on social media, but Issues are the best way to reach me.</p>
+    <div class="contact-links">
+      <a class="contact-link primary" href="https://github.com/samaBR85" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <a class="contact-link" href="https://github.com/samaBR85/BeatMarker-PremierePlugin/issues" target="_blank" data-i18n="contact-premiere">BeatMarker Premiere Issues</a>
+      <a class="contact-link" href="https://github.com/samaBR85/BeatMarker-AEPlugin/issues" target="_blank" data-i18n="contact-ae">BeatMarker AE Issues</a>
+      <a class="contact-link" href="https://github.com/samaBR85/MonoStereoToggle/issues" target="_blank" data-i18n="contact-mst">MonoStereoToggle Issues</a>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p>Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · <a href="../">portfolio</a></p>
+</footer>
+
+<script>
+  const i18n = {
+    en: {
+      back:'Portfolio', breadcrumb:'About',
+      eyebrow:'Video Editor · Open Source · Brazil',
+      title:'Tools built by an editor,<br><span class="accent">for editors</span>',
+      lead:"I'm samaBR — a video editor who got tired of doing repetitive things by hand and started building tools to fix that. I'm not a developer. I use Claude Code to build, and I ship what I need.",
+      's1-title':'The Story',
+      's1-p1':"I've been editing video for years — music videos, reels, trailers. The kind of work where everything has to land on the beat. And for years, I placed markers by hand. Every. Single. Song.",
+      's1-p2':"At some point I got tired of it. I knew there had to be a way to automate BPM detection and marker creation inside Premiere Pro. I looked for plugins — found a few, none of them did exactly what I wanted. So I decided to build one.",
+      's1-p3':"The problem: I don't write code. I know what I want to build, I understand the workflow, but I don't speak JavaScript fluently enough to write a plugin from scratch. That's where <strong>Claude Code</strong> came in. I described what I needed, it built it, things crashed, we figured out why together, and iterated until it worked.",
+      's1-p4':'That process produced three tools. All open source. All free. All solving real problems I had in my own editing workflow.',
+      's2-title':'Timeline',
+      'tl1-desc':'First plugin. WAV only, basic BPM detection, colored markers on source clips. The workflow problem that started everything.',
+      'tl2-desc':'Same concept for After Effects — but totally different architecture. CEP instead of UXP, ExtendScript bridge, AE 2026 install path discovery.',
+      'tl3-desc':'Added confidence indicator, beat selection (toggle individual beats 1–4), and phase shift with selective beats.',
+      'tl4-desc':'MP3 support — the hardest problem of the whole project. WASM crashed everything. The solution was pure JS decoding with precise timing calibration.',
+      'tl5-desc':'A completely different kind of tool — a Windows 11 utility in C# to toggle mono/stereo audio with a global hotkey. Built because checking audio mix in mono shouldn\'t take 8 clicks.',
+      's3-title':'How It\'s Built',
+      's3-lead':'Every tool here was built with Claude Code as the primary developer. I act as the product owner — I define what it should do, test it, report what broke, and decide when it\'s done.',
+      'stack-ai':"Anthropic's AI coding tool. Does the actual programming.",
+      'stack-hosting':'Free static hosting. Every site is a public repo.',
+      'stack-uxp':"Adobe's modern extension runtime. Distributed as .ccx.",
+      'stack-cep':"Adobe's legacy CEP platform — still the only viable option for AE 2026.",
+      'stack-csharp':'WinForms + Windows API for system-level audio control.',
+      'stack-audio':'Pure JS BPM detection. Custom WAV/MP3 decoders on top.',
+      's4-title':'Contact & Links',
+      's4-p1':'Everything is open source. Bug reports, suggestions, and pull requests are welcome on GitHub. I\'m not active on social media, but Issues are the best way to reach me.',
+      'contact-premiere':'BeatMarker Premiere Issues',
+      'contact-ae':'BeatMarker AE Issues',
+      'contact-mst':'MonoStereoToggle Issues',
+    },
+    pt: {
+      back:'Portfólio', breadcrumb:'Sobre',
+      eyebrow:'Editor de Vídeo · Código Aberto · Brasil',
+      title:'Ferramentas feitas por um editor,<br><span class="accent">para editores</span>',
+      lead:'Sou o samaBR — um editor de vídeo que enjoou de fazer coisas repetitivas na mão e começou a construir ferramentas para resolver isso. Não sou desenvolvedor. Uso o Claude Code para criar, e publico o que eu mesmo preciso.',
+      's1-title':'A História',
+      's1-p1':'Edito vídeo há anos — clipes musicais, reels, trailers. O tipo de trabalho onde tudo tem que cair no beat. E por anos, coloquei marcadores na mão. Em. Cada. Música.',
+      's1-p2':'Em algum momento enjoei. Sabia que tinha como automatizar a detecção de BPM e a criação de marcadores dentro do Premiere Pro. Procurei plugins — achei alguns, nenhum fazia exatamente o que eu queria. Então decidi construir.',
+      's1-p3':'O problema: não escrevo código. Sei o que quero criar, entendo o workflow, mas não falo JavaScript fluentemente o suficiente para escrever um plugin do zero. Foi aí que o <strong>Claude Code</strong> entrou. Descrevi o que precisava, ele construiu, as coisas travaram, descobrimos juntos o porquê, e iteramos até funcionar.',
+      's1-p4':'Esse processo produziu três ferramentas. Todas open source. Todas gratuitas. Todas resolvendo problemas reais que eu tinha no meu próprio workflow de edição.',
+      's2-title':'Linha do Tempo',
+      'tl1-desc':'Primeiro plugin. Só WAV, detecção básica de BPM, marcadores coloridos nos clipes de origem. O problema de workflow que começou tudo.',
+      'tl2-desc':'Mesmo conceito para o After Effects — mas arquitetura completamente diferente. CEP em vez de UXP, bridge ExtendScript, descoberta do caminho de instalação do AE 2026.',
+      'tl3-desc':'Adicionado indicador de confiança, seleção de batidas (ativar/desativar as batidas 1–4 individualmente) e phase shift com batidas seletivas.',
+      'tl4-desc':'Suporte a MP3 — o problema mais difícil de todo o projeto. WASM crashava tudo. A solução foi decode puro em JS com calibração precisa de timing.',
+      'tl5-desc':'Um tipo de ferramenta completamente diferente — um utilitário Windows 11 em C# para alternar áudio mono/estéreo com um hotkey global. Feito porque checar o mix de áudio em mono não deveria exigir 8 cliques.',
+      's3-title':'Como Foi Construído',
+      's3-lead':'Cada ferramenta aqui foi construída com o Claude Code como desenvolvedor principal. Eu ajo como product owner — defino o que deve fazer, testo, reporto o que quebrou, e decido quando está pronto.',
+      'stack-ai':'Ferramenta de IA para código da Anthropic. Faz a programação de verdade.',
+      'stack-hosting':'Hospedagem estática gratuita. Todo site é um repo público.',
+      'stack-uxp':'Runtime moderno de extensões da Adobe. Distribuído como .ccx.',
+      'stack-cep':'Plataforma legada CEP da Adobe — ainda a única opção viável para o AE 2026.',
+      'stack-csharp':'WinForms + Windows API para controle de áudio em nível de sistema.',
+      'stack-audio':'Detecção de BPM em JS puro. Decoders customizados de WAV/MP3 por cima.',
+      's4-title':'Contato & Links',
+      's4-p1':'Tudo é open source. Bug reports, sugestões e pull requests são bem-vindos no GitHub. Não sou ativo em redes sociais, mas Issues é a melhor forma de me contatar.',
+      'contact-premiere':'Issues do BeatMarker Premiere',
+      'contact-ae':'Issues do BeatMarker AE',
+      'contact-mst':'Issues do MonoStereoToggle',
+    }
+  };
+  function applyLang(lang) {
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+    document.getElementById('langLabel').textContent = lang === 'pt' ? 'EN' : 'PT';
+    const t = i18n[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if(t[k]) el.innerHTML = t[k]; });
+    localStorage.setItem('lang', lang);
+  }
+  const root = document.documentElement;
+  root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', n); localStorage.setItem('theme', n);
+  });
+  let lang = localStorage.getItem('lang') || (navigator.language.startsWith('pt') ? 'pt' : 'en');
+  applyLang(lang);
+  document.getElementById('langToggle').addEventListener('click', () => { lang = lang === 'en' ? 'pt' : 'en'; applyLang(lang); });
+</script>
+</body>
+</html>

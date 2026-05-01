@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>From Idea to v1.2: The BeatMarker Devlog — samaBR</title>
+  <meta name="description" content="Three versions, three major problems solved. The real story behind building BeatMarker — from the first working marker to MP3 support and confidence indicators, told through a changelog." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/beatmarker-changelog/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/beatmarker-changelog/" />
+  <meta property="og:title"       content="From Idea to v1.2: The BeatMarker Devlog" />
+  <meta property="og:description" content="Three versions, three major problems. The real story behind building BeatMarker — told through a changelog." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "From Idea to v1.2: The BeatMarker Devlog",
+    "description": "Three versions, three major problems solved. The real story behind building BeatMarker.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-05-01",
+    "dateModified": "2026-05-01",
+    "url": "https://samabr85.github.io/blog/beatmarker-changelog/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "BeatMarker, plugin development, changelog, devlog, Adobe Premiere Pro, After Effects, video editing"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#161a1d;--quote-border:#a855f7;
+      --v1:#34c759;--v11:#4a9eff;--v12:#f5a623;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#faf5ff;--quote-border:#a855f7;
+      --v1:#16a34a;--v11:#2563eb;--v12:#d97706;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(26px,5vw,40px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .version-card{border-radius:12px;border:1px solid var(--border);overflow:hidden;margin:32px 0}
+    .version-header{padding:16px 20px;display:flex;align-items:center;gap:12px}
+    .version-badge{font-size:13px;font-weight:800;letter-spacing:.02em;padding:4px 10px;border-radius:6px}
+    .v1-badge{background:rgba(52,199,89,.15);color:var(--v1)}
+    .v11-badge{background:rgba(74,158,255,.15);color:var(--v11)}
+    .v12-badge{background:rgba(245,166,35,.15);color:var(--v12)}
+    .version-subtitle{font-size:14px;color:var(--muted)}
+    .version-body{padding:0 20px 20px;border-top:1px solid var(--border)}
+    .version-body h3{font-size:15px;font-weight:700;margin:16px 0 8px;color:var(--muted)}
+    .version-body p{font-size:15px;margin-bottom:12px}
+    .version-body ul{margin:0 0 12px 20px;font-size:15px}
+    .version-body li{margin-bottom:4px}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">BeatMarker Devlog</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">📋 <span data-i18n="tag">Devlog · Changelog</span></div>
+    <h1 class="article-title" data-i18n="title">From Idea to v1.2:<br>The BeatMarker Devlog</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">May 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~8 min read</span>
+    </div>
+  </header>
+
+  <article>
+
+    <p data-i18n="intro">This is not a typical changelog. Those are just lists — "added X, fixed Y." This is the story behind those entries: what problem triggered each version, what Claude Code tried that didn't work, and what the solution ended up being. Three versions. Three major obstacles. One video editor who just wanted to stop placing markers by hand.</p>
+
+    <div class="pullquote" data-i18n="q-intro">"Every version started with one frustration. Not a feature request. A frustration."</div>
+
+    <!-- V1.0 -->
+    <h2 data-i18n="v1-story-title">The Origin: "I Have to Place These Markers by Hand. Again."</h2>
+    <p data-i18n="v1-p1">Beat-synced editing — cutting video to match the rhythm of music — is one of those workflows that looks effortless in the final cut. Behind the scenes it's tedious: you scrub through the track, identify each beat, place a marker at that timecode, and repeat 200 times for a 4-minute song at 120 BPM. One wrong click, and you're re-placing markers for the next five minutes.</p>
+    <p data-i18n="v1-p2">The question was: can this be automated? An AI researcher would say "yes, with a neural network." A video editor with Claude Code said "yes, with a JS library and some math." The neural network version requires a server and a subscription. The JS version runs entirely inside a plugin panel.</p>
+    <p data-i18n="v1-p3">The first challenge was just reading an audio file from inside a UXP plugin. The file system API in UXP is asynchronous-only, returns a non-standard proxy object, and requires specific manifest permissions. Claude Code worked through each of those constraints and landed on:</p>
+    <pre><code>const fs = require('fs');
+const raw = await fs.readFile(mediaPath);
+
+// UXP returns a proxy — copy to native ArrayBuffer
+const buf = new ArrayBuffer(raw.byteLength ?? raw.length);
+new Uint8Array(buf).set(new Uint8Array(raw));</code></pre>
+    <p data-i18n="v1-p4">With audio data in hand, the WAV decoder parsed the RIFF header, extracted PCM samples, mixed them to mono, and passed them to <code>music-tempo</code>. The library returned beat timestamps. Those timestamps became colored markers in the Premiere Pro timeline — Red for beat 1, Blue for beats 2 and 4, Yellow for beat 3.</p>
+
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-badge v1-badge">v1.0.0</span>
+        <span class="version-subtitle" data-i18n="v1-subtitle">Initial Release — The first markers land on the beat</span>
+      </div>
+      <div class="version-body">
+        <h3 data-i18n="v1-features">What shipped</h3>
+        <ul>
+          <li data-i18n="v1-f1">BPM detection from WAV files (any sample rate, PCM 8/16/24-bit + float32)</li>
+          <li data-i18n="v1-f2">Colored markers: 🔴 beat 1, 🔵 beats 2 & 4, 🟡 beat 3</li>
+          <li data-i18n="v1-f3">Phase adjustment (◀ ▶) to shift the beat grid without re-analyzing</li>
+          <li data-i18n="v1-f4">Remove markers — cleans only plugin-created markers via name prefix</li>
+          <li data-i18n="v1-f5">Bilingual UI (EN/PT-BR) auto-detected from system locale</li>
+        </ul>
+        <h3 data-i18n="v1-problem">The problem that triggered v1.1</h3>
+        <p data-i18n="v1-prob-text">The plugin worked. Then someone asked: "What if I only want to mark beats 1 and 3? And how do I know if the BPM detection is reliable?" Two valid questions with no answer in v1.0.</p>
+      </div>
+    </div>
+
+    <div class="pullquote" data-i18n="q-v1">"It worked on the first real song tested. That was unexpected. The next 40 minutes were spent trying to break it."</div>
+
+    <!-- V1.1 -->
+    <h2 data-i18n="v11-story-title">v1.1: "I Trust the Plugin, But Should I?"</h2>
+    <p data-i18n="v11-p1">Beat detection confidence is not binary. A metronome track: 100% reliable. A jazz improvisation with tempo rubato: maybe 60%. A song with a complex intro that doesn't establish tempo for the first 30 seconds: the detector might find the wrong BPM entirely. Placing 200 wrong markers and not knowing they're wrong is worse than placing 0 markers.</p>
+    <p data-i18n="v11-p2">Claude Code needed a way to quantify confidence from the beat timestamps alone — no access to the raw audio model, no probability scores from the library. The solution was the Coefficient of Variation (CV) of beat intervals: if beats are evenly spaced, CV is near 0. If they're erratic, CV is high. A simple formula converts that to a 0–100 score.</p>
+
+    <div class="callout tip">
+      <strong>💡 The formula</strong>
+      CV = stddev(intervals) / mean(intervals) · Confidence = clamp(0, 100, round((1 − CV × 4) × 100))
+    </div>
+
+    <p data-i18n="v11-p3">The confidence indicator needed to appear immediately after analysis — not just as a percentage, but as something communicative. The plugin shows a color-coded bar (green/yellow/red) plus a randomized phrase inspired by Whiplash: <em>"Not quite my tempo"</em> for low confidence, <em>"Rushing? No. Dragging? No. Perfect."</em> for high. Thirty phrases, chosen randomly on each analysis. A small detail that makes the tool feel alive instead of clinical.</p>
+    <p data-i18n="v11-p4">Beat selection came from a real workflow need: editors often want only the downbeats (1 and 3) or only the backbeats (2 and 4). Toggling individual beats on/off sounds simple but has a UXP complication — CSS variable-driven colors sometimes don't apply correctly to dynamically updated elements. The fix was inline styles for the beat toggle buttons, bypassing CSS variable resolution entirely.</p>
+
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-badge v11-badge">v1.1.0</span>
+        <span class="version-subtitle" data-i18n="v11-subtitle">Confidence + Beat Selection — Now you know if you can trust it</span>
+      </div>
+      <div class="version-body">
+        <h3 data-i18n="v11-features">What shipped</h3>
+        <ul>
+          <li data-i18n="v11-f1">BPM Confidence Indicator — color-coded bar with a Whiplash-inspired phrase</li>
+          <li data-i18n="v11-f2">Beat selection — toggle individual beat positions (1 2 3 4) independently</li>
+          <li data-i18n="v11-f3">Phase shift with selective beats — colors rotate within active set only</li>
+          <li data-i18n="v11-f4">UXP CSS fix — inline styles for beat toggles to bypass specificity issues</li>
+        </ul>
+        <h3 data-i18n="v11-problem">The problem that triggered v1.2</h3>
+        <p data-i18n="v11-prob-text">The plugin only accepted WAV files. Every editor who uses MP3 as their work format was left out. The question was how to decode MP3 inside UXP without crashing the host application.</p>
+      </div>
+    </div>
+
+    <!-- V1.2 -->
+    <h2 data-i18n="v12-story-title">v1.2: "My Audio Is in MP3. Now What?"</h2>
+    <p data-i18n="v12-p1">MP3 is everywhere. It's the default export format for most music streaming downloads, the standard for music library sync, and what most music tracks get delivered as. A beat detection plugin that only accepts WAV is a plugin that half the potential users can't use.</p>
+    <p data-i18n="v12-p2">The problem: decoding MP3 in JavaScript without WASM. Every high-performance MP3 decoder uses WebAssembly. Every WASM-based decoder Claude Code tested crashed Premiere Pro. Not gracefully — full application crash, no error log. The host process just terminated.</p>
+    <p data-i18n="v12-p3">WASM with pthreads is the culprit. UXP's JavaScript environment doesn't support multi-threaded WASM, and many decoders rely on it. Single-threaded WASM variants were also unstable in testing.</p>
+    <p data-i18n="v12-p4">The solution: <code>js-mp3</code>. A pure JavaScript implementation of an MP3 decoder — no native code, no WASM, just math. It's slower (2 seconds for a 4-minute track vs. 500ms for WAV), but it's the only option that doesn't crash the host.</p>
+    <p data-i18n="v12-p5">MP3 decoding introduced a timing problem that WAV doesn't have. MP3 decoders generate phantom samples at startup — the "encoder delay" recorded in the LAME header, plus a fixed MDCT startup delay specific to js-mp3 (2,070 samples). Both need to be stripped before analysis, or markers land slightly early. After calibrating against a reference decoder, the final offset was exactly 0 frames at any standard video frame rate.</p>
+
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-badge v12-badge">v1.2.0</span>
+        <span class="version-subtitle" data-i18n="v12-subtitle">MP3 Support — The format everyone actually uses</span>
+      </div>
+      <div class="version-body">
+        <h3 data-i18n="v12-features">What shipped</h3>
+        <ul>
+          <li data-i18n="v12-f1">MP3 support — auto-detected by magic bytes, not file extension</li>
+          <li data-i18n="v12-f2">Pure JS MP3 decode via js-mp3 (no WASM, no crashes)</li>
+          <li data-i18n="v12-f3">Encoder delay stripping from Xing/LAME header</li>
+          <li data-i18n="v12-f4">js-mp3 MDCT startup delay correction (2,070 samples @ 44.1 kHz)</li>
+          <li data-i18n="v12-f5">Calibrated to 0 frames offset at any standard frame rate</li>
+        </ul>
+        <h3 data-i18n="v12-current">Current status</h3>
+        <p data-i18n="v12-status-text">v1.2 is the current release. The plugins are stable, actively used, and open source. Issues and feature requests welcome on GitHub.</p>
+      </div>
+    </div>
+
+    <div class="pullquote" data-i18n="q-v12">"Three library crashes before finding js-mp3. The fourth one worked."</div>
+
+    <hr class="divider">
+
+    <h2 data-i18n="s-parallel-title">The Parallel Story: BeatMarker for After Effects</h2>
+    <p data-i18n="s-parallel-p1">While the Premiere Pro plugin was being built, the same beat detection logic was adapted for After Effects. The difference: After Effects 2026 doesn't support UXP panels for audio, so the AE plugin uses CEP instead — an older platform that runs inside a full Chromium browser with Node.js access.</p>
+    <p data-i18n="s-parallel-p2">The AE version shipped as v1.0 with the full feature set from day one, because the Premiere plugin had already solved the hard problems: audio decoding, confidence scoring, beat selection, differential marker updates. The learnings from three Premiere versions went into the AE plugin's v1.0.</p>
+    <p data-i18n="s-parallel-p3">That's one of the underrated advantages of building tools for yourself: when you build the second version of something, you already know which problems are hard.</p>
+
+    <hr class="divider">
+    <p data-i18n="footer-text">Both plugins are open source and free: <a href="https://samabr85.github.io/BeatMarkerPremiere/" style="color:var(--quote-border)">BeatMarker for Premiere Pro</a> · <a href="https://samabr85.github.io/BeatMarkerAE/" style="color:var(--quote-border)">BeatMarker for After Effects</a></p>
+
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'BeatMarker Devlog','tag':'Devlog · Changelog',
+    'title':'From Idea to v1.2:<br>The BeatMarker Devlog','date':'May 2026','readtime':'⏱ ~8 min read',
+    'intro':'This is not a typical changelog. Those are just lists — "added X, fixed Y." This is the story behind those entries: what problem triggered each version, what Claude Code tried that didn\'t work, and what the solution ended up being. Three versions. Three major obstacles. One video editor who just wanted to stop placing markers by hand.',
+    'q-intro':'"Every version started with one frustration. Not a feature request. A frustration."',
+    'v1-story-title':'The Origin: "I Have to Place These Markers by Hand. Again."',
+    'v1-p1':'Beat-synced editing — cutting video to match the rhythm of music — is one of those workflows that looks effortless in the final cut. Behind the scenes it\'s tedious: you scrub through the track, identify each beat, place a marker at that timecode, and repeat 200 times for a 4-minute song at 120 BPM. One wrong click, and you\'re re-placing markers for the next five minutes.',
+    'v1-p2':'The question was: can this be automated? An AI researcher would say "yes, with a neural network." A video editor with Claude Code said "yes, with a JS library and some math." The neural network version requires a server and a subscription. The JS version runs entirely inside a plugin panel.',
+    'v1-p3':'The first challenge was just reading an audio file from inside a UXP plugin. The file system API in UXP is asynchronous-only, returns a non-standard proxy object, and requires specific manifest permissions. Claude Code worked through each of those constraints.',
+    'v1-p4':'With audio data in hand, the WAV decoder parsed the RIFF header, extracted PCM samples, mixed them to mono, and passed them to <code>music-tempo</code>. The library returned beat timestamps. Those timestamps became colored markers in the Premiere Pro timeline.',
+    'v1-subtitle':'Initial Release — The first markers land on the beat',
+    'v1-features':'What shipped',
+    'v1-f1':'BPM detection from WAV files (any sample rate, PCM 8/16/24-bit + float32)',
+    'v1-f2':'Colored markers: 🔴 beat 1, 🔵 beats 2 & 4, 🟡 beat 3',
+    'v1-f3':'Phase adjustment (◀ ▶) to shift the beat grid without re-analyzing',
+    'v1-f4':'Remove markers — cleans only plugin-created markers via name prefix',
+    'v1-f5':'Bilingual UI (EN/PT-BR) auto-detected from system locale',
+    'v1-problem':'The problem that triggered v1.1',
+    'v1-prob-text':'The plugin worked. Then someone asked: "What if I only want to mark beats 1 and 3? And how do I know if the BPM detection is reliable?" Two valid questions with no answer in v1.0.',
+    'q-v1':'"It worked on the first real song tested. That was unexpected. The next 40 minutes were spent trying to break it."',
+    'v11-story-title':'v1.1: "I Trust the Plugin, But Should I?"',
+    'v11-p1':'Beat detection confidence is not binary. A metronome track: 100% reliable. A jazz improvisation with tempo rubato: maybe 60%. Placing 200 wrong markers and not knowing they\'re wrong is worse than placing 0 markers.',
+    'v11-p2':'Claude Code needed a way to quantify confidence from the beat timestamps alone. The solution was the Coefficient of Variation (CV) of beat intervals: if beats are evenly spaced, CV is near 0. If they\'re erratic, CV is high. A simple formula converts that to a 0–100 score.',
+    'v11-p3':'The confidence indicator needed to feel communicative, not clinical. The plugin shows a color-coded bar plus a randomized phrase inspired by Whiplash: <em>"Not quite my tempo"</em> for low confidence, <em>"Rushing? No. Dragging? No. Perfect."</em> for high. Thirty phrases, chosen randomly on each analysis.',
+    'v11-p4':'Beat selection came from a real workflow need: editors often want only the downbeats or only the backbeats. Toggling individual beats has a UXP complication — CSS variable-driven colors don\'t always apply correctly to dynamically updated elements. The fix was inline styles, bypassing CSS variable resolution.',
+    'v11-subtitle':'Confidence + Beat Selection — Now you know if you can trust it',
+    'v11-features':'What shipped',
+    'v11-f1':'BPM Confidence Indicator — color-coded bar with a Whiplash-inspired phrase',
+    'v11-f2':'Beat selection — toggle individual beat positions (1 2 3 4) independently',
+    'v11-f3':'Phase shift with selective beats — colors rotate within active set only',
+    'v11-f4':'UXP CSS fix — inline styles for beat toggles to bypass specificity issues',
+    'v11-problem':'The problem that triggered v1.2',
+    'v11-prob-text':'The plugin only accepted WAV files. Every editor who uses MP3 was left out. The question was how to decode MP3 inside UXP without crashing the host application.',
+    'v12-story-title':'v1.2: "My Audio Is in MP3. Now What?"',
+    'v12-p1':'MP3 is everywhere — the default export from streaming downloads, standard for music library sync, what most music tracks get delivered as. A beat detection plugin that only accepts WAV is a plugin that half the potential users can\'t use.',
+    'v12-p2':'The problem: decoding MP3 in JavaScript without WASM. Every high-performance MP3 decoder uses WebAssembly. Every WASM-based decoder Claude Code tested crashed Premiere Pro. Not gracefully — full application crash, no error log.',
+    'v12-p3':'WASM with pthreads is the culprit. UXP\'s JavaScript environment doesn\'t support multi-threaded WASM, and many decoders rely on it. Single-threaded WASM variants were also unstable in testing.',
+    'v12-p4':'The solution: <code>js-mp3</code>. A pure JavaScript implementation of an MP3 decoder. Slower than WASM, but the only option that doesn\'t crash the host.',
+    'v12-p5':'MP3 decoding introduced a timing problem WAV doesn\'t have: phantom samples at startup from encoder delay and a fixed js-mp3 MDCT startup offset (2,070 samples). Both need stripping, or markers land slightly early. After calibration: 0 frames offset at any standard frame rate.',
+    'v12-subtitle':'MP3 Support — The format everyone actually uses',
+    'v12-features':'What shipped',
+    'v12-f1':'MP3 support — auto-detected by magic bytes, not file extension',
+    'v12-f2':'Pure JS MP3 decode via js-mp3 (no WASM, no crashes)',
+    'v12-f3':'Encoder delay stripping from Xing/LAME header',
+    'v12-f4':'js-mp3 MDCT startup delay correction (2,070 samples @ 44.1 kHz)',
+    'v12-f5':'Calibrated to 0 frames offset at any standard frame rate',
+    'v12-current':'Current status',
+    'v12-status-text':'v1.2 is the current release. The plugins are stable, actively used, and open source. Issues and feature requests welcome on GitHub.',
+    'q-v12':'"Three library crashes before finding js-mp3. The fourth one worked."',
+    's-parallel-title':'The Parallel Story: BeatMarker for After Effects',
+    's-parallel-p1':'While the Premiere Pro plugin was being built, the same beat detection logic was adapted for After Effects. The difference: AE 2026 doesn\'t support UXP panels for audio, so the AE plugin uses CEP — an older platform that runs inside a full Chromium browser with Node.js access.',
+    's-parallel-p2':'The AE version shipped as v1.0 with the full feature set from day one, because the Premiere plugin had already solved the hard problems: audio decoding, confidence scoring, beat selection, differential marker updates.',
+    's-parallel-p3':'That\'s one of the underrated advantages of building tools for yourself: when you build the second version of something, you already know which problems are hard.',
+    'footer-text':'Both plugins are open source and free: <a href="https://samabr85.github.io/BeatMarkerPremiere/" style="color:var(--quote-border)">BeatMarker for Premiere Pro</a> · <a href="https://samabr85.github.io/BeatMarkerAE/" style="color:var(--quote-border)">BeatMarker for After Effects</a>'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'Devlog do BeatMarker','tag':'Devlog · Changelog',
+    'title':'Do Conceito ao v1.2:<br>O Devlog do BeatMarker','date':'Maio de 2026','readtime':'⏱ ~8 min de leitura',
+    'intro':'Este não é um changelog típico. Esses são só listas — "adicionou X, corrigiu Y." Este é a história por trás dessas entradas: qual problema desencadeou cada versão, o que o Claude Code tentou que não funcionou, e qual foi a solução. Três versões. Três grandes obstáculos. Um editor de vídeo que só queria parar de colocar markers na mão.',
+    'q-intro':'"Cada versão começou com uma frustração. Não uma solicitação de recurso. Uma frustração."',
+    'v1-story-title':'A Origem: "Tenho Que Colocar Esses Markers na Mão. De Novo."',
+    'v1-p1':'Edição sincronizada ao beat — cortar vídeo para combinar com o ritmo da música — é um desses workflows que parece simples no corte final. Nos bastidores é tedioso: você percorre a faixa, identifica cada beat, coloca um marker naquele timecode, e repete 200 vezes para uma música de 4 minutos a 120 BPM.',
+    'v1-p2':'A pergunta era: isso pode ser automatizado? Um pesquisador de IA diria "sim, com uma rede neural." Um editor de vídeo com Claude Code disse "sim, com uma biblioteca JS e um pouco de matemática." A versão com rede neural requer um servidor e uma assinatura. A versão JS roda inteiramente dentro de um painel de plugin.',
+    'v1-p3':'O primeiro desafio foi simplesmente ler um arquivo de áudio de dentro de um plugin UXP. A API de sistema de arquivos do UXP é apenas assíncrona, retorna um objeto proxy não padrão, e requer permissões específicas no manifest. O Claude Code trabalhou por cada uma dessas restrições.',
+    'v1-p4':'Com dados de áudio em mãos, o decodificador WAV analisou o cabeçalho RIFF, extraiu amostras PCM, misturou para mono, e as passou para <code>music-tempo</code>. A biblioteca retornou timestamps de beat. Esses timestamps se tornaram markers coloridos na timeline do Premiere Pro.',
+    'v1-subtitle':'Lançamento Inicial — Os primeiros markers caem no beat',
+    'v1-features':'O que foi lançado',
+    'v1-f1':'Detecção de BPM de arquivos WAV (qualquer taxa de amostragem, PCM 8/16/24-bit + float32)',
+    'v1-f2':'Markers coloridos: 🔴 beat 1, 🔵 beats 2 e 4, 🟡 beat 3',
+    'v1-f3':'Ajuste de fase (◀ ▶) para deslocar o grid de beats sem reanalisar',
+    'v1-f4':'Remover markers — limpa apenas markers criados pelo plugin via prefixo de nome',
+    'v1-f5':'UI bilíngue (EN/PT-BR) detectada automaticamente pelo locale do sistema',
+    'v1-problem':'O problema que desencadeou o v1.1',
+    'v1-prob-text':'O plugin funcionava. Então alguém perguntou: "E se eu quiser marcar apenas os beats 1 e 3? E como sei se a detecção de BPM é confiável?" Duas perguntas válidas sem resposta no v1.0.',
+    'q-v1':'"Funcionou na primeira música real testada. Isso foi inesperado. Os próximos 40 minutos foram tentando quebrar."',
+    'v11-story-title':'v1.1: "Confio no Plugin, Mas Deveria?"',
+    'v11-p1':'A confiança na detecção de beat não é binária. Uma faixa de metrônomo: 100% confiável. Uma improvisação de jazz com rubato: talvez 60%. Colocar 200 markers errados e não saber que estão errados é pior do que colocar 0 markers.',
+    'v11-p2':'O Claude Code precisava de uma forma de quantificar a confiança apenas a partir dos timestamps de beat. A solução foi o Coeficiente de Variação (CV) dos intervalos de beat: se os beats têm espaçamento uniforme, o CV fica próximo de 0. Uma fórmula simples converte isso em uma pontuação de 0–100.',
+    'v11-p3':'O indicador de confiança precisava ser comunicativo, não clínico. O plugin mostra uma barra com código de cores mais uma frase aleatória inspirada em Whiplash: <em>"Not quite my tempo"</em> para baixa confiança, <em>"Rushing? No. Dragging? No. Perfect."</em> para alta. Trinta frases, escolhidas aleatoriamente a cada análise.',
+    'v11-p4':'A seleção de beats veio de uma necessidade real de workflow: editores frequentemente querem apenas os downbeats ou apenas os backbeats. Alternar beats individuais tem uma complicação no UXP — cores baseadas em variáveis CSS nem sempre se aplicam corretamente a elementos atualizados dinamicamente. A correção foram estilos inline.',
+    'v11-subtitle':'Confiança + Seleção de Beats — Agora você sabe se pode confiar',
+    'v11-features':'O que foi lançado',
+    'v11-f1':'Indicador de Confiança de BPM — barra com código de cores e frase inspirada em Whiplash',
+    'v11-f2':'Seleção de beats — alternar posições de beats individuais (1 2 3 4) independentemente',
+    'v11-f3':'Phase shift com beats seletivos — cores giram dentro do conjunto ativo apenas',
+    'v11-f4':'Correção de CSS do UXP — estilos inline para botões de beat para contornar problemas de especificidade',
+    'v11-problem':'O problema que desencadeou o v1.2',
+    'v11-prob-text':'O plugin aceitava apenas arquivos WAV. Todo editor que usa MP3 estava de fora. A pergunta era como decodificar MP3 dentro do UXP sem crashar a aplicação host.',
+    'v12-story-title':'v1.2: "Meu Áudio É MP3. E Agora?"',
+    'v12-p1':'MP3 está em todo lugar — o formato de exportação padrão de downloads de streaming, padrão para sincronização de biblioteca de música. Um plugin de detecção de beat que só aceita WAV é um plugin que metade dos usuários potenciais não pode usar.',
+    'v12-p2':'O problema: decodificar MP3 em JavaScript sem WASM. Todo decodificador MP3 de alto desempenho usa WebAssembly. Todo decodificador baseado em WASM que o Claude Code testou crashou o Premiere Pro. Não graciosamente — crash completo da aplicação, sem log de erro.',
+    'v12-p3':'WASM com pthreads é o culpado. O ambiente JavaScript do UXP não suporta WASM multi-threaded, e muitos decodificadores dependem disso. Variantes WASM single-threaded também eram instáveis nos testes.',
+    'v12-p4':'A solução: <code>js-mp3</code>. Uma implementação JavaScript pura de um decodificador MP3. Mais lento que WASM, mas a única opção que não crasha o host.',
+    'v12-p5':'A decodificação MP3 introduziu um problema de timing que WAV não tem: amostras fantasmas no início do encoder delay e um offset de startup MDCT fixo do js-mp3 (2.070 amostras). Ambos precisam ser removidos, ou os markers caem levemente antes. Após calibração: 0 frames de offset em qualquer frame rate padrão.',
+    'v12-subtitle':'Suporte a MP3 — O formato que todos realmente usam',
+    'v12-features':'O que foi lançado',
+    'v12-f1':'Suporte a MP3 — detectado automaticamente por magic bytes, não pela extensão do arquivo',
+    'v12-f2':'Decodificação MP3 em JS puro via js-mp3 (sem WASM, sem crashes)',
+    'v12-f3':'Remoção do encoder delay do cabeçalho Xing/LAME',
+    'v12-f4':'Correção do delay de startup MDCT do js-mp3 (2.070 amostras @ 44.1 kHz)',
+    'v12-f5':'Calibrado para 0 frames de offset em qualquer frame rate padrão',
+    'v12-current':'Status atual',
+    'v12-status-text':'v1.2 é o release atual. Os plugins são estáveis, ativamente usados e open source. Issues e solicitações de recursos são bem-vindos no GitHub.',
+    'q-v12':'"Três crashes de bibliotecas antes de encontrar o js-mp3. O quarto funcionou."',
+    's-parallel-title':'A História Paralela: BeatMarker para After Effects',
+    's-parallel-p1':'Enquanto o plugin do Premiere Pro estava sendo construído, a mesma lógica de detecção de beat foi adaptada para o After Effects. A diferença: o AE 2026 não suporta painéis UXP para áudio, então o plugin AE usa CEP — uma plataforma mais antiga que roda dentro de um browser Chromium completo com acesso Node.js.',
+    's-parallel-p2':'A versão AE lançou como v1.0 com o conjunto completo de recursos desde o primeiro dia, porque o plugin Premiere já havia resolvido os problemas difíceis: decodificação de áudio, pontuação de confiança, seleção de beats, atualizações diferenciais de markers.',
+    's-parallel-p3':'Essa é uma das vantagens subestimadas de construir ferramentas para si mesmo: quando você constrói a segunda versão de algo, já sabe quais problemas são difíceis.',
+    'footer-text':'Ambos os plugins são open source e gratuitos: <a href="https://samabr85.github.io/BeatMarkerPremiere/" style="color:var(--quote-border)">BeatMarker para Premiere Pro</a> · <a href="https://samabr85.github.io/BeatMarkerAE/" style="color:var(--quote-border)">BeatMarker para After Effects</a>'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>

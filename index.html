@@ -184,6 +184,14 @@
     :root[data-theme="dark"]  .icon-sun  { display: none; }
     :root[data-theme="light"] .icon-moon { display: none; }
 
+    .nav-about {
+      display: flex; align-items: center;
+      font-size: 13px; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 14px; transition: color .2s, border-color .2s;
+    }
+    .nav-about:hover { color: var(--text); border-color: #555; }
+
     .nav-gh {
       display: flex; align-items: center; gap: 8px;
       font-size: 13px; color: var(--muted);
@@ -414,6 +422,7 @@
         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
       </svg>
     </button>
+    <a class="nav-about" href="/about/" data-i18n="nav-about">About</a>
     <a class="nav-gh" href="https://github.com/samaBR85" target="_blank">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub
@@ -550,6 +559,46 @@
       <p class="blog-card-desc" data-i18n="blog-art1-desc">A production reference built while shipping BeatMarker — filesystem quirks, the marker API lies, transaction limits, and why WASM will crash Premiere every single time.</p>
       <span class="blog-read-more" data-i18n="blog-read">Read article →</span>
     </a>
+
+    <a class="blog-card" href="blog/cep-after-effects/">
+      <div class="blog-card-meta">
+        <span class="blog-tag">CEP · After Effects</span>
+        <span class="blog-date">May 2026</span>
+      </div>
+      <h3 class="blog-card-title" data-i18n="blog-art2-title">CEP for After Effects 2026: The Underground Plugin Guide</h3>
+      <p class="blog-card-desc" data-i18n="blog-art2-desc">The install path Adobe forgot to document, the manifest version that actually works, the registry key that unlocks debug mode — everything you need to ship a CEP panel in AE 2026.</p>
+      <span class="blog-read-more" data-i18n="blog-read">Read article →</span>
+    </a>
+
+    <a class="blog-card" href="blog/beat-detection-js/">
+      <div class="blog-card-meta">
+        <span class="blog-tag">Audio · JavaScript · BPM</span>
+        <span class="blog-date">May 2026</span>
+      </div>
+      <h3 class="blog-card-title" data-i18n="blog-art3-title">Beat Detection in JavaScript: No AI, No Magic, Just Math</h3>
+      <p class="blog-card-desc" data-i18n="blog-art3-desc">How to decode WAV and MP3 files by hand inside an Adobe plugin, extract beats with music-tempo, score confidence with the CV formula — and why WASM will crash Premiere before you get there.</p>
+      <span class="blog-read-more" data-i18n="blog-read">Read article →</span>
+    </a>
+
+    <a class="blog-card" href="blog/beatmarker-changelog/">
+      <div class="blog-card-meta">
+        <span class="blog-tag">Devlog · Changelog</span>
+        <span class="blog-date">May 2026</span>
+      </div>
+      <h3 class="blog-card-title" data-i18n="blog-art4-title">From Idea to v1.2: The BeatMarker Devlog</h3>
+      <p class="blog-card-desc" data-i18n="blog-art4-desc">Three versions, three major problems: the WAV pipeline, the confidence indicator nobody asked for but everyone needed, and the MP3 decoder that didn't crash the host on the fourth try.</p>
+      <span class="blog-read-more" data-i18n="blog-read">Read article →</span>
+    </a>
+
+    <a class="blog-card" href="blog/windows-utility-csharp/">
+      <div class="blog-card-meta">
+        <span class="blog-tag">C# · .NET 8 · Windows</span>
+        <span class="blog-date">May 2026</span>
+      </div>
+      <h3 class="blog-card-title" data-i18n="blog-art5-title">Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights</h3>
+      <p class="blog-card-desc" data-i18n="blog-art5-desc">When JavaScript plugins aren't enough: how Claude Code built a native Windows system tray utility in C# and .NET 8 — global hotkeys, COM audio APIs, and a self-contained single-file .exe.</p>
+      <span class="blog-read-more" data-i18n="blog-read">Read article →</span>
+    </a>
   </div>
 </div>
 
@@ -578,8 +627,17 @@
       'blog-eyebrow':     'Blog · Dev Articles',
       'blog-title':       'From the <span class="accent">Build Log</span>',
       'blog-desc':        'Technical deep-dives written while building these tools — for video editors who want to code.',
+      'nav-about':        'About',
       'blog-art1-title':  'UXP Plugin Development: What Adobe Doesn\'t Tell You',
       'blog-art1-desc':   'A production reference built while shipping BeatMarker — filesystem quirks, the marker API lies, transaction limits, and why WASM will crash Premiere every single time.',
+      'blog-art2-title':  'CEP for After Effects 2026: The Underground Plugin Guide',
+      'blog-art2-desc':   'The install path Adobe forgot to document, the manifest version that actually works, the registry key that unlocks debug mode — everything you need to ship a CEP panel in AE 2026.',
+      'blog-art3-title':  'Beat Detection in JavaScript: No AI, No Magic, Just Math',
+      'blog-art3-desc':   'How to decode WAV and MP3 files by hand inside an Adobe plugin, extract beats with music-tempo, score confidence with the CV formula — and why WASM will crash Premiere before you get there.',
+      'blog-art4-title':  'From Idea to v1.2: The BeatMarker Devlog',
+      'blog-art4-desc':   'Three versions, three major problems: the WAV pipeline, the confidence indicator nobody asked for but everyone needed, and the MP3 decoder that didn\'t crash the host on the fourth try.',
+      'blog-art5-title':  'Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights',
+      'blog-art5-desc':   'When JavaScript plugins aren\'t enough: how Claude Code built a native Windows system tray utility in C# and .NET 8 — global hotkeys, COM audio APIs, and a self-contained single-file .exe.',
       'blog-read':        'Read article →',
     },
     pt: {
@@ -600,8 +658,17 @@
       'blog-eyebrow':     'Blog · Artigos Técnicos',
       'blog-title':       'Do <span class="accent">Diário de Desenvolvimento</span>',
       'blog-desc':        'Deep-dives técnicos escritos durante o desenvolvimento dessas ferramentas — para editores de vídeo que querem programar.',
+      'nav-about':        'Sobre',
       'blog-art1-title':  'Desenvolvimento de Plugin UXP: O Que a Adobe Não Te Conta',
       'blog-art1-desc':   'Uma referência de produção construída durante o desenvolvimento do BeatMarker — quirks do filesystem, mentiras da API de markers, limites de transação, e por que WASM vai travar o Premiere toda vez.',
+      'blog-art2-title':  'CEP para After Effects 2026: O Guia Underground de Plugins',
+      'blog-art2-desc':   'O caminho de instalação que a Adobe esqueceu de documentar, a versão do manifest que realmente funciona, a chave de registro que desbloqueia o modo de debug — tudo que você precisa para lançar um painel CEP no AE 2026.',
+      'blog-art3-title':  'Detecção de BPM em JavaScript: Sem IA, Sem Mágica, Só Matemática',
+      'blog-art3-desc':   'Como decodificar WAV e MP3 na mão dentro de um plugin Adobe, extrair beats com music-tempo, pontuar confiança com a fórmula CV — e por que WASM vai crashar o Premiere antes de você chegar lá.',
+      'blog-art4-title':  'Do Conceito ao v1.2: O Devlog do BeatMarker',
+      'blog-art4-desc':   'Três versões, três grandes problemas: o pipeline WAV, o indicador de confiança que ninguém pediu mas todo mundo precisava, e o decodificador MP3 que não crashou o host na quarta tentativa.',
+      'blog-art5-title':  'Construindo um Utilitário Windows em C#: Hotkeys, Ícone de Bandeja e Admin',
+      'blog-art5-desc':   'Quando plugins JavaScript não são suficientes: como o Claude Code construiu um utilitário nativo Windows em C# e .NET 8 — hotkeys globais, APIs de áudio COM, e um .exe single-file.',
       'blog-read':        'Ler artigo →',
     }
   };

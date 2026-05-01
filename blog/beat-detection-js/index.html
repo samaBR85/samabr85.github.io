@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beat Detection in JavaScript: No AI, No Magic, Just Math — samaBR</title>
+  <meta name="description" content="How Claude Code built a real-time beat detection pipeline in pure JavaScript for Adobe plugins — WAV decoding, BPM analysis, confidence scoring, and why WASM crashed Premiere Pro." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/beat-detection-js/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/beat-detection-js/" />
+  <meta property="og:title"       content="Beat Detection in JavaScript: No AI, No Magic, Just Math" />
+  <meta property="og:description" content="How Claude Code built a real-time beat detection pipeline in pure JS — WAV decoding, BPM analysis, confidence scoring, and why WASM crashed Premiere." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Beat Detection in JavaScript: No AI, No Magic, Just Math",
+    "description": "How Claude Code built a real-time beat detection pipeline in pure JavaScript for Adobe Premiere Pro and After Effects plugins.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-05-01",
+    "dateModified": "2026-05-01",
+    "url": "https://samabr85.github.io/blog/beat-detection-js/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "beat detection, JavaScript, BPM, audio analysis, WAV decoding, music-tempo, video editing"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#161a1d;--quote-border:#34c759;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#f0fff4;--quote-border:#16a34a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.2);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(26px,5vw,40px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .confidence-bar{display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:20px 0}
+    .confidence-bar .bar{flex:1;height:8px;border-radius:4px;overflow:hidden;background:var(--border)}
+    .confidence-bar .fill{height:100%;border-radius:4px}
+    .fill-green{background:#34c759;width:88%}
+    .fill-yellow{background:#ffd60a;width:67%}
+    .fill-red{background:#ff453a;width:35%}
+    .confidence-bar span{font-size:13px;color:var(--muted);min-width:40px;text-align:right}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">Beat Detection in JavaScript</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">🎵 <span data-i18n="tag">Audio · JavaScript · BPM</span></div>
+    <h1 class="article-title" data-i18n="title">Beat Detection in JavaScript:<br>No AI, No Magic, Just Math</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">May 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~10 min read</span>
+    </div>
+  </header>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Goal: Click a Button, Get Markers</h2>
+    <p data-i18n="s1-p1">The idea behind BeatMarker is simple enough to explain in one sentence: you select an audio clip in your Adobe timeline, click a button, and the plugin places colored markers on every beat of the music. No manual tapping, no external tools, no subscription.</p>
+    <p data-i18n="s1-p2">The implementation is the interesting part. Claude Code needed to decode audio files — WAV and MP3 — entirely inside an Adobe plugin environment, extract beats with high accuracy, and do it fast enough that the editor doesn't sit waiting. No server. No AI model. No cloud API. Just JavaScript running locally in a sandboxed plugin panel.</p>
+    <p data-i18n="s1-p3">This is the story of how that pipeline was built, what worked, what catastrophically failed, and what the final numbers look like.</p>
+
+    <div class="pullquote" data-i18n="q1">"The idea was simple. The implementation involved decoding binary audio formats by hand."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">Why Not Just Use the Web Audio API?</h2>
+    <p data-i18n="s2-p1">The obvious approach is <code>AudioContext.decodeAudioData()</code> — it's the standard Web Audio way to decode audio files. It handles WAV, MP3, AAC, everything. You pass it an ArrayBuffer, it gives you back a decoded PCM AudioBuffer. Clean, fast, battle-tested.</p>
+    <p data-i18n="s2-p2">In UXP (Adobe Premiere Pro plugins), <code>AudioContext</code> doesn't exist. The entire Web Audio API is absent. Claude Code confirmed this by checking:</p>
+    <pre><code>typeof AudioContext         // "undefined"
+typeof webkitAudioContext   // "undefined"</code></pre>
+    <p data-i18n="s2-p3">This meant building a complete audio decoding pipeline from scratch, in pure JavaScript, with no browser APIs. Every byte of the audio file has to be read and interpreted manually.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">Decoding WAV Files by Hand</h2>
+    <p data-i18n="s3-p1">WAV files follow the RIFF container format. The file starts with a header that describes the audio: sample rate, bit depth, number of channels, encoding type. Everything after the data chunk is raw PCM samples. Claude Code implemented a <code>DataView</code>-based decoder to parse this:</p>
+    <pre><code>function decodeWav(arrayBuffer) {
+  const view = new DataView(arrayBuffer);
+
+  // Verify RIFF header
+  const riff = String.fromCharCode(view.getUint8(0), view.getUint8(1),
+                                    view.getUint8(2), view.getUint8(3));
+  if (riff !== 'RIFF') throw new Error('Not a WAV file');
+
+  const audioFormat = view.getUint16(20, true); // 1=PCM, 3=float32
+  const numChannels = view.getUint16(22, true);
+  const sampleRate  = view.getUint32(24, true);
+  const bitsPerSample = view.getUint16(34, true);
+
+  // Find the 'data' chunk (it may not start at byte 44)
+  let dataOffset = 12;
+  while (dataOffset &lt; view.byteLength - 8) {
+    const chunkId = String.fromCharCode(
+      view.getUint8(dataOffset),   view.getUint8(dataOffset+1),
+      view.getUint8(dataOffset+2), view.getUint8(dataOffset+3)
+    );
+    const chunkSize = view.getUint32(dataOffset + 4, true);
+    if (chunkId === 'data') break;
+    dataOffset += 8 + chunkSize;
+  }
+  dataOffset += 8; // skip 'data' + size fields
+
+  // Decode samples to Float32 [-1.0, 1.0]
+  const samples = extractSamples(view, dataOffset, bitsPerSample, audioFormat);
+  const mono = numChannels > 1 ? mixToMono(samples, numChannels) : samples;
+
+  return { sampleRate, samples: mono };
+}</code></pre>
+    <p data-i18n="s3-p2">The format supports 8-bit unsigned, 16-bit signed, 24-bit signed, and 32-bit float samples. Each encoding requires different math to convert to the normalized float range expected by the beat detection library.</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">MP3 Support: WASM Crashes Premiere Pro</h2>
+    <p data-i18n="s4-p1">WAV is straightforward because it's uncompressed PCM. MP3 is an entirely different beast — it uses psychoacoustic compression, Huffman coding, and MDCT transforms. Implementing an MP3 decoder from scratch is a weeks-long project.</p>
+    <p data-i18n="s4-p2">The obvious solution is a WASM (WebAssembly) based decoder — fast, accurate, widely used. Claude Code tried <code>mpg123-decoder</code>, which is one of the best JS MP3 decoders available. It crashed Premiere Pro immediately. Not a JavaScript error. An actual application crash. No log, no error message — the host app just died.</p>
+    <p data-i18n="s4-p3">The reason: WASM with pthreads (multi-threading) is not supported in UXP. Even single-threaded WASM variants caused crashes in testing. This ruled out virtually every high-performance audio decoder.</p>
+    <p data-i18n="s4-p4">The solution was <code>js-mp3</code> — a pure JavaScript MP3 decoder with zero native dependencies. Slower than WASM, but it doesn't crash the host. It works. For 3–5 minute tracks at 44.1 kHz, decoding takes 1–2 seconds — acceptable for a tool that's replacing manual marker placement.</p>
+
+    <div class="callout danger">
+      <strong>🚨 Don't Try WASM in UXP</strong>
+      WASM with pthreads crashes Premiere Pro immediately. Single-threaded WASM variants also crash during testing. If you need native-performance processing in a UXP plugin, you need a different architecture entirely.
+    </div>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">The MP3 Timing Problem: Phantom Samples</h2>
+    <p data-i18n="s5-p1">MP3 decoders don't start cleanly at sample 0. There are two sources of phantom samples at the beginning of every MP3 decode that cause timing offsets — markers placed slightly before the actual beat:</p>
+    <ol>
+      <li data-i18n="s5-l1"><strong>Encoder delay</strong> — recorded in the Xing/LAME header of the MP3 file. Varies per encoder and encode settings.</li>
+      <li data-i18n="s5-l2"><strong>MDCT startup delay</strong> — specific to js-mp3's implementation. After testing, this is consistently 2,070 samples at 44,100 Hz regardless of the source file.</li>
+    </ol>
+    <p data-i18n="s5-p2">Both delays must be stripped before passing audio to the beat detector. Claude Code calibrated the final offset against <code>mpg123-decoder</code> as a reference: the result was <strong>0 frames offset</strong> at any standard video frame rate. Markers land exactly on the beat.</p>
+    <pre><code>// Read encoder delay from Xing/LAME header
+function getEncoderDelay(arrayBuffer) {
+  const view = new DataView(arrayBuffer);
+  // LAME header starts after Xing/Info tag
+  // Encoder delay is stored at a known byte offset in the LAME tag
+  // Returns 0 if no LAME tag is found (CBR files)
+  return parseLameHeader(view) ?? 0;
+}
+
+// Strip phantom samples before analysis
+const encoderDelay = getEncoderDelay(mp3Buffer);
+const mdctDelay = 2070; // js-mp3 specific
+const totalDelay = encoderDelay + mdctDelay;
+const cleanSamples = decodedSamples.slice(totalDelay);</code></pre>
+
+    <div class="pullquote" data-i18n="q2">"MP3 decoding: three libraries tried. One didn't crash the host. That's the one we shipped."</div>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">The Beat Detector: music-tempo</h2>
+    <p data-i18n="s6-p1">With clean PCM samples in hand, the next step is extracting beats. BeatMarker uses <code>music-tempo</code> — a pure JavaScript library that implements BPM detection via autocorrelation and onset detection. It takes a Float32Array of audio samples and a sample rate, and returns a list of beat timestamps in seconds.</p>
+    <pre><code>import { analyzeAudio } from 'music-tempo';
+
+// Resample to 44100 Hz if needed — music-tempo expects a standard rate
+const normalizedSamples = resampleIfNeeded(samples, sampleRate, 44100);
+
+const result = analyzeAudio(normalizedSamples, 44100);
+// result.beats — array of beat timestamps in seconds
+// result.bpm   — detected tempo</code></pre>
+    <p data-i18n="s6-p2">The library handles the heavy lifting: onset detection, tempo estimation, beat phase alignment. What it doesn't provide is a confidence metric — how reliable is this BPM estimate? That had to be built.</p>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">Confidence Scoring: The CV Formula</h2>
+    <p data-i18n="s7-p1">A metronome click track would give perfectly even beat intervals. Real music has swing, rubato, fills, and tempo variation. The beat detector still finds beats, but they're spaced less evenly. The consistency of spacing is a reliable proxy for detection confidence.</p>
+    <p data-i18n="s7-p2">Claude Code implemented confidence scoring using the <strong>Coefficient of Variation (CV)</strong> — a normalized measure of how much beat intervals vary relative to their mean:</p>
+    <pre><code>function computeConfidence(beats) {
+  const intervals = [];
+  for (let i = 1; i &lt; beats.length; i++) {
+    intervals.push(beats[i] - beats[i-1]);
+  }
+
+  const mean = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+  const variance = intervals.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / intervals.length;
+  const stddev = Math.sqrt(variance);
+
+  const cv = stddev / mean;
+
+  // Scale to 0–100: CV of 0 = 100%, CV of 0.25 = 0%
+  return Math.max(0, Math.min(100, Math.round((1 - cv * 4) * 100)));
+}</code></pre>
+    <p data-i18n="s7-p3">The resulting score drives a color-coded indicator in the plugin UI:</p>
+
+    <div class="confidence-bar">
+      <span style="font-size:13px;color:var(--green);min-width:80px" data-i18n="conf-high">High (88%)</span>
+      <div class="bar"><div class="fill fill-green"></div></div>
+      <span>88%</span>
+    </div>
+    <div class="confidence-bar">
+      <span style="font-size:13px;color:#ffd60a;min-width:80px" data-i18n="conf-med">Medium (67%)</span>
+      <div class="bar"><div class="fill fill-yellow"></div></div>
+      <span>67%</span>
+    </div>
+    <div class="confidence-bar">
+      <span style="font-size:13px;color:#ff453a;min-width:80px" data-i18n="conf-low">Low (35%)</span>
+      <div class="bar"><div class="fill fill-red"></div></div>
+      <span>35%</span>
+    </div>
+
+    <p style="margin-top:16px" data-i18n="s7-p4">High confidence (>85%) means the detected beats are probably right. Low confidence (<60%) means the track has complex rhythm, variable tempo, or the audio quality is poor — the editor should verify the markers manually.</p>
+
+    <!-- SECTION 8 -->
+    <h2 data-i18n="s8-title">Resampling: When the Audio Isn't 44.1 kHz</h2>
+    <p data-i18n="s8-p1">Music recorded at 48 kHz, 96 kHz, or 22.05 kHz all need to be resampled to 44.1 kHz before analysis. The beat library expects standard audio rates, and mismatched rates cause the BPM estimate to be wrong by a ratio (e.g., 48/44.1 ≈ 1.088 — beats appear 8.8% too fast or slow).</p>
+    <p data-i18n="s8-p2">Claude Code implemented linear interpolation resampling — fast enough for plugin use, accurate enough that the BPM result doesn't shift perceptibly:</p>
+    <pre><code>function resample(samples, fromRate, toRate) {
+  if (fromRate === toRate) return samples;
+
+  const ratio = fromRate / toRate;
+  const outputLength = Math.round(samples.length / ratio);
+  const output = new Float32Array(outputLength);
+
+  for (let i = 0; i &lt; outputLength; i++) {
+    const srcPos = i * ratio;
+    const srcIndex = Math.floor(srcPos);
+    const fraction = srcPos - srcIndex;
+
+    const a = samples[srcIndex] ?? 0;
+    const b = samples[srcIndex + 1] ?? 0;
+    output[i] = a + (b - a) * fraction; // linear interpolation
+  }
+
+  return output;
+}</code></pre>
+
+    <!-- SECTION 9 -->
+    <h2 data-i18n="s9-title">The Complete Pipeline</h2>
+    <p data-i18n="s9-p1">Putting it all together, the full audio processing pipeline for one click of the "Analyze" button:</p>
+    <ol>
+      <li data-i18n="s9-l1"><strong>Get file path</strong> — read from the selected clip's media path via the Premiere Pro API</li>
+      <li data-i18n="s9-l2"><strong>Read file</strong> — <code>fs.readFile()</code> returns a UXP proxy ArrayBuffer; copy to native ArrayBuffer</li>
+      <li data-i18n="s9-l3"><strong>Detect format</strong> — check magic bytes (RIFF = WAV, 0xFF 0xFB = MP3); don't trust the file extension</li>
+      <li data-i18n="s9-l4"><strong>Decode audio</strong> — custom WAV decoder or js-mp3 with delay stripping</li>
+      <li data-i18n="s9-l5"><strong>Mix to mono</strong> — average channels; beat detection is mono</li>
+      <li data-i18n="s9-l6"><strong>Resample</strong> — linear interpolation to 44,100 Hz</li>
+      <li data-i18n="s9-l7"><strong>Analyze</strong> — <code>music-tempo</code> returns beat timestamps and BPM</li>
+      <li data-i18n="s9-l8"><strong>Score confidence</strong> — CV formula → 0–100 → green/yellow/red</li>
+      <li data-i18n="s9-l9"><strong>Place markers</strong> — transaction batching in groups of 50 (Premiere limit)</li>
+    </ol>
+    <p data-i18n="s9-p2">Total time for a 4-minute WAV track: under 500ms. For a 4-minute MP3: 1.5–2 seconds (js-mp3 decode dominates). Both are fast enough to feel instant to a video editor whose alternative was placing markers by hand.</p>
+
+    <div class="pullquote" data-i18n="q3">"500 milliseconds to place markers on every beat of a 4-minute track. Previously that took 15 minutes by hand."</div>
+
+    <hr class="divider">
+    <h2 data-i18n="s10-title">What This Means for You</h2>
+    <p data-i18n="s10-p1">The full audio pipeline — WAV decoder, MP3 decoder with timing correction, resampler, beat detector, confidence scorer — is bundled into a single JS file using esbuild. It runs inside any Adobe UXP plugin or CEP panel with no external dependencies, no WASM, no server calls.</p>
+    <p data-i18n="s10-p2">The plugins that use this: <a href="https://samabr85.github.io/BeatMarkerPremiere/" style="color:var(--quote-border)">BeatMarker for Premiere Pro</a> and <a href="https://samabr85.github.io/BeatMarkerAE/" style="color:var(--quote-border)">BeatMarker for After Effects</a> — both open source, both free.</p>
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'Beat Detection in JavaScript',
+    'tag':'Audio · JavaScript · BPM','title':'Beat Detection in JavaScript:<br>No AI, No Magic, Just Math',
+    'date':'May 2026','readtime':'⏱ ~10 min read',
+    's1-title':'The Goal: Click a Button, Get Markers',
+    's1-p1':'The idea behind BeatMarker is simple enough to explain in one sentence: you select an audio clip in your Adobe timeline, click a button, and the plugin places colored markers on every beat of the music. No manual tapping, no external tools, no subscription.',
+    's1-p2':'The implementation is the interesting part. Claude Code needed to decode audio files — WAV and MP3 — entirely inside an Adobe plugin environment, extract beats with high accuracy, and do it fast enough that the editor doesn\'t sit waiting. No server. No AI model. No cloud API. Just JavaScript running locally in a sandboxed plugin panel.',
+    's1-p3':'This is the story of how that pipeline was built, what worked, what catastrophically failed, and what the final numbers look like.',
+    'q1':'"The idea was simple. The implementation involved decoding binary audio formats by hand."',
+    's2-title':'Why Not Just Use the Web Audio API?',
+    's2-p1':'The obvious approach is <code>AudioContext.decodeAudioData()</code> — it\'s the standard Web Audio way to decode audio files. It handles WAV, MP3, AAC, everything. You pass it an ArrayBuffer, it gives you back a decoded PCM AudioBuffer. Clean, fast, battle-tested.',
+    's2-p2':'In UXP (Adobe Premiere Pro plugins), <code>AudioContext</code> doesn\'t exist. The entire Web Audio API is absent. Claude Code confirmed this by checking:',
+    's2-p3':'This meant building a complete audio decoding pipeline from scratch, in pure JavaScript, with no browser APIs. Every byte of the audio file has to be read and interpreted manually.',
+    's3-title':'Decoding WAV Files by Hand',
+    's3-p1':'WAV files follow the RIFF container format. The file starts with a header that describes the audio: sample rate, bit depth, number of channels, encoding type. Everything after the data chunk is raw PCM samples. Claude Code implemented a <code>DataView</code>-based decoder to parse this:',
+    's3-p2':'The format supports 8-bit unsigned, 16-bit signed, 24-bit signed, and 32-bit float samples. Each encoding requires different math to convert to the normalized float range expected by the beat detection library.',
+    's4-title':'MP3 Support: WASM Crashes Premiere Pro',
+    's4-p1':'WAV is straightforward because it\'s uncompressed PCM. MP3 is an entirely different beast — it uses psychoacoustic compression, Huffman coding, and MDCT transforms. Implementing an MP3 decoder from scratch is a weeks-long project.',
+    's4-p2':'The obvious solution is a WASM (WebAssembly) based decoder — fast, accurate, widely used. Claude Code tried <code>mpg123-decoder</code>, which is one of the best JS MP3 decoders available. It crashed Premiere Pro immediately. Not a JavaScript error. An actual application crash. No log, no error message — the host app just died.',
+    's4-p3':'The reason: WASM with pthreads (multi-threading) is not supported in UXP. Even single-threaded WASM variants caused crashes in testing. This ruled out virtually every high-performance audio decoder.',
+    's4-p4':'The solution was <code>js-mp3</code> — a pure JavaScript MP3 decoder with zero native dependencies. Slower than WASM, but it doesn\'t crash the host. It works. For 3–5 minute tracks at 44.1 kHz, decoding takes 1–2 seconds — acceptable for a tool that\'s replacing manual marker placement.',
+    's5-title':'The MP3 Timing Problem: Phantom Samples',
+    's5-p1':'MP3 decoders don\'t start cleanly at sample 0. There are two sources of phantom samples at the beginning of every MP3 decode that cause timing offsets — markers placed slightly before the actual beat:',
+    's5-l1':'<strong>Encoder delay</strong> — recorded in the Xing/LAME header of the MP3 file. Varies per encoder and encode settings.',
+    's5-l2':'<strong>MDCT startup delay</strong> — specific to js-mp3\'s implementation. After testing, this is consistently 2,070 samples at 44,100 Hz regardless of the source file.',
+    's5-p2':'Both delays must be stripped before passing audio to the beat detector. Claude Code calibrated the final offset against <code>mpg123-decoder</code> as a reference: the result was <strong>0 frames offset</strong> at any standard video frame rate. Markers land exactly on the beat.',
+    'q2':'"MP3 decoding: three libraries tried. One didn\'t crash the host. That\'s the one we shipped."',
+    's6-title':'The Beat Detector: music-tempo',
+    's6-p1':'With clean PCM samples in hand, the next step is extracting beats. BeatMarker uses <code>music-tempo</code> — a pure JavaScript library that implements BPM detection via autocorrelation and onset detection. It takes a Float32Array of audio samples and a sample rate, and returns a list of beat timestamps in seconds.',
+    's6-p2':'The library handles the heavy lifting: onset detection, tempo estimation, beat phase alignment. What it doesn\'t provide is a confidence metric — how reliable is this BPM estimate? That had to be built.',
+    's7-title':'Confidence Scoring: The CV Formula',
+    's7-p1':'A metronome click track would give perfectly even beat intervals. Real music has swing, rubato, fills, and tempo variation. The beat detector still finds beats, but they\'re spaced less evenly. The consistency of spacing is a reliable proxy for detection confidence.',
+    's7-p2':'Claude Code implemented confidence scoring using the <strong>Coefficient of Variation (CV)</strong> — a normalized measure of how much beat intervals vary relative to their mean:',
+    's7-p3':'The resulting score drives a color-coded indicator in the plugin UI:',
+    'conf-high':'High (88%)',
+    'conf-med':'Medium (67%)',
+    'conf-low':'Low (35%)',
+    's7-p4':'High confidence (>85%) means the detected beats are probably right. Low confidence (<60%) means the track has complex rhythm, variable tempo, or the audio quality is poor — the editor should verify the markers manually.',
+    's8-title':'Resampling: When the Audio Isn\'t 44.1 kHz',
+    's8-p1':'Music recorded at 48 kHz, 96 kHz, or 22.05 kHz all need to be resampled to 44.1 kHz before analysis. The beat library expects standard audio rates, and mismatched rates cause the BPM estimate to be wrong by a ratio (e.g., 48/44.1 ≈ 1.088 — beats appear 8.8% too fast or slow).',
+    's8-p2':'Claude Code implemented linear interpolation resampling — fast enough for plugin use, accurate enough that the BPM result doesn\'t shift perceptibly:',
+    's9-title':'The Complete Pipeline',
+    's9-p1':'Putting it all together, the full audio processing pipeline for one click of the "Analyze" button:',
+    's9-l1':'<strong>Get file path</strong> — read from the selected clip\'s media path via the Premiere Pro API',
+    's9-l2':'<strong>Read file</strong> — <code>fs.readFile()</code> returns a UXP proxy ArrayBuffer; copy to native ArrayBuffer',
+    's9-l3':'<strong>Detect format</strong> — check magic bytes (RIFF = WAV, 0xFF 0xFB = MP3); don\'t trust the file extension',
+    's9-l4':'<strong>Decode audio</strong> — custom WAV decoder or js-mp3 with delay stripping',
+    's9-l5':'<strong>Mix to mono</strong> — average channels; beat detection is mono',
+    's9-l6':'<strong>Resample</strong> — linear interpolation to 44,100 Hz',
+    's9-l7':'<strong>Analyze</strong> — <code>music-tempo</code> returns beat timestamps and BPM',
+    's9-l8':'<strong>Score confidence</strong> — CV formula → 0–100 → green/yellow/red',
+    's9-l9':'<strong>Place markers</strong> — transaction batching in groups of 50 (Premiere limit)',
+    's9-p2':'Total time for a 4-minute WAV track: under 500ms. For a 4-minute MP3: 1.5–2 seconds (js-mp3 decode dominates). Both are fast enough to feel instant to a video editor whose alternative was placing markers by hand.',
+    'q3':'"500 milliseconds to place markers on every beat of a 4-minute track. Previously that took 15 minutes by hand."',
+    's10-title':'What This Means for You',
+    's10-p1':'The full audio pipeline — WAV decoder, MP3 decoder with timing correction, resampler, beat detector, confidence scorer — is bundled into a single JS file using esbuild. It runs inside any Adobe UXP plugin or CEP panel with no external dependencies, no WASM, no server calls.',
+    's10-p2':'The plugins that use this: <a href="https://samabr85.github.io/BeatMarkerPremiere/" style="color:var(--quote-border)">BeatMarker for Premiere Pro</a> and <a href="https://samabr85.github.io/BeatMarkerAE/" style="color:var(--quote-border)">BeatMarker for After Effects</a> — both open source, both free.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'Detecção de BPM em JavaScript',
+    'tag':'Áudio · JavaScript · BPM','title':'Detecção de BPM em JavaScript:<br>Sem IA, Sem Mágica, Só Matemática',
+    'date':'Maio de 2026','readtime':'⏱ ~10 min de leitura',
+    's1-title':'O Objetivo: Clicar um Botão, Receber Markers',
+    's1-p1':'A ideia por trás do BeatMarker é simples o suficiente para explicar em uma frase: você seleciona um clipe de áudio na sua timeline Adobe, clica um botão, e o plugin coloca markers coloridos em cada beat da música. Sem tapping manual, sem ferramentas externas, sem assinatura.',
+    's1-p2':'A implementação é a parte interessante. O Claude Code precisava decodificar arquivos de áudio — WAV e MP3 — inteiramente dentro de um ambiente de plugin Adobe, extrair os beats com alta precisão, e fazer isso rápido o suficiente para que o editor não fique esperando. Sem servidor. Sem modelo de IA. Sem API na nuvem. Apenas JavaScript rodando localmente em um painel de plugin sandboxed.',
+    's1-p3':'Esta é a história de como esse pipeline foi construído, o que funcionou, o que falhou catastroficamente, e como ficaram os números finais.',
+    'q1':'"A ideia era simples. A implementação envolveu decodificar formatos de áudio binário na mão."',
+    's2-title':'Por Que Não Usar a Web Audio API Simplesmente?',
+    's2-p1':'A abordagem óbvia é <code>AudioContext.decodeAudioData()</code> — é o jeito padrão Web Audio de decodificar arquivos de áudio. Suporta WAV, MP3, AAC, tudo. Você passa um ArrayBuffer, ele devolve um AudioBuffer PCM decodificado. Limpo, rápido, battle-tested.',
+    's2-p2':'No UXP (plugins do Adobe Premiere Pro), <code>AudioContext</code> não existe. Toda a Web Audio API está ausente. O Claude Code confirmou isso verificando:',
+    's2-p3':'Isso significava construir um pipeline completo de decodificação de áudio do zero, em JavaScript puro, sem APIs de browser. Cada byte do arquivo de áudio precisa ser lido e interpretado manualmente.',
+    's3-title':'Decodificando Arquivos WAV na Mão',
+    's3-p1':'Arquivos WAV seguem o formato de container RIFF. O arquivo começa com um cabeçalho que descreve o áudio: taxa de amostragem, profundidade de bits, número de canais, tipo de codificação. Tudo após o chunk de dados são amostras PCM brutas. O Claude Code implementou um decodificador baseado em <code>DataView</code> para analisar isso:',
+    's3-p2':'O formato suporta amostras unsigned 8-bit, signed 16-bit, signed 24-bit e float32. Cada codificação requer matemática diferente para converter para o intervalo float normalizado esperado pela biblioteca de detecção de beat.',
+    's4-title':'Suporte a MP3: WASM Crasha o Premiere Pro',
+    's4-p1':'WAV é direto porque é PCM não comprimido. MP3 é completamente diferente — usa compressão psicoacústica, codificação Huffman e transformadas MDCT. Implementar um decodificador MP3 do zero é um projeto de semanas.',
+    's4-p2':'A solução óbvia é um decodificador baseado em WASM (WebAssembly) — rápido, preciso, amplamente usado. O Claude Code tentou o <code>mpg123-decoder</code>, um dos melhores decodificadores JS de MP3 disponíveis. Ele crashou o Premiere Pro imediatamente. Não um erro de JavaScript. Um crash real da aplicação. Sem log, sem mensagem de erro — o app host simplesmente morreu.',
+    's4-p3':'A razão: WASM com pthreads (multi-threading) não é suportado no UXP. Mesmo variantes WASM single-threaded causaram crashes durante os testes. Isso descartou praticamente todo decodificador de áudio de alto desempenho.',
+    's4-p4':'A solução foi <code>js-mp3</code> — um decodificador MP3 em JavaScript puro sem dependências nativas. Mais lento que WASM, mas não crasha o host. Funciona. Para faixas de 3–5 minutos a 44.1 kHz, a decodificação leva 1–2 segundos — aceitável para uma ferramenta que substitui a colocação manual de markers.',
+    's5-title':'O Problema de Timing do MP3: Amostras Fantasmas',
+    's5-p1':'Decodificadores MP3 não começam limpos na amostra 0. Há duas fontes de amostras fantasmas no início de cada decodificação MP3 que causam offsets de timing — markers colocados ligeiramente antes do beat real:',
+    's5-l1':'<strong>Encoder delay</strong> — registrado no cabeçalho Xing/LAME do arquivo MP3. Varia por encoder e configurações de encode.',
+    's5-l2':'<strong>MDCT startup delay</strong> — específico da implementação do js-mp3. Após testes, é consistentemente 2.070 amostras a 44.100 Hz independente do arquivo fonte.',
+    's5-p2':'Ambos os delays devem ser removidos antes de passar o áudio para o detector de beat. O Claude Code calibrou o offset final contra <code>mpg123-decoder</code> como referência: o resultado foi <strong>0 frames de offset</strong> em qualquer frame rate de vídeo padrão. Os markers caem exatamente no beat.',
+    'q2':'"Decodificação MP3: três bibliotecas testadas. Uma não crashou o host. Essa foi a que entrou em produção."',
+    's6-title':'O Detector de Beat: music-tempo',
+    's6-p1':'Com amostras PCM limpas em mãos, o próximo passo é extrair os beats. O BeatMarker usa <code>music-tempo</code> — uma biblioteca JavaScript pura que implementa detecção de BPM via autocorrelação e detecção de onset. Ela recebe um Float32Array de amostras de áudio e uma taxa de amostragem, e retorna uma lista de timestamps de beat em segundos.',
+    's6-p2':'A biblioteca faz o trabalho pesado: detecção de onset, estimação de tempo, alinhamento de fase de beat. O que ela não fornece é uma métrica de confiança — quão confiável é essa estimativa de BPM? Isso precisou ser construído.',
+    's7-title':'Pontuação de Confiança: A Fórmula CV',
+    's7-p1':'Uma faixa de click de metrônomo daria intervalos de beat perfeitamente uniformes. Música real tem swing, rubato, fills e variação de tempo. O detector de beat ainda encontra beats, mas eles têm espaçamento menos uniforme. A consistência do espaçamento é um proxy confiável para a confiança na detecção.',
+    's7-p2':'O Claude Code implementou pontuação de confiança usando o <strong>Coeficiente de Variação (CV)</strong> — uma medida normalizada de quanto os intervalos de beat variam em relação à sua média:',
+    's7-p3':'A pontuação resultante guia um indicador com código de cores na UI do plugin:',
+    'conf-high':'Alta (88%)',
+    'conf-med':'Média (67%)',
+    'conf-low':'Baixa (35%)',
+    's7-p4':'Alta confiança (>85%) significa que os beats detectados provavelmente estão certos. Baixa confiança (<60%) significa que a faixa tem ritmo complexo, tempo variável, ou a qualidade do áudio é ruim — o editor deve verificar os markers manualmente.',
+    's8-title':'Resampling: Quando o Áudio Não É 44.1 kHz',
+    's8-p1':'Música gravada a 48 kHz, 96 kHz ou 22.05 kHz precisa ser reamostrada para 44.1 kHz antes da análise. A biblioteca de beat espera taxas de áudio padrão, e taxas incompatíveis fazem a estimativa de BPM ficar errada por uma razão (ex: 48/44.1 ≈ 1.088 — beats aparecem 8,8% rápido ou lento demais).',
+    's8-p2':'O Claude Code implementou resampling por interpolação linear — rápido o suficiente para uso em plugins, preciso o suficiente para que o resultado de BPM não se desvie perceptivelmente:',
+    's9-title':'O Pipeline Completo',
+    's9-p1':'Juntando tudo, o pipeline completo de processamento de áudio para um clique no botão "Analisar":',
+    's9-l1':'<strong>Obter caminho do arquivo</strong> — ler do caminho de mídia do clipe selecionado via API do Premiere Pro',
+    's9-l2':'<strong>Ler arquivo</strong> — <code>fs.readFile()</code> retorna um proxy ArrayBuffer UXP; copiar para ArrayBuffer nativo',
+    's9-l3':'<strong>Detectar formato</strong> — verificar magic bytes (RIFF = WAV, 0xFF 0xFB = MP3); não confiar na extensão do arquivo',
+    's9-l4':'<strong>Decodificar áudio</strong> — decodificador WAV customizado ou js-mp3 com remoção de delay',
+    's9-l5':'<strong>Mixar para mono</strong> — calcular média dos canais; detecção de beat é mono',
+    's9-l6':'<strong>Reamostrar</strong> — interpolação linear para 44.100 Hz',
+    's9-l7':'<strong>Analisar</strong> — <code>music-tempo</code> retorna timestamps de beat e BPM',
+    's9-l8':'<strong>Calcular confiança</strong> — fórmula CV → 0–100 → verde/amarelo/vermelho',
+    's9-l9':'<strong>Colocar markers</strong> — batching de transações em grupos de 50 (limite do Premiere)',
+    's9-p2':'Tempo total para uma faixa WAV de 4 minutos: menos de 500ms. Para um MP3 de 4 minutos: 1,5–2 segundos (decodificação js-mp3 domina). Ambos são rápidos o suficiente para parecer instantâneo para um editor de vídeo cuja alternativa era colocar markers na mão.',
+    'q3':'"500 milissegundos para colocar markers em cada beat de uma faixa de 4 minutos. Antes isso levava 15 minutos na mão."',
+    's10-title':'O Que Isso Significa Para Você',
+    's10-p1':'O pipeline completo de áudio — decodificador WAV, decodificador MP3 com correção de timing, resampler, detector de beat, pontuador de confiança — é empacotado em um único arquivo JS usando esbuild. Roda dentro de qualquer plugin UXP Adobe ou painel CEP sem dependências externas, sem WASM, sem chamadas de servidor.',
+    's10-p2':'Os plugins que usam isso: <a href="https://samabr85.github.io/BeatMarkerPremiere/" style="color:var(--quote-border)">BeatMarker para Premiere Pro</a> e <a href="https://samabr85.github.io/BeatMarkerAE/" style="color:var(--quote-border)">BeatMarker para After Effects</a> — ambos open source, ambos gratuitos.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>
