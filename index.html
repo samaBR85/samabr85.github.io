@@ -325,6 +325,38 @@
     }
     .btn-ghost:hover { color: var(--text); border-color: #555; }
 
+    /* ── ARTICLE TEASER ── */
+    .article-teaser {
+      margin: 0 24px 0;
+      border-left: 3px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-radius: 0 0 12px 12px;
+      padding: 18px 22px 20px;
+      background: var(--bg2);
+      transition: border-color .2s;
+    }
+    .article-teaser:hover { border-left-color: #555; border-color: #555; }
+    .article-teaser-label {
+      font-size: 10px; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .article-teaser-title {
+      font-size: 14px; font-weight: 700; color: var(--text);
+      margin-bottom: 6px; line-height: 1.4;
+    }
+    .article-teaser-text {
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .article-teaser-link {
+      display: inline-block; font-size: 12px; font-weight: 800;
+      letter-spacing: .04em; color: var(--muted);
+      transition: color .2s;
+    }
+    .article-teaser:hover .article-teaser-link { color: var(--text); }
+
     /* ── BLOG SECTION ── */
     .blog-section {
       border-top: 1px solid var(--border);
@@ -472,6 +504,14 @@
     </div>
   </div>
 
+  <!-- Teaser: UXP article -->
+  <a class="article-teaser" href="blog/uxp-production-guide/">
+    <div class="article-teaser-label" data-i18n="teaser-label">📝 From the blog</div>
+    <div class="article-teaser-title" data-i18n="teaser1-title">UXP Plugin Development: What Adobe Doesn't Tell You</div>
+    <div class="article-teaser-text" data-i18n="teaser1-text">UXP is Adobe's modern plugin runtime and it runs a completely different JavaScript environment from what you're used to. No AudioContext. No Worker. No readFileSync. This is the production reference built while shipping BeatMarker — every quirk confirmed in production.</div>
+    <span class="article-teaser-link" data-i18n="teaser-read">LEIA MAIS →</span>
+  </a>
+
   <!-- BeatMarker AE -->
   <div class="project-card">
     <div class="card-image">
@@ -506,6 +546,14 @@
     </div>
   </div>
 
+  <!-- Teaser: CEP article -->
+  <a class="article-teaser" href="blog/cep-after-effects/">
+    <div class="article-teaser-label" data-i18n="teaser-label">📝 From the blog</div>
+    <div class="article-teaser-title" data-i18n="teaser2-title">CEP for After Effects 2026: The Underground Plugin Guide</div>
+    <div class="article-teaser-text" data-i18n="teaser2-text">Every tutorial on CEP says the same install paths. In After Effects 2026, those paths do nothing — no error, no log, just silence. Claude Code found the real path by reverse-engineering Adobe's own bundled extension. This is the guide that didn't exist.</div>
+    <span class="article-teaser-link" data-i18n="teaser-read">LEIA MAIS →</span>
+  </a>
+
   <!-- Mono Stereo Toggle -->
   <div class="project-card">
     <div class="card-image">
@@ -538,6 +586,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Teaser: C# article -->
+  <a class="article-teaser" href="blog/windows-utility-csharp/">
+    <div class="article-teaser-label" data-i18n="teaser-label">📝 From the blog</div>
+    <div class="article-teaser-title" data-i18n="teaser3-title">Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights</div>
+    <div class="article-teaser-text" data-i18n="teaser3-text">Switching between stereo and mono happens dozens of times a day for a video editor who checks audio mixes. Windows buries the toggle three clicks deep in Accessibility Settings. One keyboard shortcut was the fix — and that meant building a native C# utility from scratch, for the first time.</div>
+    <span class="article-teaser-link" data-i18n="teaser-read">LEIA MAIS →</span>
+  </a>
 
 </div>
 
@@ -628,6 +684,14 @@
       'blog-title':       'From the <span class="accent">Build Log</span>',
       'blog-desc':        'Technical deep-dives written while building these tools — for video editors who want to code.',
       'nav-about':        'About',
+      'teaser-label':     '📝 From the blog',
+      'teaser-read':      'READ MORE →',
+      'teaser1-title':    'UXP Plugin Development: What Adobe Doesn\'t Tell You',
+      'teaser1-text':     'UXP is Adobe\'s modern plugin runtime and it runs a completely different JavaScript environment from what you\'re used to. No AudioContext. No Worker. No readFileSync. This is the production reference built while shipping BeatMarker — every quirk confirmed in production.',
+      'teaser2-title':    'CEP for After Effects 2026: The Underground Plugin Guide',
+      'teaser2-text':     'Every tutorial on CEP says the same install paths. In After Effects 2026, those paths do nothing — no error, no log, just silence. Claude Code found the real path by reverse-engineering Adobe\'s own bundled extension. This is the guide that didn\'t exist.',
+      'teaser3-title':    'Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights',
+      'teaser3-text':     'Switching between stereo and mono happens dozens of times a day for a video editor who checks audio mixes. Windows buries the toggle three clicks deep in Accessibility Settings. One keyboard shortcut was the fix — and that meant building a native C# utility from scratch, for the first time.',
       'blog-art1-title':  'UXP Plugin Development: What Adobe Doesn\'t Tell You',
       'blog-art1-desc':   'A production reference built while shipping BeatMarker — filesystem quirks, the marker API lies, transaction limits, and why WASM will crash Premiere every single time.',
       'blog-art2-title':  'CEP for After Effects 2026: The Underground Plugin Guide',
@@ -659,6 +723,14 @@
       'blog-title':       'Do <span class="accent">Diário de Desenvolvimento</span>',
       'blog-desc':        'Deep-dives técnicos escritos durante o desenvolvimento dessas ferramentas — para editores de vídeo que querem programar.',
       'nav-about':        'Sobre',
+      'teaser-label':     '📝 Do blog',
+      'teaser-read':      'LEIA MAIS →',
+      'teaser1-title':    'Desenvolvimento de Plugin UXP: O Que a Adobe Não Te Conta',
+      'teaser1-text':     'O UXP é o runtime moderno de plugins da Adobe e roda em um ambiente JavaScript completamente diferente do que você está acostumado. Sem AudioContext. Sem Worker. Sem readFileSync. Esta é a referência de produção construída durante o desenvolvimento do BeatMarker — cada quirk confirmado em produção.',
+      'teaser2-title':    'CEP para After Effects 2026: O Guia Underground de Plugins',
+      'teaser2-text':     'Todo tutorial sobre CEP mostra os mesmos caminhos de instalação. No After Effects 2026, esses caminhos não fazem nada — sem erro, sem log, só silêncio. O Claude Code encontrou o caminho real fazendo engenharia reversa na própria extensão da Adobe. Este é o guia que não existia.',
+      'teaser3-title':    'Construindo um Utilitário Windows em C#: Hotkeys, Bandeja e Permissões',
+      'teaser3-text':     'Alternar entre estéreo e mono acontece dezenas de vezes por dia para um editor de vídeo que revisa mixagens. O Windows enterra o toggle três cliques abaixo nas Configurações de Acessibilidade. Um atalho de teclado era a solução — e isso significava construir um utilitário C# nativo do zero, pela primeira vez.',
       'blog-art1-title':  'Desenvolvimento de Plugin UXP: O Que a Adobe Não Te Conta',
       'blog-art1-desc':   'Uma referência de produção construída durante o desenvolvimento do BeatMarker — quirks do filesystem, mentiras da API de markers, limites de transação, e por que WASM vai travar o Premiere toda vez.',
       'blog-art2-title':  'CEP para After Effects 2026: O Guia Underground de Plugins',
