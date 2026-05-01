@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UXP Plugin Development: What Adobe Doesn't Tell You — samaBR</title>
+  <meta name="description" content="A production reference for building Adobe Premiere Pro UXP plugins — written by a video editor who learned the hard way. Filesystem quirks, marker API bugs, transaction limits and more." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/uxp-production-guide/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/uxp-production-guide/" />
+  <meta property="og:title"       content="UXP Plugin Development: What Adobe Doesn't Tell You" />
+  <meta property="og:description" content="A production reference for building Adobe Premiere Pro UXP plugins — written by a video editor who learned the hard way." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/link-preview.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "UXP Plugin Development: What Adobe Doesn't Tell You",
+    "description": "A production reference for building Adobe Premiere Pro UXP plugins — written by a video editor who learned the hard way.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-05-01",
+    "dateModified": "2026-05-01",
+    "url": "https://samabr85.github.io/blog/uxp-production-guide/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "UXP, Adobe Premiere Pro, plugin development, video editor tools, CEP, ExtendScript"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:       #0e0e0e;
+      --bg2:      #161616;
+      --bg3:      #1e1e1e;
+      --border:   #2a2a2a;
+      --text:     #e8e8e8;
+      --muted:    #888;
+      --green:    #34c759;
+      --shadow:   rgba(0,0,0,0.4);
+      --code-bg:  #111;
+      --quote-bg: #161a1d;
+      --quote-border: #4084e5;
+    }
+    :root[data-theme="light"] {
+      --bg:       #f4f4f5;
+      --bg2:      #ffffff;
+      --bg3:      #e8e8eb;
+      --border:   #d4d4d8;
+      --text:     #18181b;
+      --muted:    #71717a;
+      --green:    #16a34a;
+      --shadow:   rgba(0,0,0,0.08);
+      --code-bg:  #1e1e2e;
+      --quote-bg: #eef4ff;
+      --quote-border: #4084e5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background .25s, color .25s;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,14,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background .25s, border-color .25s;
+    }
+    :root[data-theme="light"] nav { background: rgba(244,244,245,0.92); }
+    .nav-logo { font-size: 17px; font-weight: 800; letter-spacing: .02em; }
+    .nav-logo span { color: var(--muted); font-weight: 400; }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+
+    .lang-toggle {
+      height: 36px; padding: 0 12px; border-radius: 8px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700;
+      transition: color .2s, border-color .2s;
+    }
+    .lang-toggle:hover { color: var(--text); border-color: #555; }
+
+    .theme-toggle {
+      width: 36px; height: 36px; border-radius: 8px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color .2s, border-color .2s;
+    }
+    .theme-toggle:hover { color: var(--text); border-color: #555; }
+    .icon-sun, .icon-moon { width: 16px; height: 16px; }
+    :root[data-theme="dark"]  .icon-sun  { display: none; }
+    :root[data-theme="light"] .icon-moon { display: none; }
+
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 14px; transition: color .2s, border-color .2s;
+    }
+    .nav-back:hover { color: var(--text); border-color: #555; }
+
+    /* ── ARTICLE LAYOUT ── */
+    .article-wrap {
+      flex: 1;
+      max-width: 760px; margin: 0 auto; width: 100%;
+      padding: 56px 24px 80px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      font-size: 12px; color: var(--muted);
+      margin-bottom: 32px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .breadcrumb a:hover { color: var(--text); }
+    .breadcrumb span { opacity: .5; }
+
+    /* Header */
+    .article-header { margin-bottom: 40px; }
+    .article-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+    }
+    .article-title {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 900; letter-spacing: -.03em; line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .article-title .accent { color: #d53a3a; }
+    .article-subtitle {
+      font-size: 18px; color: var(--muted); line-height: 1.6;
+      margin-bottom: 24px; max-width: 600px;
+    }
+    .article-meta {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 13px; color: var(--muted);
+      padding-top: 20px; border-top: 1px solid var(--border);
+    }
+    .meta-dot { opacity: .4; }
+    .reading-time { display: flex; align-items: center; gap: 5px; }
+
+    /* Body */
+    article { line-height: 1.8; }
+
+    article h2 {
+      font-size: 24px; font-weight: 800; letter-spacing: -.02em;
+      margin: 52px 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    article h3 {
+      font-size: 17px; font-weight: 700;
+      margin: 28px 0 10px;
+      color: var(--text);
+    }
+    article p { margin-bottom: 18px; }
+    article ul, article ol {
+      margin: 0 0 18px 20px;
+    }
+    article li { margin-bottom: 6px; }
+    article strong { font-weight: 700; }
+
+    /* Inline code */
+    article code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+
+    /* Code blocks */
+    article pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0 28px;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    article pre code {
+      background: none; border: none; padding: 0;
+      font-size: inherit; color: #c9d1d9;
+    }
+
+    /* Pullquote */
+    .pullquote {
+      margin: 36px 0;
+      padding: 20px 24px;
+      border-left: 4px solid var(--quote-border);
+      background: var(--quote-bg);
+      border-radius: 0 12px 12px 0;
+      font-size: 17px;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .pullquote cite {
+      display: block;
+      margin-top: 10px;
+      font-size: 13px;
+      font-style: normal;
+      color: var(--muted);
+    }
+
+    /* Warning / tip boxes */
+    .callout {
+      display: flex; gap: 14px;
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin: 20px 0 28px;
+      font-size: 14px; line-height: 1.6;
+    }
+    .callout-danger  { background: rgba(192,57,43,.12); border: 1px solid rgba(192,57,43,.3); }
+    .callout-tip     { background: rgba(52,199,89,.1);  border: 1px solid rgba(52,199,89,.3); }
+    .callout-warning { background: rgba(215,171,47,.1); border: 1px solid rgba(215,171,47,.3); }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin: 20px 0 28px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; padding: 10px 14px; border-bottom: 2px solid var(--border); font-weight: 700; color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { font-family: 'Cascadia Code', monospace; font-size: 13px; }
+
+    /* Works / Breaks list */
+    .works-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0 28px; }
+    .works-col { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+    .works-col h4 { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+    .works-col.ok  h4 { color: var(--green); }
+    .works-col.bad h4 { color: #c0392b; }
+    .works-col li { font-size: 13px; font-family: 'Cascadia Code', monospace; margin-bottom: 6px; list-style: none; }
+    .works-col li::before { margin-right: 6px; }
+    .works-col.ok  li::before { content: '✅'; }
+    .works-col.bad li::before { content: '❌'; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px; text-align: center;
+      font-size: 13px; color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .works-list { grid-template-columns: 1fr; }
+      article pre { padding: 16px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">samaBR <span>/ blog</span></div>
+  <div class="nav-actions">
+    <button class="lang-toggle" id="langToggle" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <a class="nav-back" href="../../">← <span data-i18n="back">Portfolio</span></a>
+  </div>
+</nav>
+
+<div class="article-wrap">
+  <div class="breadcrumb">
+    <a href="../../">samaBR</a>
+    <span>/</span>
+    <a href="../">Blog</a>
+    <span>/</span>
+    <span data-i18n="breadcrumb">UXP Production Guide</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-eyebrow" data-i18n="eyebrow">Plugin Development · Adobe Premiere Pro · UXP</div>
+    <h1 class="article-title" data-i18n="title">UXP Plugin Development:<br><span class="accent">What Adobe Doesn't Tell You</span></h1>
+    <p class="article-subtitle" data-i18n="subtitle">I'm a video editor. I cut to the beat — music videos, trailers, reels. One day I got tired of placing markers by hand and decided to build my own plugin. This is everything I wish I had known before starting.</p>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span class="meta-dot">·</span>
+      <span>May 2026</span>
+      <span class="meta-dot">·</span>
+      <span class="reading-time">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span data-i18n="readtime">10 min read</span>
+      </span>
+    </div>
+  </header>
+
+  <article>
+
+    <!-- ── SECTION 1 ── -->
+    <h2 data-i18n="s1-title">UXP: Adobe's Beautiful Promise</h2>
+    <p data-i18n="s1-p1">Adobe said it was simple. "Build plugins with HTML, CSS, and JavaScript," they said. "It's just a web page inside Premiere." And in a way, that's true — until it isn't.</p>
+    <p data-i18n="s1-p2"><strong>UXP (Unified Extensibility Platform)</strong> is Adobe's modern runtime that replaced CEP (Chrome Embedded Framework) and old ExtendScript across Premiere Pro, Photoshop, InDesign, and others. It runs a proprietary JavaScript engine — not V8, not full Node.js — with access to native app APIs through specific modules like <code>require('premierepro')</code>.</p>
+    <p data-i18n="s1-p3">The pitch is solid: you write HTML + vanilla JS, use real CSS, communicate with Premiere through a documented API, and ship your plugin as a <code>.ccx</code> file. No C++, no deep SDK. For a video editor who knows a bit of JavaScript, it sounds like the perfect entry point.</p>
+
+    <div class="callout callout-danger">
+      <span class="callout-icon">🚫</span>
+      <span data-i18n="s1-callout">Never use CEP or ExtendScript documentation as a reference for UXP. The APIs are completely different. Everything you find about the old system will mislead you.</span>
+    </div>
+
+    <div class="pullquote">
+      <span data-i18n="s1-quote">"I wasn't a developer. I just wanted my beat-synced cut workflow to work better. So I opened the docs and started reading."</span>
+    </div>
+
+    <!-- ── SECTION 2 ── -->
+    <h2 data-i18n="s2-title">What Adobe Forgot to Mention</h2>
+    <p data-i18n="s2-p1">Here's where things get interesting. UXP is a sandboxed environment. It's not a browser. It's not Node.js. It's its own thing — and it has some very specific holes where features you'd expect simply don't exist.</p>
+    <p data-i18n="s2-p2">I found these out the hard way, usually when Premiere Pro crashed, froze, or silently did nothing.</p>
+
+    <div class="works-list">
+      <div class="works-col ok">
+        <h4 data-i18n="s2-works">Works ✓</h4>
+        <ul>
+          <li>require('premierepro')</li>
+          <li>require('fs')  — async</li>
+          <li>fetch('https://...')</li>
+          <li>navigator.language</li>
+          <li>TextDecoder / Encoder</li>
+          <li>BigInt</li>
+          <li>uxp.shell.openExternal()</li>
+        </ul>
+      </div>
+      <div class="works-col bad">
+        <h4 data-i18n="s2-breaks">Breaks ✗</h4>
+        <ul>
+          <li>new Worker(...)</li>
+          <li>AudioContext</li>
+          <li>fs.readFileSync</li>
+          <li>fetch('file://...')</li>
+          <li>WebAssembly + pthreads</li>
+          <li>SharedArrayBuffer</li>
+          <li>require('child_process')</li>
+        </ul>
+      </div>
+    </div>
+
+    <p data-i18n="s2-p3">That last one — <strong>WebAssembly with pthreads</strong> — deserves its own story. I tried using a WASM-based MP3 decoder. Premiere Pro crashed immediately, every single time, with zero error messages. It took me days to figure out why. I'll get to that in a moment.</p>
+
+    <div class="pullquote">
+      <span>"AudioContext? Not in this neighborhood."</span>
+    </div>
+
+    <!-- ── SECTION 3 ── -->
+    <h2 data-i18n="s3-title">Reading an Audio File Should Be Simple</h2>
+    <p data-i18n="s3-p1">My plugin needs to read an audio file — a WAV or MP3 from the user's drive — to detect the BPM. Sounds simple. In any browser, in any Node.js app, you'd do this in 5 lines. In UXP, there are two specific traps.</p>
+
+    <h3 data-i18n="s3-h3a">Trap #1: readFileSync doesn't exist</h3>
+    <p data-i18n="s3-p2">In UXP, <code>fs.readFileSync</code> throws <code>Route not found</code>. There's no sync filesystem API. Everything is <code>async/await</code>. That's fine — just make sure you're not copying Node.js patterns without thinking.</p>
+
+    <h3 data-i18n="s3-h3b">Trap #2: The buffer is a fake</h3>
+    <p data-i18n="s3-p3">When <code>fs.readFile()</code> returns, you don't get a real <code>ArrayBuffer</code>. You get a <strong>UXP proxy ArrayBuffer</strong> — an object that looks like an ArrayBuffer but behaves differently when you try to process it with audio decoding code. The fix is to copy it into a real native buffer before doing anything else:</p>
+
+    <pre><code>const raw = await fs.readFile('/path/to/audio.wav');
+
+// ⚠️ raw is a UXP proxy — copy it first!
+const byteLength = raw.byteLength ?? raw.length;
+const nativeBuffer = new ArrayBuffer(byteLength);
+new Uint8Array(nativeBuffer).set(new Uint8Array(raw));</code></pre>
+
+    <p data-i18n="s3-p4">One more thing: if your plugin reads files, you must declare it in <code>manifest.json</code>. Otherwise the permission is silently denied:</p>
+
+    <pre><code>"requiredPermissions": {
+  "localFileSystem": "fullAccess"
+}</code></pre>
+
+    <!-- ── SECTION 4 ── -->
+    <h2 data-i18n="s4-title">The Markers That Lie to You</h2>
+    <p data-i18n="s4-p1">Once you have your BPM and beat timestamps, you need to create markers on the clip in Premiere. The Markers API looks clean in the docs. In practice, there are a few things that will waste your time.</p>
+
+    <h3 data-i18n="s4-h3a">Always use getter methods</h3>
+    <p data-i18n="s4-p2">This one burned me. If you try to access marker properties directly, they return <code>undefined</code>:</p>
+
+    <pre><code>marker.name        // ❌ undefined — always
+marker.colorIndex  // ❌ undefined — always
+
+marker.getName()        // ✅
+marker.getColorIndex()  // ✅
+marker.getStart()       // ✅  →  TickTime
+marker.getDuration()    // ✅</code></pre>
+
+    <h3 data-i18n="s4-h3b">Cast first, then get markers</h3>
+    <p data-i18n="s4-p3">To access markers on a source clip, you can't just call <code>getMarkers(projectItem)</code> directly — it returns <code>null</code>. You have to cast the item first:</p>
+
+    <pre><code>// ❌ This returns null
+const markers = await ppro.Markers.getMarkers(projectItem);
+
+// ✅ Cast first
+const clipPI = ppro.ClipProjectItem.cast(projectItem);
+const clipMarkers = await ppro.Markers.getMarkers(clipPI);</code></pre>
+
+    <h3 data-i18n="s4-h3c">Premiere's 8 native marker colors</h3>
+    <p data-i18n="s4-p4">Marker colors are set by index — there's no free color picker. Here are the 8 available colors:</p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th data-i18n="t-index">Index</th><th data-i18n="t-color">Color</th><th>Hex</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>🟢 Green</td><td>#4aad4a</td></tr>
+        <tr><td>1</td><td>🔴 Red</td><td>#d53a3a</td></tr>
+        <tr><td>2</td><td>🟣 Purple</td><td>#a06db5</td></tr>
+        <tr><td>3</td><td>🟠 Orange</td><td>#e8832a</td></tr>
+        <tr><td>4</td><td>🟡 Yellow</td><td>#d4a017</td></tr>
+        <tr><td>5</td><td>⚪ White</td><td>#d0d0d0</td></tr>
+        <tr><td>6</td><td>🔵 Blue</td><td>#4084e5</td></tr>
+        <tr><td>7</td><td>🩵 Cyan</td><td>#1ab3a6</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="pullquote">
+      <span data-i18n="s4-quote">"When Premiere freezes because of your plugin, you learn fast what not to do."</span>
+    </div>
+
+    <!-- ── SECTION 5 ── -->
+    <h2 data-i18n="s5-title">50 Is the Magic Number</h2>
+    <p data-i18n="s5-p1">Every write to the Premiere Pro API must happen inside an <code>executeTransaction()</code> call. That's fine — it enables undo history. But there's a limit nobody documents: <strong>roughly 50 actions per transaction</strong>. Go over that limit and Premiere hangs silently.</p>
+
+    <p data-i18n="s5-p2">The fix is batching. If you're creating 200 markers, split them into 4 transactions of 50:</p>
+
+    <pre><code>const BATCH_SIZE = 50;
+
+for (let i = 0; i < beats.length; i += BATCH_SIZE) {
+  const batch = beats.slice(i, i + BATCH_SIZE);
+
+  await project.executeTransaction(async (ca) => {
+    for (const beat of batch) {
+      ca.addAction(
+        clipMarkers.createAddMarkerAction(
+          `[BM] ${beat.index}`,
+          'Comment',
+          ppro.TickTime.createWithSeconds(beat.time),
+          ppro.TickTime.createWithSeconds(0),
+          'beatmarker-guid'
+        )
+      );
+    }
+  }, `Add beat markers — batch ${Math.floor(i / BATCH_SIZE) + 1}`);
+}</code></pre>
+
+    <div class="callout callout-warning">
+      <span class="callout-icon">⚠️</span>
+      <span data-i18n="s5-callout">Also: never use <code>continue</code> inside a transaction callback. It can behave unpredictably. Pre-filter your array before entering the transaction loop.</span>
+    </div>
+
+    <!-- ── SECTION 6 ── -->
+    <h2 data-i18n="s6-title">CSS Inside Premiere Is a Different Dimension</h2>
+    <p data-i18n="s6-p1">UXP renders a real HTML/CSS interface, which is great. But there are some specificity rules that don't behave the way you'd expect from a browser.</p>
+
+    <p data-i18n="s6-p2">The most painful one: <strong>ID selectors with <code>!important</code> override class selectors with <code>!important</code></strong>. That sounds normal — until you're building a dynamic UI and wondering why your toggle button won't change color no matter what class you add to it.</p>
+
+    <p data-i18n="s6-p3">The safest solution for dynamic visual state: use inline styles instead of class toggling:</p>
+
+    <pre><code>// ❌ This might not work — class selectors lose to ID !important
+beatBox.classList.add('active');
+
+// ✅ This always works
+beatBox.style.backgroundColor = '#d53a3a';
+beatBox.style.color = '#fff';</code></pre>
+
+    <p data-i18n="s6-p4">One more UXP CSS gotcha: <code>line-height</code> must be at least <code>1.5</code> on small italic text, otherwise descenders get clipped by the rendering engine.</p>
+
+    <!-- ── SECTION 7 ── -->
+    <h2 data-i18n="s7-title">The MP3 Problem: WASM is a Trap</h2>
+    <p data-i18n="s7-p1">My plugin needed to support MP3 files. WAV was easy — I wrote a pure JavaScript decoder using <code>DataView</code>. But MP3 is complex, and I figured I'd use a proper library.</p>
+
+    <p data-i18n="s7-p2">Here's what I tried, and what happened:</p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th data-i18n="t-approach">Approach</th><th data-i18n="t-result">Result in UXP</th></tr></thead>
+      <tbody>
+        <tr><td>WASM with pthreads</td><td data-i18n="t-crash">💥 Crashes Premiere instantly</td></tr>
+        <tr><td>mpg123-decoder (single-thread WASM)</td><td data-i18n="t-crash2">💥 Still crashes Premiere on analysis</td></tr>
+        <tr><td>AudioContext.decodeAudioData</td><td data-i18n="t-noexist">🚫 Doesn't exist in UXP</td></tr>
+        <tr><td>Web Workers</td><td data-i18n="t-undef">🚫 typeof Worker === 'undefined'</td></tr>
+        <tr><td>js-mp3 (pure JS)</td><td data-i18n="t-works">✅ Works perfectly</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p data-i18n="s7-p3">The solution was <code>js-mp3</code> — a 100% pure JavaScript MP3 decoder. No WASM, no Workers. Just math and arrays. It's slower, but it works inside UXP without crashing anything.</p>
+
+    <p data-i18n="s7-p4">There's also a timing correction you have to apply. The <code>js-mp3</code> decoder introduces a startup delay of <strong>2070 samples</strong> from the MDCT warm-up phase. Add the encoder delay from the file's Xing/LAME header, and you have to strip those samples from the output before running beat detection — otherwise every beat timestamp will be slightly off.</p>
+
+    <div class="pullquote">
+      <span data-i18n="s7-quote">"I spent three days trying to make WASM work. On day four, I wrote a pure JS decoder and it worked on the first try."</span>
+    </div>
+
+    <!-- ── SECTION 8 ── -->
+    <h2 data-i18n="s8-title">Packaging Without Losing Your Mind</h2>
+    <p data-i18n="s8-p1">The <code>manifest.json</code> has some gotchas that aren't obvious from the docs:</p>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>❌ <span data-i18n="t-wrong">Wrong</span></th><th>✅ <span data-i18n="t-correct">Correct</span></th></tr></thead>
+      <tbody>
+        <tr><td>"app": "PPRO"</td><td>"app": "premierepro" (lowercase)</td></tr>
+        <tr><td>"host": [{ ... }]</td><td>"host": { ... } (object, not array)</td></tr>
+        <tr><td data-i18n="t-missing-main">missing "main"</td><td>"main": "index.html" (required)</td></tr>
+        <tr><td data-i18n="t-missing-launch">missing launchProcess</td><td data-i18n="t-launch-needed">needed for shell.openExternal()</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p data-i18n="s8-p2">If you're using npm packages that depend on Node.js modules missing in UXP — like <code>worker_threads</code>, <code>vm</code>, or <code>url</code> — you'll need to bundle with <strong>esbuild</strong> and inject stubs for the missing modules. The plugin folder needs to be self-contained: no <code>node_modules</code>, just your bundled JS.</p>
+
+    <p data-i18n="s8-p3">Distribution is a <code>.ccx</code> file. During development, load it via the <strong>UXP Developer Tool</strong> (UDT). For production, users double-click the <code>.ccx</code> with Premiere closed. If you want to list on the <strong>Adobe Exchange</strong>, prepare for a review process that takes days to weeks.</p>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">💡</span>
+      <span data-i18n="s8-tip">Quick pre-release checklist: lowercase "premierepro" in manifest, "host" as object, "main" field present, unique plugin ID, all required permissions declared, no leftover console.log calls in production.</span>
+    </div>
+
+    <!-- ── CLOSING ── -->
+    <h2 data-i18n="s9-title">Was It Worth It?</h2>
+    <p data-i18n="s9-p1">Absolutely. <a href="https://samabr85.github.io/BeatMarker-PremierePlugin/" target="_blank" style="color:#d53a3a;text-decoration:underline">BeatMarker</a> now runs inside Premiere Pro, detects BPM from any WAV or MP3 file, and creates color-coded markers on source clips — one click instead of an hour of manual work on every project.</p>
+    <p data-i18n="s9-p2">UXP is genuinely a good platform. The frustrating parts aren't because it's badly designed — they're because the documentation doesn't cover production realities. Hopefully this article does.</p>
+    <p data-i18n="s9-p3">All the source files, specs, and changelogs that inspired this article live in the open-source repo. Feel free to dig in.</p>
+
+    <div class="pullquote">
+      <span data-i18n="s9-quote">"The best tool is the one you build for yourself — because you know exactly what's missing."</span>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <p>Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · <a href="../../">portfolio</a></p>
+</footer>
+
+<script>
+  /* ── TRANSLATIONS ── */
+  const i18n = {
+    en: {
+      'back':          'Portfolio',
+      'breadcrumb':    'UXP Production Guide',
+      'eyebrow':       'Plugin Development · Adobe Premiere Pro · UXP',
+      'title':         'UXP Plugin Development:<br><span class="accent">What Adobe Doesn\'t Tell You</span>',
+      'subtitle':      'I\'m a video editor. I cut to the beat — music videos, trailers, reels. One day I got tired of placing markers by hand and decided to build my own plugin. This is everything I wish I had known before starting.',
+      'readtime':      '10 min read',
+      's1-title':      'UXP: Adobe\'s Beautiful Promise',
+      's1-p1':         'Adobe said it was simple. "Build plugins with HTML, CSS, and JavaScript," they said. "It\'s just a web page inside Premiere." And in a way, that\'s true — until it isn\'t.',
+      's1-p2':         '<strong>UXP (Unified Extensibility Platform)</strong> is Adobe\'s modern runtime that replaced CEP (Chrome Embedded Framework) and old ExtendScript across Premiere Pro, Photoshop, InDesign, and others. It runs a proprietary JavaScript engine — not V8, not full Node.js — with access to native app APIs through specific modules like <code>require(\'premierepro\')</code>.',
+      's1-p3':         'The pitch is solid: you write HTML + vanilla JS, use real CSS, communicate with Premiere through a documented API, and ship your plugin as a <code>.ccx</code> file. No C++, no deep SDK. For a video editor who knows a bit of JavaScript, it sounds like the perfect entry point.',
+      's1-callout':    'Never use CEP or ExtendScript documentation as a reference for UXP. The APIs are completely different. Everything you find about the old system will mislead you.',
+      's1-quote':      '"I wasn\'t a developer. I just wanted my beat-synced cut workflow to work better. So I opened the docs and started reading."',
+      's2-title':      'What Adobe Forgot to Mention',
+      's2-p1':         'Here\'s where things get interesting. UXP is a sandboxed environment. It\'s not a browser. It\'s not Node.js. It\'s its own thing — and it has some very specific holes where features you\'d expect simply don\'t exist.',
+      's2-p2':         'I found these out the hard way, usually when Premiere Pro crashed, froze, or silently did nothing.',
+      's2-works':      'Works ✓',
+      's2-breaks':     'Breaks ✗',
+      's2-p3':         'That last one — <strong>WebAssembly with pthreads</strong> — deserves its own story. I tried using a WASM-based MP3 decoder. Premiere Pro crashed immediately, every single time, with zero error messages. It took me days to figure out why. I\'ll get to that in a moment.',
+      's3-title':      'Reading an Audio File Should Be Simple',
+      's3-p1':         'My plugin needs to read an audio file — a WAV or MP3 from the user\'s drive — to detect the BPM. Sounds simple. In any browser, in any Node.js app, you\'d do this in 5 lines. In UXP, there are two specific traps.',
+      's3-h3a':        'Trap #1: readFileSync doesn\'t exist',
+      's3-p2':         'In UXP, <code>fs.readFileSync</code> throws <code>Route not found</code>. There\'s no sync filesystem API. Everything is <code>async/await</code>. That\'s fine — just make sure you\'re not copying Node.js patterns without thinking.',
+      's3-h3b':        'Trap #2: The buffer is a fake',
+      's3-p3':         'When <code>fs.readFile()</code> returns, you don\'t get a real <code>ArrayBuffer</code>. You get a <strong>UXP proxy ArrayBuffer</strong> — an object that looks like an ArrayBuffer but behaves differently when you try to process it with audio decoding code. The fix is to copy it into a real native buffer before doing anything else:',
+      's3-p4':         'One more thing: if your plugin reads files, you must declare it in <code>manifest.json</code>. Otherwise the permission is silently denied:',
+      's4-title':      'The Markers That Lie to You',
+      's4-p1':         'Once you have your BPM and beat timestamps, you need to create markers on the clip in Premiere. The Markers API looks clean in the docs. In practice, there are a few things that will waste your time.',
+      's4-h3a':        'Always use getter methods',
+      's4-p2':         'This one burned me. If you try to access marker properties directly, they return <code>undefined</code>:',
+      's4-h3b':        'Cast first, then get markers',
+      's4-p3':         'To access markers on a source clip, you can\'t just call <code>getMarkers(projectItem)</code> directly — it returns <code>null</code>. You have to cast the item first:',
+      's4-h3c':        'Premiere\'s 8 native marker colors',
+      's4-p4':         'Marker colors are set by index — there\'s no free color picker. Here are the 8 available colors:',
+      's4-quote':      '"When Premiere freezes because of your plugin, you learn fast what not to do."',
+      't-index':       'Index', 't-color': 'Color',
+      's5-title':      '50 Is the Magic Number',
+      's5-p1':         'Every write to the Premiere Pro API must happen inside an <code>executeTransaction()</code> call. That\'s fine — it enables undo history. But there\'s a limit nobody documents: <strong>roughly 50 actions per transaction</strong>. Go over that limit and Premiere hangs silently.',
+      's5-p2':         'The fix is batching. If you\'re creating 200 markers, split them into 4 transactions of 50:',
+      's5-callout':    'Also: never use <code>continue</code> inside a transaction callback. It can behave unpredictably. Pre-filter your array before entering the transaction loop.',
+      's6-title':      'CSS Inside Premiere Is a Different Dimension',
+      's6-p1':         'UXP renders a real HTML/CSS interface, which is great. But there are some specificity rules that don\'t behave the way you\'d expect from a browser.',
+      's6-p2':         'The most painful one: <strong>ID selectors with <code>!important</code> override class selectors with <code>!important</code></strong>. That sounds normal — until you\'re building a dynamic UI and wondering why your toggle button won\'t change color no matter what class you add to it.',
+      's6-p3':         'The safest solution for dynamic visual state: use inline styles instead of class toggling:',
+      's6-p4':         'One more UXP CSS gotcha: <code>line-height</code> must be at least <code>1.5</code> on small italic text, otherwise descenders get clipped by the rendering engine.',
+      's7-title':      'The MP3 Problem: WASM is a Trap',
+      's7-p1':         'My plugin needed to support MP3 files. WAV was easy — I wrote a pure JavaScript decoder using <code>DataView</code>. But MP3 is complex, and I figured I\'d use a proper library.',
+      's7-p2':         'Here\'s what I tried, and what happened:',
+      't-approach':    'Approach', 't-result': 'Result in UXP',
+      't-crash':       '💥 Crashes Premiere instantly',
+      't-crash2':      '💥 Still crashes Premiere on analysis',
+      't-noexist':     '🚫 Doesn\'t exist in UXP',
+      't-undef':       '🚫 typeof Worker === \'undefined\'',
+      't-works':       '✅ Works perfectly',
+      's7-p3':         'The solution was <code>js-mp3</code> — a 100% pure JavaScript MP3 decoder. No WASM, no Workers. Just math and arrays. It\'s slower, but it works inside UXP without crashing anything.',
+      's7-p4':         'There\'s also a timing correction you have to apply. The <code>js-mp3</code> decoder introduces a startup delay of <strong>2070 samples</strong> from the MDCT warm-up phase. Add the encoder delay from the file\'s Xing/LAME header, and you have to strip those samples from the output before running beat detection — otherwise every beat timestamp will be slightly off.',
+      's7-quote':      '"I spent three days trying to make WASM work. On day four, I wrote a pure JS decoder and it worked on the first try."',
+      's8-title':      'Packaging Without Losing Your Mind',
+      's8-p1':         'The <code>manifest.json</code> has some gotchas that aren\'t obvious from the docs:',
+      't-wrong':       'Wrong', 't-correct': 'Correct',
+      't-missing-main':   'missing "main"',
+      't-missing-launch': 'missing launchProcess',
+      't-launch-needed':  'needed for shell.openExternal()',
+      's8-p2':         'If you\'re using npm packages that depend on Node.js modules missing in UXP — like <code>worker_threads</code>, <code>vm</code>, or <code>url</code> — you\'ll need to bundle with <strong>esbuild</strong> and inject stubs for the missing modules. The plugin folder needs to be self-contained: no <code>node_modules</code>, just your bundled JS.',
+      's8-p3':         'Distribution is a <code>.ccx</code> file. During development, load it via the <strong>UXP Developer Tool</strong> (UDT). For production, users double-click the <code>.ccx</code> with Premiere closed. If you want to list on the <strong>Adobe Exchange</strong>, prepare for a review process that takes days to weeks.',
+      's8-tip':        'Quick pre-release checklist: lowercase "premierepro" in manifest, "host" as object, "main" field present, unique plugin ID, all required permissions declared, no leftover console.log calls in production.',
+      's9-title':      'Was It Worth It?',
+      's9-p1':         'Absolutely. <a href="https://samabr85.github.io/BeatMarker-PremierePlugin/" target="_blank" style="color:#d53a3a;text-decoration:underline">BeatMarker</a> now runs inside Premiere Pro, detects BPM from any WAV or MP3 file, and creates color-coded markers on source clips — one click instead of an hour of manual work on every project.',
+      's9-p2':         'UXP is genuinely a good platform. The frustrating parts aren\'t because it\'s badly designed — they\'re because the documentation doesn\'t cover production realities. Hopefully this article does.',
+      's9-p3':         'All the source files, specs, and changelogs that inspired this article live in the open-source repo. Feel free to dig in.',
+      's9-quote':      '"The best tool is the one you build for yourself — because you know exactly what\'s missing."',
+    },
+    pt: {
+      'back':          'Portfólio',
+      'breadcrumb':    'Guia de Produção UXP',
+      'eyebrow':       'Desenvolvimento de Plugin · Adobe Premiere Pro · UXP',
+      'title':         'Desenvolvimento de Plugin UXP:<br><span class="accent">O Que a Adobe Não Te Conta</span>',
+      'subtitle':      'Sou editor de vídeo. Corto no ritmo — clipes musicais, trailers, reels. Um dia enjoei de colocar marcadores manualmente e decidi criar meu próprio plugin. Isso aqui é tudo o que eu gostaria de ter sabido antes de começar.',
+      'readtime':      'Leitura: 10 min',
+      's1-title':      'UXP: A Promessa Bonita da Adobe',
+      's1-p1':         'A Adobe disse que era simples. "Crie plugins com HTML, CSS e JavaScript", eles disseram. "É só uma página web dentro do Premiere." E, de certo modo, é verdade — até a hora que não é.',
+      's1-p2':         '<strong>UXP (Unified Extensibility Platform)</strong> é a plataforma moderna da Adobe que substituiu o CEP (Chrome Embedded Framework) e o antigo ExtendScript no Premiere Pro, Photoshop, InDesign e outros. Ela roda um engine JavaScript proprietário — não é V8, não é Node.js completo — com acesso às APIs nativas do app via módulos específicos como <code>require(\'premierepro\')</code>.',
+      's1-p3':         'A proposta é boa: você escreve HTML + vanilla JS, usa CSS de verdade, se comunica com o Premiere por uma API documentada, e distribui o plugin como arquivo <code>.ccx</code>. Sem C++, sem SDK pesado. Para um editor de vídeo que sabe um pouco de JavaScript, parece o ponto de entrada perfeito.',
+      's1-callout':    'Nunca use documentação de CEP ou ExtendScript como referência para UXP. As APIs são completamente diferentes. Tudo que você encontrar sobre o sistema antigo vai te confundir.',
+      's1-quote':      '"Eu não era desenvolvedor. Eu só queria que meu workflow de corte no ritmo funcionasse melhor. Então abri a documentação e comecei a ler."',
+      's2-title':      'O Que a Adobe Esqueceu de Te Contar',
+      's2-p1':         'É aqui que as coisas ficam interessantes. UXP é um ambiente sandboxed. Não é um browser. Não é Node.js. É uma coisa própria — e tem alguns buracos bem específicos onde recursos que você esperaria simplesmente não existem.',
+      's2-p2':         'Descobri tudo isso da pior forma, geralmente quando o Premiere Pro travava, congelava ou simplesmente não fazia nada.',
+      's2-works':      'Funciona ✓',
+      's2-breaks':     'Quebra ✗',
+      's2-p3':         'O último — <strong>WebAssembly com pthreads</strong> — merece uma história própria. Tentei usar um decoder MP3 baseado em WASM. O Premiere Pro crashava imediatamente, toda vez, sem nenhuma mensagem de erro. Levei dias para descobrir o porquê. Chego lá.',
+      's3-title':      'Ler um Arquivo de Áudio Deveria Ser Simples',
+      's3-p1':         'Meu plugin precisa ler um arquivo de áudio — um WAV ou MP3 do disco do usuário — para detectar o BPM. Parece simples. Em qualquer browser, em qualquer app Node.js, você faz isso em 5 linhas. No UXP, existem duas armadilhas específicas.',
+      's3-h3a':        'Armadilha #1: readFileSync não existe',
+      's3-p2':         'No UXP, <code>fs.readFileSync</code> lança <code>Route not found</code>. Não existe API de filesystem síncrona. Tudo é <code>async/await</code>. Tudo bem — só garanta que não está copiando padrões Node.js sem pensar.',
+      's3-h3b':        'Armadilha #2: O buffer é uma mentira',
+      's3-p3':         'Quando <code>fs.readFile()</code> retorna, você não recebe um <code>ArrayBuffer</code> de verdade. Você recebe um <strong>UXP proxy ArrayBuffer</strong> — um objeto que parece um ArrayBuffer mas se comporta diferente quando você tenta processá-lo com código de decode de áudio. O jeito de resolver é copiar para um buffer nativo antes de fazer qualquer coisa:',
+      's3-p4':         'Mais uma coisa: se o seu plugin lê arquivos, você precisa declarar isso no <code>manifest.json</code>. Caso contrário, a permissão é negada silenciosamente:',
+      's4-title':      'Os Markers Que Mentem',
+      's4-p1':         'Depois de ter o BPM e os timestamps das batidas, você precisa criar marcadores no clipe dentro do Premiere. A API de Markers parece limpa na documentação. Na prática, tem algumas coisas que vão desperdiçar seu tempo.',
+      's4-h3a':        'Sempre use os métodos getter',
+      's4-p2':         'Esse me pegou. Se você tentar acessar propriedades do marker diretamente, elas retornam <code>undefined</code>:',
+      's4-h3b':        'Faça o cast primeiro, depois acesse os markers',
+      's4-p3':         'Para acessar markers em um clipe de origem, você não pode chamar <code>getMarkers(projectItem)</code> diretamente — retorna <code>null</code>. Você precisa fazer o cast primeiro:',
+      's4-h3c':        'As 8 cores nativas de marker do Premiere',
+      's4-p4':         'As cores dos markers são definidas por índice — não existe color picker livre. Aqui estão as 8 cores disponíveis:',
+      's4-quote':      '"Quando o Premiere trava por causa do seu plugin, você aprende rápido o que não fazer."',
+      't-index':       'Índice', 't-color': 'Cor',
+      's5-title':      '50 É o Número Mágico',
+      's5-p1':         'Toda escrita na API do Premiere Pro precisa acontecer dentro de uma chamada <code>executeTransaction()</code>. Isso é ótimo — habilita o histórico de undo. Mas existe um limite que ninguém documenta: <strong>aproximadamente 50 ações por transação</strong>. Passe esse limite e o Premiere trava silenciosamente.',
+      's5-p2':         'A solução é fazer batches. Se você está criando 200 markers, divida em 4 transações de 50:',
+      's5-callout':    'Também: nunca use <code>continue</code> dentro de um callback de transação. O comportamento pode ser imprevisível. Filtre o array antes de entrar no loop da transação.',
+      's6-title':      'CSS Dentro do Premiere É Outra Dimensão',
+      's6-p1':         'O UXP renderiza uma interface HTML/CSS de verdade, o que é ótimo. Mas existem algumas regras de especificidade que não se comportam como você esperaria num browser.',
+      's6-p2':         'A mais dolorosa: <strong>seletores ID com <code>!important</code> vencem seletores de classe com <code>!important</code></strong>. Isso parece normal — até você estar construindo uma UI dinâmica e não conseguir entender por que o botão de toggle não muda de cor independente de qual classe você adiciona.',
+      's6-p3':         'A solução mais segura para estado visual dinâmico: use inline styles em vez de alternar classes:',
+      's6-p4':         'Mais um detalhe de CSS no UXP: <code>line-height</code> deve ser pelo menos <code>1.5</code> em textos itálicos pequenos, caso contrário os descenders são cortados pelo engine de renderização.',
+      's7-title':      'O Problema do MP3: WASM É uma Armadilha',
+      's7-p1':         'Meu plugin precisava suportar arquivos MP3. WAV foi fácil — escrevi um decoder JavaScript puro usando <code>DataView</code>. Mas MP3 é complexo, e achei que usaria uma biblioteca adequada.',
+      's7-p2':         'Aqui está o que tentei e o que aconteceu:',
+      't-approach':    'Abordagem', 't-result': 'Resultado no UXP',
+      't-crash':       '💥 Crasha o Premiere instantaneamente',
+      't-crash2':      '💥 Ainda crasha o Premiere na análise',
+      't-noexist':     '🚫 Não existe no UXP',
+      't-undef':       '🚫 typeof Worker === \'undefined\'',
+      't-works':       '✅ Funciona perfeitamente',
+      's7-p3':         'A solução foi o <code>js-mp3</code> — um decoder MP3 100% puro em JavaScript. Sem WASM, sem Workers. Só matemática e arrays. É mais lento, mas funciona dentro do UXP sem travar nada.',
+      's7-p4':         'Há também uma correção de timing que você precisa aplicar. O decoder <code>js-mp3</code> introduz um delay de inicialização de <strong>2070 amostras</strong> da fase de warm-up do MDCT. Some o encoder delay do cabeçalho Xing/LAME do arquivo, e você precisa remover essas amostras do output antes de rodar a detecção de batidas — caso contrário cada timestamp vai estar levemente errado.',
+      's7-quote':      '"Passei três dias tentando fazer o WASM funcionar. No quarto dia, escrevi um decoder JS puro e funcionou na primeira tentativa."',
+      's8-title':      'Empacotando Tudo Sem Enlouquecer',
+      's8-p1':         'O <code>manifest.json</code> tem algumas pegadinhas que não ficam óbvias na documentação:',
+      't-wrong':       'Errado', 't-correct': 'Correto',
+      't-missing-main':   'sem o campo "main"',
+      't-missing-launch': 'sem launchProcess',
+      't-launch-needed':  'necessário para shell.openExternal()',
+      's8-p2':         'Se você usar pacotes npm que dependem de módulos Node.js ausentes no UXP — como <code>worker_threads</code>, <code>vm</code> ou <code>url</code> — precisará fazer bundle com <strong>esbuild</strong> e injetar stubs para os módulos faltantes. A pasta do plugin precisa ser autocontida: sem <code>node_modules</code>, só o JS empacotado.',
+      's8-p3':         'A distribuição é um arquivo <code>.ccx</code>. Durante o desenvolvimento, carregue via <strong>UXP Developer Tool</strong> (UDT). Para produção, os usuários dão duplo clique no <code>.ccx</code> com o Premiere fechado. Se quiser listar no <strong>Adobe Exchange</strong>, prepare-se para um processo de revisão que leva dias a semanas.',
+      's8-tip':        'Checklist rápido pré-release: "premierepro" em minúsculas no manifest, "host" como objeto, campo "main" presente, ID único do plugin, todas as permissões necessárias declaradas, sem console.log sobrando em produção.',
+      's9-title':      'Valeu a Pena?',
+      's9-p1':         'Com certeza. O <a href="https://samabr85.github.io/BeatMarker-PremierePlugin/" target="_blank" style="color:#d53a3a;text-decoration:underline">BeatMarker</a> agora roda dentro do Premiere Pro, detecta BPM de qualquer arquivo WAV ou MP3, e cria marcadores coloridos nos clipes de origem — um clique em vez de uma hora de trabalho manual em cada projeto.',
+      's9-p2':         'UXP é genuinamente uma boa plataforma. As partes frustrantes não são porque foi mal projetada — é porque a documentação não cobre as realidades de produção. Espero que este artigo cubra.',
+      's9-p3':         'Todos os arquivos fonte, specs e changelogs que inspiraram este artigo estão no repositório open source. Fique à vontade para explorar.',
+      's9-quote':      '"A melhor ferramenta é aquela que você cria para si mesmo — porque você sabe exatamente o que está faltando."',
+    }
+  };
+
+  function applyLang(lang) {
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+    document.getElementById('langLabel').textContent = lang === 'pt' ? 'EN' : 'PT';
+    const t = i18n[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key] !== undefined) el.innerHTML = t[key];
+    });
+    localStorage.setItem('lang', lang);
+  }
+
+  /* Theme */
+  const root = document.documentElement;
+  root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+
+  /* Language */
+  let currentLang = localStorage.getItem('lang') || (navigator.language.startsWith('pt') ? 'pt' : 'en');
+  applyLang(currentLang);
+  document.getElementById('langToggle').addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'pt' : 'en';
+    applyLang(currentLang);
+  });
+</script>
+
+</body>
+</html>

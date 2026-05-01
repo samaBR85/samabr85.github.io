@@ -317,6 +317,64 @@
     }
     .btn-ghost:hover { color: var(--text); border-color: #555; }
 
+    /* ── BLOG SECTION ── */
+    .blog-section {
+      border-top: 1px solid var(--border);
+      padding: 64px 24px;
+      background: var(--bg2);
+    }
+    .blog-inner {
+      max-width: 900px; margin: 0 auto;
+    }
+    .section-header { margin-bottom: 36px; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 900; letter-spacing: -.03em;
+      margin-bottom: 10px;
+    }
+    .section-desc { font-size: 15px; color: var(--muted); }
+
+    .blog-card {
+      display: block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      cursor: pointer;
+    }
+    .blog-card:hover {
+      border-color: #555;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--shadow);
+    }
+    .blog-card-meta {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 12px;
+    }
+    .blog-tag {
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--muted);
+      background: var(--bg3); border: 1px solid var(--border);
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .blog-date { font-size: 12px; color: var(--muted); }
+    .blog-card-title {
+      font-size: 20px; font-weight: 800; letter-spacing: -.02em;
+      margin-bottom: 10px; color: var(--text);
+    }
+    .blog-card-desc {
+      font-size: 14px; color: var(--muted); line-height: 1.7;
+      margin-bottom: 16px; max-width: 680px;
+    }
+    .blog-read-more {
+      font-size: 13px; font-weight: 700; color: #d53a3a;
+    }
+
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
@@ -474,6 +532,27 @@
 
 </div>
 
+<!-- ── BLOG ── -->
+<div class="blog-section">
+  <div class="blog-inner">
+    <div class="section-header">
+      <div class="section-eyebrow" data-i18n="blog-eyebrow">Blog · Dev Articles</div>
+      <h2 class="section-title" data-i18n="blog-title">From the <span class="accent">Build Log</span></h2>
+      <p class="section-desc" data-i18n="blog-desc">Technical deep-dives written while building these tools — for video editors who want to code.</p>
+    </div>
+
+    <a class="blog-card" href="blog/uxp-production-guide/">
+      <div class="blog-card-meta">
+        <span class="blog-tag">UXP · Premiere Pro</span>
+        <span class="blog-date">May 2026</span>
+      </div>
+      <h3 class="blog-card-title" data-i18n="blog-art1-title">UXP Plugin Development: What Adobe Doesn't Tell You</h3>
+      <p class="blog-card-desc" data-i18n="blog-art1-desc">A production reference built while shipping BeatMarker — filesystem quirks, the marker API lies, transaction limits, and why WASM will crash Premiere every single time.</p>
+      <span class="blog-read-more" data-i18n="blog-read">Read article →</span>
+    </a>
+  </div>
+</div>
+
 <footer>
   <p data-i18n="footer">Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source</p>
 </footer>
@@ -493,9 +572,15 @@
       'desc-mst':      'A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.',
       'free':          'Free',
       'desktop-app':   'Desktop App',
-      'footer':        'Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source',
-      'star':          'star', 'stars': 'stars',
-      'download':      'download', 'downloads': 'downloads',
+      'footer':           'Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source',
+      'star':             'star', 'stars': 'stars',
+      'download':         'download', 'downloads': 'downloads',
+      'blog-eyebrow':     'Blog · Dev Articles',
+      'blog-title':       'From the <span class="accent">Build Log</span>',
+      'blog-desc':        'Technical deep-dives written while building these tools — for video editors who want to code.',
+      'blog-art1-title':  'UXP Plugin Development: What Adobe Doesn\'t Tell You',
+      'blog-art1-desc':   'A production reference built while shipping BeatMarker — filesystem quirks, the marker API lies, transaction limits, and why WASM will crash Premiere every single time.',
+      'blog-read':        'Read article →',
     },
     pt: {
       'eyebrow':       'Código Aberto · Ferramentas Gratuitas',
@@ -509,9 +594,15 @@
       'desc-mst':      'Um utilitário leve para Windows 11 que permite alternar instantaneamente a saída de áudio entre os modos Mono e Estéreo — a mesma configuração encontrada em Configurações do Windows → Sistema → Som.',
       'free':          'Grátis',
       'desktop-app':   'App Desktop',
-      'footer':        'Feito por <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Código Aberto',
-      'star':          'estrela', 'stars': 'estrelas',
-      'download':      'download', 'downloads': 'downloads',
+      'footer':           'Feito por <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Código Aberto',
+      'star':             'estrela', 'stars': 'estrelas',
+      'download':         'download', 'downloads': 'downloads',
+      'blog-eyebrow':     'Blog · Artigos Técnicos',
+      'blog-title':       'Do <span class="accent">Diário de Desenvolvimento</span>',
+      'blog-desc':        'Deep-dives técnicos escritos durante o desenvolvimento dessas ferramentas — para editores de vídeo que querem programar.',
+      'blog-art1-title':  'Desenvolvimento de Plugin UXP: O Que a Adobe Não Te Conta',
+      'blog-art1-desc':   'Uma referência de produção construída durante o desenvolvimento do BeatMarker — quirks do filesystem, mentiras da API de markers, limites de transação, e por que WASM vai travar o Premiere toda vez.',
+      'blog-read':        'Ler artigo →',
     }
   };
 
