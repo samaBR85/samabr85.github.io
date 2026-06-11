@@ -793,30 +793,32 @@
     applyLang(currentLang);
   });
 
-  /* ── GITHUB STATS ── */
+  /* ── GITHUB STATS ──
+     Reads stats.json (updated every 6h by .github/workflows/update-stats.yml).
+     Falls back to "—" on any error (file missing, network issue, etc). */
   window._statsCache = {};
 
-  async function fetchStats(repo, starsEl, dlEl) {
+  const STATS_TARGETS = {
+    'BeatMarker-PremierePlugin': { starsEl: document.getElementById('stars-premiere'), dlEl: document.getElementById('dl-premiere') },
+    'BeatMarker-AEPlugin':       { starsEl: document.getElementById('stars-ae'),       dlEl: document.getElementById('dl-ae') },
+    'MonoStereoToggle':          { starsEl: document.getElementById('stars-mst'),      dlEl: document.getElementById('dl-mst') }
+  };
+
+  async function loadStats() {
     try {
-      const [repoRes, relRes] = await Promise.all([
-        fetch(`https://api.github.com/repos/samaBR85/${repo}`),
-        fetch(`https://api.github.com/repos/samaBR85/${repo}/releases`)
-      ]);
-      if (!repoRes.ok || !relRes.ok) return; // rate limit ou erro — mantém o "—"
-      const repoData = await repoRes.json();
-      const releases = await relRes.json();
-      const stars     = repoData.stargazers_count ?? 0;
-      const downloads = Array.isArray(releases)
-        ? releases.reduce((sum, r) => sum + r.assets.reduce((s, a) => s + a.download_count, 0), 0)
-        : 0;
-      window._statsCache[repo] = { stars, downloads, starsEl, dlEl };
+      const res = await fetch('stats.json');
+      if (!res.ok) return; // stats.json não existe ainda — mantém o "—"
+      const data = await res.json();
+      for (const [repo, els] of Object.entries(STATS_TARGETS)) {
+        const s = data[repo];
+        if (!s) continue;
+        window._statsCache[repo] = { stars: s.stars, downloads: s.downloads, ...els };
+      }
       renderStats(currentLang, window._statsCache);
     } catch (_) {}
   }
 
-  fetchStats('BeatMarker-PremierePlugin', document.getElementById('stars-premiere'), document.getElementById('dl-premiere'));
-  fetchStats('BeatMarker-AEPlugin',       document.getElementById('stars-ae'),       document.getElementById('dl-ae'));
-  fetchStats('MonoStereoToggle',          document.getElementById('stars-mst'),      document.getElementById('dl-mst'));
+  loadStats();
 </script>
 
 </body>
