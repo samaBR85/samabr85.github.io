@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building a Pokémon Plugin for the Nintendo 3DS in C++ — samaBR</title>
+  <meta name="description" content="How a non-programmer built Gen6 CTRP Framework Overhauled — a beginner-friendly Luma3DS plugin for Pokémon X, Y, OR, and AS with a wild spawner, PC editor, battle tools, 25 themes, and a 23-page in-app guide. All in C++." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/gen6-ctrp-framework/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/gen6-ctrp-framework/" />
+  <meta property="og:title"       content="Building a Pokémon Plugin for the Nintendo 3DS in C++" />
+  <meta property="og:description" content="How a non-programmer built a beginner-friendly Luma3DS plugin for Pokémon X, Y, OR, and AS — wild spawner, PC editor, battle tools, 25 themes, and a 23-page in-app guide." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Building a Pokémon Plugin for the Nintendo 3DS in C++",
+    "description": "How a non-programmer built Gen6 CTRP Framework Overhauled — a beginner-friendly Luma3DS plugin for Pokémon X, Y, OR, and AS.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-06-28",
+    "dateModified": "2026-06-28",
+    "url": "https://samabr85.github.io/blog/gen6-ctrp-framework/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "Nintendo 3DS, Luma3DS, C++, Pokémon, plugin, CTRPF, Gen 6, cheats, open source"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#1a1628;--quote-border:#7c5be5;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#f5f3ff;--quote-border:#7c3aed;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a78bfa;background:rgba(124,91,229,.12);border:1px solid rgba(124,91,229,.25);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+    .article-screenshot{margin:0 0 40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)}
+    .article-screenshot img{width:100%;height:auto;display:block}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">Pokémon Plugin for 3DS</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">🎮 <span data-i18n="tag">Plugin · Nintendo 3DS · C++</span></div>
+    <h1 class="article-title" data-i18n="title">Building a Pokémon Plugin<br>for the Nintendo 3DS in C++</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">June 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~10 min read</span>
+    </div>
+  </header>
+
+  <figure class="article-screenshot">
+    <img src="../../docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" alt="Gen6 CTRP Framework Overhauled screenshot" loading="lazy" />
+  </figure>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: The 3DS Modding Scene Wasn't Built for Casual Players</h2>
+    <p data-i18n="s1-p1">I picked up Pokémon Omega Ruby again after years away. I wasn't interested in a fresh playthrough — I wanted to experiment: test specific teams, spawn rare Pokémon to see their stats, build competitive sets without grinding for hours. The tools exist for that. Luma3DS, the most popular 3DS custom firmware, supports plugins that run alongside the game. The 3DS modding community is active and technically impressive.</p>
+    <p data-i18n="s1-p2">But existing Gen 6 plugins assumed you were already deep in the scene. The interfaces used hex IDs you had to look up on external wikis, the options had no explanations, and there was no in-app help if something wasn't obvious. For someone who just wanted to spawn a Garchomp without spending twenty minutes on a setup guide, it was more friction than fun.</p>
+    <p data-i18n="s1-p3">So I built one from scratch. Gen6 CTRP Framework Overhauled is a Luma3DS plugin for Pokémon X, Y, Omega Ruby, and Alpha Sapphire — built with Claude Code in C++, designed so that someone who has never modded a game in their life can open the menu and understand every option immediately.</p>
+
+    <div class="pullquote" data-i18n="q1">"The tools existed. They just weren't built for people who didn't already know how to use them."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">What It Does</h2>
+    <p data-i18n="s2-p1">The plugin runs as an overlay on top of the game. Press the hotkey combination, the menu appears. Every section is named in plain language, every option has a description that explains what it does and what happens when you use it.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">🔍</div>
+        <div class="fi-title" data-i18n="feat1-title">Wild Spawner</div>
+        <div class="fi-desc" data-i18n="feat1-desc">Search by name, type, or generation. Filter owned vs. not owned. Spawn any wild Pokémon instantly.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📦</div>
+        <div class="fi-title" data-i18n="feat2-title">PC Box Editor</div>
+        <div class="fi-desc" data-i18n="feat2-desc">Visual grid of all your boxes. Edit stats, moves, held items, and nature directly — no external tools needed.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🛒</div>
+        <div class="fi-title" data-i18n="feat3-title">PokéMart Anywhere</div>
+        <div class="fi-desc" data-i18n="feat3-desc">Full shop with FREE or PAY mode. Shopping cart, price sorting. Access any item without finding a Mart.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">⚔️</div>
+        <div class="fi-title" data-i18n="feat4-title">Battle Tools</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Enemy stat overlay, ability and item explanations, party stat changes mid-battle, legendary respawn.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🗺️</div>
+        <div class="fi-title" data-i18n="feat5-title">Teleportation</div>
+        <div class="fi-desc" data-i18n="feat5-desc">Navigable maps with named locations. Customizable saved warps. Travel anywhere instantly.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🎮</div>
+        <div class="fi-title" data-i18n="feat6-title">Mini Game Corner</div>
+        <div class="fi-desc" data-i18n="feat6-desc">7 games: loot boxes, slots, spinning wheels, stat duels, higher-or-lower, challenger generator, team generator.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🎨</div>
+        <div class="fi-title" data-i18n="feat7-title">25 Color Themes</div>
+        <div class="fi-desc" data-i18n="feat7-desc">Live previews before applying. The entire menu UI changes color instantly.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📖</div>
+        <div class="fi-title" data-i18n="feat8-title">23-Page In-App Guide</div>
+        <div class="fi-desc" data-i18n="feat8-desc">Full documentation inside the plugin itself. No external wiki required.</div>
+      </div>
+    </div>
+
+    <p data-i18n="s2-p2">It also supports the usual quality-of-life options — fast text and walk speed, walk-through-walls, instant eggs, a configurable HUD, rebindable hotkeys, and a favorites system with drag-to-reorder. Seven languages are included: English, French, German, Italian, Japanese, Portuguese (Brazil), and Spanish.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">Why C++? Because That's What Luma3DS Plugins Are</h2>
+    <p data-i18n="s3-p1">The 3DS plugin framework is built on CTRPF — CTRPluginFramework. It's a C++ library that gives plugins access to game memory, input events, and an overlay rendering system. There's no JavaScript runtime, no Python interpreter, no abstraction layer. If you want to build a Luma3DS plugin, you write C++.</p>
+    <p data-i18n="s3-p2">I had never written C++ before this project. The BeatMarker plugins are JavaScript. MonoStereoToggle is C#. C++ is a different world: manual memory management, pointers, compilation toolchains, headers, makefiles. The kind of thing that has a reputation for being hostile to beginners.</p>
+    <p data-i18n="s3-p3">Claude Code handled it. The approach was the same as every other project: describe the feature in plain language, review the code that comes back, test on hardware, adjust. The CTRPF framework is well-documented, and once the build environment was set up — devkitARM, the 3DS toolchain, the CTRPF headers — adding features was straightforward in practice.</p>
+
+    <div class="callout tip">
+      <strong>💡 Build Environment</strong>
+      Building 3DS plugins requires devkitARM (the ARM cross-compiler toolchain) and the CTRPluginFramework headers. The Makefile handles the compilation and linking — running <code>make</code> produces a <code>.3gx</code> file that goes on the SD card.
+    </div>
+
+    <pre><code># Simplified project structure
+Gen6CTRPFrameworkOverhauled/
+├── include/          # Header files
+├── source/           # C++ source files
+│   ├── main.cpp      # Entry point, menu registration
+│   ├── Spawner.cpp   # Wild Pokémon spawner logic
+│   ├── PCEditor.cpp  # Box editor
+│   ├── Battle.cpp    # Battle tools
+│   ├── Mart.cpp      # PokéMart anywhere
+│   ├── Teleport.cpp  # Warp system
+│   ├── Themes.cpp    # 25 color themes
+│   └── Guide.cpp     # In-app 23-page guide
+├── Makefile
+└── README.md</code></pre>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">Reading Game Memory: How the Spawner Works</h2>
+    <p data-i18n="s4-p1">The Wild Pokémon Spawner works by writing directly to game memory at known addresses. When you enter a grass patch or surf on water, the game loads a "wild encounter slot" — a memory region that defines which Pokémon species will appear, its level range, and its form. The spawner overwrites those values before the encounter triggers.</p>
+    <p data-i18n="s4-p2">CTRPF provides memory read/write functions that plugins can call. The offsets for Pokémon X, Y, OR, and AS differ per game, so the plugin detects which game is running at startup and loads the correct address map:</p>
+
+    <pre><code>// Detect game and load address map
+void InitGameAddresses() {
+  u64 titleId = Process::GetTitleID();
+  switch (titleId) {
+    case 0x0004000000055D00: // Pokémon X
+      g_WildSlotAddr = 0x8D6300;
+      g_PartyAddr     = 0x8C8F48;
+      break;
+    case 0x0004000000055E00: // Pokémon Y
+      g_WildSlotAddr = 0x8D6300;
+      g_PartyAddr     = 0x8C8F48;
+      break;
+    case 0x000400000011C400: // Omega Ruby
+      g_WildSlotAddr = 0x8C861C;
+      g_PartyAddr     = 0x8C6D30;
+      break;
+    case 0x000400000011C500: // Alpha Sapphire
+      g_WildSlotAddr = 0x8C861C;
+      g_PartyAddr     = 0x8C6D30;
+      break;
+  }
+}
+
+// Write species ID to wild encounter slot
+void SpawnWildPokemon(u16 speciesId, u8 level) {
+  Process::Write16(g_WildSlotAddr, speciesId);
+  Process::Write8(g_WildSlotAddr + 0x02, level);
+}</code></pre>
+
+    <p data-i18n="s4-p3">The searchable Pokémon database — all 721 Pokémon available in Gen 6 — is stored as a compiled-in array. The search filters (by name, type, generation, whether you own it) run over this array in real time as the user types. On the 3DS's 268 MHz ARM11 processor, this is fast enough to feel instant.</p>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">The Design Principle: Plain Language, Always</h2>
+    <p data-i18n="s5-p1">Every decision in this plugin came back to one principle: a player who has never modded a game should be able to open this menu and understand what every option does without looking anything up.</p>
+    <p data-i18n="s5-p2">That meant no hex IDs in the UI. The spawner shows "Garchomp" not "0x0192". The PC editor shows "Attack" not "Stat[0]". The teleport system shows "Petalburg City" not "warp 0x0C:0x04". Every menu item has a subtitle that appears in the status bar when it's selected, written in conversational language.</p>
+    <p data-i18n="s5-p3">It also meant building the 23-page in-app guide. External wikis go out of date. Links break. A guide embedded in the plugin itself is always current, always available, works offline, and doesn't require the player to put the 3DS down and reach for a phone.</p>
+
+    <div class="pullquote" data-i18n="q2">"No hex IDs. No external wikis. If you need to Google something to use this plugin, that's a bug."</div>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">The Mini Game Corner: A Plugin Within the Plugin</h2>
+    <p data-i18n="s6-p1">The Mini Game Corner started as a joke and ended up being one of the most-used sections. The idea: while you're waiting for an egg to hatch or running back and forth to grind, you can play a quick mini game without leaving the plugin menu.</p>
+    <p data-i18n="s6-p2">Seven games shipped in v0.5.0:</p>
+    <ul>
+      <li data-i18n="mg1"><strong>Loot Boxes</strong> — randomized item rewards from tiered pools</li>
+      <li data-i18n="mg2"><strong>Spinning Wheel</strong> — land on a prize from a weighted wheel</li>
+      <li data-i18n="mg3"><strong>Slots</strong> — three-reel slot machine with configurable payouts</li>
+      <li data-i18n="mg4"><strong>Stat Duel</strong> — your Pokémon vs. a random opponent, highest stat wins</li>
+      <li data-i18n="mg5"><strong>Higher or Lower</strong> — guess whether the next Pokédex number is higher or lower</li>
+      <li data-i18n="mg6"><strong>Challenger Generator</strong> — generates a random trainer battle challenge (6v6, type-locked, etc.)</li>
+      <li data-i18n="mg7"><strong>Team Generator</strong> — builds a random team with rules you set (no legendaries, single type, etc.)</li>
+    </ul>
+    <p data-i18n="s6-p3">All of these run inside the CTRPF overlay renderer — no external assets, no image files, just the 3DS's built-in font and the plugin's drawing API. The rendering code uses simple primitives: filled rectangles for backgrounds, text for labels, the D-pad for navigation.</p>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">25 Color Themes with Live Preview</h2>
+    <p data-i18n="s7-p1">The theme system was technically the most interesting part of the UI code. CTRPF's overlay uses a color palette for drawing menu elements. Switching themes means updating the active palette and re-rendering the current frame — all while the menu is open.</p>
+    <p data-i18n="s7-p2">The live preview works by applying the new palette to a single frame before committing it. The player can scroll through themes and see each one applied to the current menu state before selecting it. If they don't like it, pressing B reverts to the previous palette.</p>
+
+    <pre><code>// Simplified theme switching
+struct Theme {
+  Color background;
+  Color menuBar;
+  Color highlight;
+  Color text;
+  Color border;
+  const char* name;
+};
+
+static const Theme g_Themes[25] = {
+  { Color(15, 15, 25),  Color(30, 20, 60),  Color(124, 91, 229), Color(240, 240, 255), Color(60, 40, 100),  "Purple Void"    },
+  { Color(10, 25, 15),  Color(15, 45, 25),  Color(52,  199, 89), Color(220, 255, 230), Color(30, 80, 45),   "Forest"         },
+  { Color(25, 10, 10),  Color(55, 15, 15),  Color(255, 59,  48), Color(255, 235, 235), Color(100, 30, 30),  "Crimson"        },
+  // ... 22 more themes
+};
+
+void ApplyTheme(int index) {
+  const Theme& t = g_Themes[index];
+  PluginMenu::SetBackgroundColor(t.background);
+  PluginMenu::SetMenuBarColor(t.menuBar);
+  PluginMenu::SetHighlightColor(t.highlight);
+  PluginMenu::SetTextColor(t.text);
+}</code></pre>
+
+    <!-- SECTION 8 -->
+    <h2 data-i18n="s8-title">Seven Languages, One Codebase</h2>
+    <p data-i18n="s8-p1">Supporting seven languages in a 3DS plugin is not something the framework makes easy. There's no built-in i18n system. Every string in the plugin is a candidate for translation, and the 3DS's small screen means every translated string also has to fit within the available width.</p>
+    <p data-i18n="s8-p2">The solution: a centralized string table, one per language, compiled into the binary. The active language is detected from the console's system settings at startup and can be overridden from the plugin options menu.</p>
+
+    <pre><code>// Language detection at startup
+CFG_Language sysLang;
+CFGU_GetSystemLanguage(&sysLang);
+
+switch (sysLang) {
+  case CFG_LANGUAGE_JP: g_Lang = LANG_JA; break;
+  case CFG_LANGUAGE_FR: g_Lang = LANG_FR; break;
+  case CFG_LANGUAGE_DE: g_Lang = LANG_DE; break;
+  case CFG_LANGUAGE_IT: g_Lang = LANG_IT; break;
+  case CFG_LANGUAGE_ES: g_Lang = LANG_ES; break;
+  case CFG_LANGUAGE_PT: g_Lang = LANG_PT_BR; break;
+  default:              g_Lang = LANG_EN; break;
+}</code></pre>
+
+    <div class="callout warn">
+      <strong>⚠️ String Length on 3DS</strong>
+      The 3DS bottom screen is 320×240 pixels. Menu items that fit comfortably in English can overflow in German or Portuguese. Every translation was tested on hardware to ensure nothing was clipped.
+    </div>
+
+    <!-- SECTION 9 -->
+    <h2 data-i18n="s9-title">Building Without Being a Programmer</h2>
+    <p data-i18n="s9-p1">This project is, in the clearest possible terms, out of scope for what I thought I could build. I'm a video editor. I got into programming because tools I needed didn't exist, and I convinced myself that if I worked with Claude Code, I could describe what I wanted and get working software back.</p>
+    <p data-i18n="s9-p2">Gen6 CTRP Framework Overhauled is proof that this works even in C++, on embedded hardware, in a niche ecosystem with limited documentation. The workflow was the same as it's always been: play the game, notice friction, describe the friction as a feature request, review the code, test on the actual console, repeat.</p>
+    <p data-i18n="s9-p3">The 23-page guide was the last thing built. After everything else was done, the plugin had enough features that a new user genuinely needed a map of what was there. Writing the guide was the most purely human part of the project — explaining every feature in language that assumes no prior modding knowledge, organized the way a player would think about it rather than the way the code was structured.</p>
+
+    <div class="pullquote" data-i18n="q3">"The code is Claude Code's. The friction it solves is mine. That division of labor turns out to be surprisingly effective."</div>
+
+    <hr class="divider">
+    <h2 data-i18n="s10-title">The Result</h2>
+    <p data-i18n="s10-p1">Gen6 CTRP Framework Overhauled is a free, open source Luma3DS plugin that works on any modded Nintendo 3DS running Pokémon X, Y, Omega Ruby, or Alpha Sapphire. It requires no coding knowledge to install or use. Drop the <code>.3gx</code> file on your SD card in the right folder, boot the game, press the hotkey, and the menu is there.</p>
+    <p data-i18n="s10-p2">It has everything I wished existed when I picked up the 3DS again: a spawner that speaks Pokémon names instead of IDs, a PC editor that works like a real tool, battle helpers that explain what the AI is doing, and enough small things (fast text, fast walk, instant eggs) that replaying the game doesn't feel like a chore.</p>
+    <p data-i18n="s10-p3">Download, source, and the full feature list: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, free.</p>
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'Pokémon Plugin for 3DS','tag':'Plugin · Nintendo 3DS · C++',
+    'title':'Building a Pokémon Plugin<br>for the Nintendo 3DS in C++',
+    'date':'June 2026','readtime':'⏱ ~10 min read',
+    's1-title':'The Problem: The 3DS Modding Scene Wasn\'t Built for Casual Players',
+    's1-p1':'I picked up Pokémon Omega Ruby again after years away. I wasn\'t interested in a fresh playthrough — I wanted to experiment: test specific teams, spawn rare Pokémon to see their stats, build competitive sets without grinding for hours. The tools exist for that. Luma3DS, the most popular 3DS custom firmware, supports plugins that run alongside the game. The 3DS modding community is active and technically impressive.',
+    's1-p2':'But existing Gen 6 plugins assumed you were already deep in the scene. The interfaces used hex IDs you had to look up on external wikis, the options had no explanations, and there was no in-app help if something wasn\'t obvious. For someone who just wanted to spawn a Garchomp without spending twenty minutes on a setup guide, it was more friction than fun.',
+    's1-p3':'So I built one from scratch. Gen6 CTRP Framework Overhauled is a Luma3DS plugin for Pokémon X, Y, Omega Ruby, and Alpha Sapphire — built with Claude Code in C++, designed so that someone who has never modded a game in their life can open the menu and understand every option immediately.',
+    'q1':'"The tools existed. They just weren\'t built for people who didn\'t already know how to use them."',
+    's2-title':'What It Does',
+    's2-p1':'The plugin runs as an overlay on top of the game. Press the hotkey combination, the menu appears. Every section is named in plain language, every option has a description that explains what it does and what happens when you use it.',
+    'feat1-title':'Wild Spawner','feat1-desc':'Search by name, type, or generation. Filter owned vs. not owned. Spawn any wild Pokémon instantly.',
+    'feat2-title':'PC Box Editor','feat2-desc':'Visual grid of all your boxes. Edit stats, moves, held items, and nature directly — no external tools needed.',
+    'feat3-title':'PokéMart Anywhere','feat3-desc':'Full shop with FREE or PAY mode. Shopping cart, price sorting. Access any item without finding a Mart.',
+    'feat4-title':'Battle Tools','feat4-desc':'Enemy stat overlay, ability and item explanations, party stat changes mid-battle, legendary respawn.',
+    'feat5-title':'Teleportation','feat5-desc':'Navigable maps with named locations. Customizable saved warps. Travel anywhere instantly.',
+    'feat6-title':'Mini Game Corner','feat6-desc':'7 games: loot boxes, slots, spinning wheels, stat duels, higher-or-lower, challenger generator, team generator.',
+    'feat7-title':'25 Color Themes','feat7-desc':'Live previews before applying. The entire menu UI changes color instantly.',
+    'feat8-title':'23-Page In-App Guide','feat8-desc':'Full documentation inside the plugin itself. No external wiki required.',
+    's2-p2':'It also supports quality-of-life options — fast text and walk speed, walk-through-walls, instant eggs, a configurable HUD, rebindable hotkeys, and a favorites system with drag-to-reorder. Seven languages are included: English, French, German, Italian, Japanese, Portuguese (Brazil), and Spanish.',
+    's3-title':'Why C++? Because That\'s What Luma3DS Plugins Are',
+    's3-p1':'The 3DS plugin framework is built on CTRPF — CTRPluginFramework. It\'s a C++ library that gives plugins access to game memory, input events, and an overlay rendering system. There\'s no JavaScript runtime, no Python interpreter, no abstraction layer. If you want to build a Luma3DS plugin, you write C++.',
+    's3-p2':'I had never written C++ before this project. The BeatMarker plugins are JavaScript. MonoStereoToggle is C#. C++ is a different world: manual memory management, pointers, compilation toolchains, headers, makefiles. The kind of thing that has a reputation for being hostile to beginners.',
+    's3-p3':'Claude Code handled it. The approach was the same as every other project: describe the feature in plain language, review the code that comes back, test on hardware, adjust. The CTRPF framework is well-documented, and once the build environment was set up — devkitARM, the 3DS toolchain, the CTRPF headers — adding features was straightforward in practice.',
+    's4-title':'Reading Game Memory: How the Spawner Works',
+    's4-p1':'The Wild Pokémon Spawner works by writing directly to game memory at known addresses. When you enter a grass patch or surf on water, the game loads a "wild encounter slot" — a memory region that defines which Pokémon species will appear, its level range, and its form. The spawner overwrites those values before the encounter triggers.',
+    's4-p2':'CTRPF provides memory read/write functions that plugins can call. The offsets for Pokémon X, Y, OR, and AS differ per game, so the plugin detects which game is running at startup and loads the correct address map:',
+    's4-p3':'The searchable Pokémon database — all 721 Pokémon available in Gen 6 — is stored as a compiled-in array. The search filters (by name, type, generation, whether you own it) run over this array in real time as the user types. On the 3DS\'s 268 MHz ARM11 processor, this is fast enough to feel instant.',
+    's5-title':'The Design Principle: Plain Language, Always',
+    's5-p1':'Every decision in this plugin came back to one principle: a player who has never modded a game should be able to open this menu and understand what every option does without looking anything up.',
+    's5-p2':'That meant no hex IDs in the UI. The spawner shows "Garchomp" not "0x0192". The PC editor shows "Attack" not "Stat[0]". The teleport system shows "Petalburg City" not "warp 0x0C:0x04". Every menu item has a subtitle that appears in the status bar when selected, written in conversational language.',
+    's5-p3':'It also meant building the 23-page in-app guide. External wikis go out of date. Links break. A guide embedded in the plugin itself is always current, always available, works offline, and doesn\'t require the player to put the 3DS down and reach for a phone.',
+    'q2':'"No hex IDs. No external wikis. If you need to Google something to use this plugin, that\'s a bug."',
+    's6-title':'The Mini Game Corner: A Plugin Within the Plugin',
+    's6-p1':'The Mini Game Corner started as a joke and ended up being one of the most-used sections. The idea: while you\'re waiting for an egg to hatch or running back and forth to grind, you can play a quick mini game without leaving the plugin menu.',
+    's6-p2':'Seven games shipped in v0.5.0:',
+    'mg1':'<strong>Loot Boxes</strong> — randomized item rewards from tiered pools',
+    'mg2':'<strong>Spinning Wheel</strong> — land on a prize from a weighted wheel',
+    'mg3':'<strong>Slots</strong> — three-reel slot machine with configurable payouts',
+    'mg4':'<strong>Stat Duel</strong> — your Pokémon vs. a random opponent, highest stat wins',
+    'mg5':'<strong>Higher or Lower</strong> — guess whether the next Pokédex number is higher or lower',
+    'mg6':'<strong>Challenger Generator</strong> — generates a random trainer battle challenge (6v6, type-locked, etc.)',
+    'mg7':'<strong>Team Generator</strong> — builds a random team with rules you set (no legendaries, single type, etc.)',
+    's6-p3':'All of these run inside the CTRPF overlay renderer — no external assets, no image files, just the 3DS\'s built-in font and the plugin\'s drawing API. The rendering code uses simple primitives: filled rectangles for backgrounds, text for labels, the D-pad for navigation.',
+    's7-title':'25 Color Themes with Live Preview',
+    's7-p1':'The theme system was technically the most interesting part of the UI code. CTRPF\'s overlay uses a color palette for drawing menu elements. Switching themes means updating the active palette and re-rendering the current frame — all while the menu is open.',
+    's7-p2':'The live preview works by applying the new palette to a single frame before committing it. The player can scroll through themes and see each one applied to the current menu state before selecting it. If they don\'t like it, pressing B reverts to the previous palette.',
+    's8-title':'Seven Languages, One Codebase',
+    's8-p1':'Supporting seven languages in a 3DS plugin is not something the framework makes easy. There\'s no built-in i18n system. Every string in the plugin is a candidate for translation, and the 3DS\'s small screen means every translated string has to fit within the available width.',
+    's8-p2':'The solution: a centralized string table, one per language, compiled into the binary. The active language is detected from the console\'s system settings at startup and can be overridden from the plugin options menu.',
+    's9-title':'Building Without Being a Programmer',
+    's9-p1':'This project is, in the clearest possible terms, out of scope for what I thought I could build. I\'m a video editor. I got into programming because tools I needed didn\'t exist, and I convinced myself that if I worked with Claude Code, I could describe what I wanted and get working software back.',
+    's9-p2':'Gen6 CTRP Framework Overhauled is proof that this works even in C++, on embedded hardware, in a niche ecosystem with limited documentation. The workflow was the same as always: play the game, notice friction, describe the friction as a feature request, review the code, test on the actual console, repeat.',
+    's9-p3':'The 23-page guide was the last thing built. After everything else was done, the plugin had enough features that a new user genuinely needed a map of what was there. Writing the guide was the most purely human part of the project — explaining every feature in language that assumes no prior modding knowledge, organized the way a player would think about it.',
+    'q3':'"The code is Claude Code\'s. The friction it solves is mine. That division of labor turns out to be surprisingly effective."',
+    's10-title':'The Result',
+    's10-p1':'Gen6 CTRP Framework Overhauled is a free, open source Luma3DS plugin that works on any modded Nintendo 3DS running Pokémon X, Y, Omega Ruby, or Alpha Sapphire. It requires no coding knowledge to install or use. Drop the <code>.3gx</code> file on your SD card in the right folder, boot the game, press the hotkey, and the menu is there.',
+    's10-p2':'It has everything I wished existed when I picked up the 3DS again: a spawner that speaks Pokémon names instead of IDs, a PC editor that works like a real tool, battle helpers that explain what the AI is doing, and enough small things (fast text, fast walk, instant eggs) that replaying the game doesn\'t feel like a chore.',
+    's10-p3':'Download, source, and the full feature list: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, free.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'Plugin Pokémon para 3DS','tag':'Plugin · Nintendo 3DS · C++',
+    'title':'Construindo um Plugin de Pokémon<br>para o Nintendo 3DS em C++',
+    'date':'Junho de 2026','readtime':'⏱ ~10 min de leitura',
+    's1-title':'O Problema: A Cena de Mods do 3DS Não Foi Feita para Jogadores Casuais',
+    's1-p1':'Voltei a jogar Pokémon Omega Ruby depois de anos. Não queria um playthrough do zero — queria experimentar: testar times específicos, spawnar Pokémon raros para ver os stats, montar sets competitivos sem horas de grinding. As ferramentas existem para isso. O Luma3DS, o custom firmware mais popular do 3DS, suporta plugins que rodam junto com o jogo. A comunidade de mods do 3DS é ativa e tecnicamente impressionante.',
+    's1-p2':'Mas os plugins existentes de Gen 6 assumiam que você já era do meio. As interfaces usavam IDs hexadecimais que você precisava buscar em wikis externas, as opções não tinham explicações, e não havia ajuda in-app quando algo não era óbvio. Para quem só queria spawnar um Garchomp sem gastar vinte minutos num guia de configuração, era mais atrito do que diversão.',
+    's1-p3':'Então construí um do zero. Gen6 CTRP Framework Overhauled é um plugin Luma3DS para Pokémon X, Y, Omega Ruby e Alpha Sapphire — construído com Claude Code em C++, projetado para que alguém que nunca moddou um jogo na vida possa abrir o menu e entender cada opção imediatamente.',
+    'q1':'"As ferramentas existiam. Só não foram construídas para quem ainda não sabia usá-las."',
+    's2-title':'O Que Ele Faz',
+    's2-p1':'O plugin roda como um overlay em cima do jogo. Pressione a combinação de hotkey, o menu aparece. Cada seção tem nome em linguagem simples, cada opção tem uma descrição que explica o que faz e o que acontece quando você usa.',
+    'feat1-title':'Wild Spawner','feat1-desc':'Busque por nome, tipo ou geração. Filtre por possuídos ou não. Spawne qualquer Pokémon selvagem instantaneamente.',
+    'feat2-title':'Editor de Box do PC','feat2-desc':'Grade visual de todas as suas boxes. Edite stats, moves, itens e natureza diretamente — sem ferramentas externas.',
+    'feat3-title':'PokéMart em Qualquer Lugar','feat3-desc':'Loja completa com modo GRÁTIS ou PAGO. Carrinho de compras, ordenação por preço. Acesse qualquer item sem precisar de uma Mart.',
+    'feat4-title':'Ferramentas de Batalha','feat4-desc':'Overlay de stats do inimigo, explicações de habilidades e itens, mudança de stats do time durante a batalha, respawn de lendários.',
+    'feat5-title':'Teletransporte','feat5-desc':'Mapas navegáveis com locais nomeados. Warps salvos personalizáveis. Viaje para qualquer lugar instantaneamente.',
+    'feat6-title':'Cantinho de Mini Games','feat6-desc':'7 jogos: loot boxes, caça-níqueis, rodas giratórias, duelos de stats, maior-ou-menor, gerador de desafios, gerador de times.',
+    'feat7-title':'25 Temas de Cor','feat7-desc':'Prévia ao vivo antes de aplicar. Toda a UI do menu muda de cor instantaneamente.',
+    'feat8-title':'Guia In-App de 23 Páginas','feat8-desc':'Documentação completa dentro do próprio plugin. Nenhuma wiki externa necessária.',
+    's2-p2':'Também suporta opções de qualidade de vida — texto e caminhada rápidos, atravessar paredes, ovos instantâneos, HUD configurável, hotkeys remapeáveis e sistema de favoritos com arrastar para reordenar. Sete idiomas incluídos: inglês, francês, alemão, italiano, japonês, português (Brasil) e espanhol.',
+    's3-title':'Por Que C++? Porque É Assim que Plugins Luma3DS São Feitos',
+    's3-p1':'O framework de plugins do 3DS é construído sobre CTRPF — CTRPluginFramework. É uma biblioteca C++ que dá aos plugins acesso à memória do jogo, eventos de input e um sistema de renderização de overlay. Não há runtime JavaScript, interpretador Python nem camada de abstração. Se você quer construir um plugin Luma3DS, escreve em C++.',
+    's3-p2':'Nunca tinha escrito C++ antes deste projeto. Os plugins BeatMarker são JavaScript. MonoStereoToggle é C#. C++ é um mundo diferente: gerenciamento manual de memória, ponteiros, toolchains de compilação, headers, makefiles. O tipo de coisa que tem reputação de ser hostil a iniciantes.',
+    's3-p3':'O Claude Code resolveu. A abordagem foi a mesma de todos os outros projetos: descrever a funcionalidade em linguagem simples, revisar o código que volta, testar no hardware, ajustar. O framework CTRPF é bem documentado e, uma vez que o ambiente de build foi configurado — devkitARM, a toolchain do 3DS, os headers do CTRPF — adicionar funcionalidades foi tranquilo na prática.',
+    's4-title':'Lendo a Memória do Jogo: Como o Spawner Funciona',
+    's4-p1':'O Wild Pokémon Spawner funciona escrevendo diretamente na memória do jogo em endereços conhecidos. Quando você entra numa área de grama ou surfa na água, o jogo carrega um "slot de encontro selvagem" — uma região de memória que define qual espécie de Pokémon aparecerá, sua faixa de nível e forma. O spawner sobrescreve esses valores antes do encontro ser acionado.',
+    's4-p2':'O CTRPF fornece funções de leitura/escrita de memória que os plugins podem chamar. Os offsets para Pokémon X, Y, OR e AS diferem por jogo, então o plugin detecta qual jogo está rodando na inicialização e carrega o mapa de endereços correto:',
+    's4-p3':'O banco de dados pesquisável de Pokémon — todos os 721 Pokémon disponíveis na Gen 6 — é armazenado como um array compilado no binário. Os filtros de busca (por nome, tipo, geração, se você o possui) rodam sobre esse array em tempo real enquanto o usuário digita. No processador ARM11 de 268 MHz do 3DS, isso é rápido o suficiente para parecer instantâneo.',
+    's5-title':'O Princípio de Design: Linguagem Simples, Sempre',
+    's5-p1':'Cada decisão neste plugin voltava a um princípio: um jogador que nunca moddou um jogo deve conseguir abrir este menu e entender o que cada opção faz sem precisar buscar nada.',
+    's5-p2':'Isso significava sem IDs hexadecimais na UI. O spawner mostra "Garchomp" não "0x0192". O editor de PC mostra "Ataque" não "Stat[0]". O sistema de teletransporte mostra "Cidade Pétala" não "warp 0x0C:0x04". Cada item do menu tem um subtítulo que aparece na barra de status quando selecionado, escrito em linguagem conversacional.',
+    's5-p3':'Também significava construir o guia in-app de 23 páginas. Wikis externas ficam desatualizadas. Links quebram. Um guia embutido no próprio plugin é sempre atual, sempre disponível, funciona offline e não requer que o jogador pouse o 3DS para pegar o celular.',
+    'q2':'"Sem IDs hex. Sem wikis externas. Se você precisa do Google para usar este plugin, isso é um bug."',
+    's6-title':'O Cantinho de Mini Games: Um Plugin Dentro do Plugin',
+    's6-p1':'O Cantinho de Mini Games começou como brincadeira e acabou sendo uma das seções mais usadas. A ideia: enquanto você espera um ovo chocar ou anda de um lado para outro para grindear, pode jogar um mini game rápido sem sair do menu do plugin.',
+    's6-p2':'Sete jogos foram lançados na v0.5.0:',
+    'mg1':'<strong>Loot Boxes</strong> — recompensas de itens aleatórias de pools por tier',
+    'mg2':'<strong>Roda Giratória</strong> — pare num prêmio de uma roda ponderada',
+    'mg3':'<strong>Caça-Níqueis</strong> — máquina de três rolos com pagamentos configuráveis',
+    'mg4':'<strong>Duelo de Stats</strong> — seu Pokémon vs. um oponente aleatório, maior stat vence',
+    'mg5':'<strong>Maior ou Menor</strong> — adivinhe se o próximo número da Pokédex é maior ou menor',
+    'mg6':'<strong>Gerador de Desafios</strong> — gera um desafio de batalha aleatório (6v6, bloqueado por tipo, etc.)',
+    'mg7':'<strong>Gerador de Time</strong> — monta um time aleatório com regras que você define (sem lendários, tipo único, etc.)',
+    's6-p3':'Tudo isso roda dentro do renderizador de overlay do CTRPF — sem assets externos, sem arquivos de imagem, apenas a fonte integrada do 3DS e a API de desenho do plugin. O código de renderização usa primitivas simples: retângulos preenchidos para fundos, texto para rótulos, o D-pad para navegação.',
+    's7-title':'25 Temas de Cor com Prévia ao Vivo',
+    's7-p1':'O sistema de temas foi tecnicamente a parte mais interessante do código de UI. O overlay do CTRPF usa uma paleta de cores para desenhar elementos de menu. Trocar temas significa atualizar a paleta ativa e re-renderizar o frame atual — tudo enquanto o menu está aberto.',
+    's7-p2':'A prévia ao vivo funciona aplicando a nova paleta a um único frame antes de confirmar. O jogador pode rolar pelos temas e ver cada um aplicado ao estado atual do menu antes de selecionar. Se não gostar, pressionar B reverte para a paleta anterior.',
+    's8-title':'Sete Idiomas, Uma Codebase',
+    's8-p1':'Suportar sete idiomas em um plugin de 3DS não é algo que o framework facilita. Não há sistema de i18n integrado. Cada string no plugin é candidata a tradução, e a tela pequena do 3DS significa que cada string traduzida também precisa caber na largura disponível.',
+    's8-p2':'A solução: uma tabela de strings centralizada, uma por idioma, compilada no binário. O idioma ativo é detectado das configurações do sistema do console na inicialização e pode ser alterado no menu de opções do plugin.',
+    's9-title':'Construindo Sem Ser Programador',
+    's9-p1':'Este projeto está, nos termos mais claros possíveis, fora do escopo do que eu achava que conseguia construir. Sou editor de vídeo. Entrei na programação porque ferramentas que precisava não existiam, e me convenci de que se trabalhasse com Claude Code, poderia descrever o que queria e receber software funcionando.',
+    's9-p2':'Gen6 CTRP Framework Overhauled é a prova de que isso funciona mesmo em C++, em hardware embarcado, em um ecossistema de nicho com documentação limitada. O fluxo de trabalho foi o mesmo de sempre: jogar o jogo, notar atrito, descrever o atrito como solicitação de funcionalidade, revisar o código, testar no console real, repetir.',
+    's9-p3':'O guia de 23 páginas foi o último a ser construído. Depois que tudo o mais estava pronto, o plugin tinha funcionalidades suficientes para que um novo usuário genuinamente precisasse de um mapa do que havia lá. Escrever o guia foi a parte mais puramente humana do projeto — explicar cada funcionalidade em linguagem que não assume conhecimento prévio de mods, organizado do jeito que um jogador pensaria.',
+    'q3':'"O código é do Claude Code. O atrito que ele resolve é meu. Essa divisão de trabalho se mostra surpreendentemente eficaz."',
+    's10-title':'O Resultado',
+    's10-p1':'Gen6 CTRP Framework Overhauled é um plugin Luma3DS gratuito e open source que funciona em qualquer Nintendo 3DS moddado rodando Pokémon X, Y, Omega Ruby ou Alpha Sapphire. Não requer conhecimento de programação para instalar ou usar. Coloque o arquivo <code>.3gx</code> no SD card na pasta certa, inicie o jogo, pressione o hotkey e o menu está lá.',
+    's10-p2':'Tem tudo que eu queria que existisse quando voltei ao 3DS: um spawner que fala nomes de Pokémon em vez de IDs, um editor de PC que funciona como uma ferramenta de verdade, auxiliares de batalha que explicam o que a IA está fazendo, e coisas pequenas suficientes (texto rápido, caminhada rápida, ovos instantâneos) para que rejoggar o game não pareça uma tarefa chata.',
+    's10-p3':'Download, fonte e a lista completa de funcionalidades: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, gratuito.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>
