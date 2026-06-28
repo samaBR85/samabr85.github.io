@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Building a Pokémon Plugin for the Nintendo 3DS in C++ — samaBR</title>
-  <meta name="description" content="How a non-programmer built Gen6 CTRP Framework Overhauled — a beginner-friendly Luma3DS plugin for Pokémon X, Y, OR, and AS with a wild spawner, PC editor, battle tools, 25 themes, and a 23-page in-app guide. All in C++." />
+  <meta name="description" content="How a curious player forked and overhauled a Luma3DS plugin for Pokémon X, Y, OR, and AS — wild spawner, PC editor, battle tools, 25 themes, a 23-page in-app guide, all built in collaboration with Claude." />
   <meta name="author" content="samaBR" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://samabr85.github.io/blog/gen6-ctrp-framework/" />
@@ -12,7 +12,7 @@
   <meta property="og:type"        content="article" />
   <meta property="og:url"         content="https://samabr85.github.io/blog/gen6-ctrp-framework/" />
   <meta property="og:title"       content="Building a Pokémon Plugin for the Nintendo 3DS in C++" />
-  <meta property="og:description" content="How a non-programmer built a beginner-friendly Luma3DS plugin for Pokémon X, Y, OR, and AS — wild spawner, PC editor, battle tools, 25 themes, and a 23-page in-app guide." />
+  <meta property="og:description" content="How a curious player forked and overhauled a Luma3DS plugin for Pokémon X, Y, OR, and AS — wild spawner, PC editor, battle tools, 25 themes, and a 23-page in-app guide, built in collaboration with Claude." />
   <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" />
   <meta name="twitter:card"       content="summary_large_image" />
   <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" />
@@ -22,7 +22,7 @@
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": "Building a Pokémon Plugin for the Nintendo 3DS in C++",
-    "description": "How a non-programmer built Gen6 CTRP Framework Overhauled — a beginner-friendly Luma3DS plugin for Pokémon X, Y, OR, and AS.",
+    "description": "How a curious player forked and overhauled a Luma3DS plugin for Pokémon X, Y, OR, and AS — built in collaboration with Claude.",
     "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
     "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
     "datePublished": "2026-06-28",
@@ -154,7 +154,7 @@
     <h2 data-i18n="s1-title">The Problem: The 3DS Modding Scene Wasn't Built for Casual Players</h2>
     <p data-i18n="s1-p1">I picked up Pokémon Omega Ruby again after years away. I wasn't interested in a fresh playthrough — I wanted to experiment: test specific teams, spawn rare Pokémon to see their stats, build competitive sets without grinding for hours. The tools exist for that. Luma3DS, the most popular 3DS custom firmware, supports plugins that run alongside the game. The 3DS modding community is active and technically impressive.</p>
     <p data-i18n="s1-p2">But existing Gen 6 plugins assumed you were already deep in the scene. The interfaces used hex IDs you had to look up on external wikis, the options had no explanations, and there was no in-app help if something wasn't obvious. For someone who just wanted to spawn a Garchomp without spending twenty minutes on a setup guide, it was more friction than fun.</p>
-    <p data-i18n="s1-p3">So I built one from scratch. Gen6 CTRP Framework Overhauled is a Luma3DS plugin for Pokémon X, Y, Omega Ruby, and Alpha Sapphire — built with Claude Code in C++, designed so that someone who has never modded a game in their life can open the menu and understand every option immediately.</p>
+    <p data-i18n="s1-p3">The building blocks were already there. Gen6 CTRPluginFramework by biometrix76 — itself built on years of volunteer work going back to the Multi-Pokémon Framework — gave me a foundation. I forked it, overhauled it substantially, and added a large set of new features, all in back-and-forth collaboration with Claude. The goal throughout: every screen should make sense to someone who has never modded a game in their life.</p>
 
     <div class="pullquote" data-i18n="q1">"The tools existed. They just weren't built for people who didn't already know how to use them."</div>
 
@@ -208,30 +208,10 @@
     <p data-i18n="s2-p2">It also supports the usual quality-of-life options — fast text and walk speed, walk-through-walls, instant eggs, a configurable HUD, rebindable hotkeys, and a favorites system with drag-to-reorder. Seven languages are included: English, French, German, Italian, Japanese, Portuguese (Brazil), and Spanish.</p>
 
     <!-- SECTION 3 -->
-    <h2 data-i18n="s3-title">Why C++? Because That's What Luma3DS Plugins Are</h2>
-    <p data-i18n="s3-p1">The 3DS plugin framework is built on CTRPF — CTRPluginFramework. It's a C++ library that gives plugins access to game memory, input events, and an overlay rendering system. There's no JavaScript runtime, no Python interpreter, no abstraction layer. If you want to build a Luma3DS plugin, you write C++.</p>
-    <p data-i18n="s3-p2">I had never written C++ before this project. The BeatMarker plugins are JavaScript. MonoStereoToggle is C#. C++ is a different world: manual memory management, pointers, compilation toolchains, headers, makefiles. The kind of thing that has a reputation for being hostile to beginners.</p>
-    <p data-i18n="s3-p3">Claude Code handled it. The approach was the same as every other project: describe the feature in plain language, review the code that comes back, test on hardware, adjust. The CTRPF framework is well-documented, and once the build environment was set up — devkitARM, the 3DS toolchain, the CTRPF headers — adding features was straightforward in practice.</p>
-
-    <div class="callout tip">
-      <strong>💡 Build Environment</strong>
-      Building 3DS plugins requires devkitARM (the ARM cross-compiler toolchain) and the CTRPluginFramework headers. The Makefile handles the compilation and linking — running <code>make</code> produces a <code>.3gx</code> file that goes on the SD card.
-    </div>
-
-    <pre><code># Simplified project structure
-Gen6CTRPFrameworkOverhauled/
-├── include/          # Header files
-├── source/           # C++ source files
-│   ├── main.cpp      # Entry point, menu registration
-│   ├── Spawner.cpp   # Wild Pokémon spawner logic
-│   ├── PCEditor.cpp  # Box editor
-│   ├── Battle.cpp    # Battle tools
-│   ├── Mart.cpp      # PokéMart anywhere
-│   ├── Teleport.cpp  # Warp system
-│   ├── Themes.cpp    # 25 color themes
-│   └── Guide.cpp     # In-app 23-page guide
-├── Makefile
-└── README.md</code></pre>
+    <h2 data-i18n="s3-title">A Fork Built on Giants' Shoulders</h2>
+    <p data-i18n="s3-p1">This project stands on a long line of volunteer work. The plugin lineage runs: Multi-Pokémon Framework → Alolan CTRPluginFramework → Gen 6 CTRPluginFramework (biometrix76) → this overhaul. Each step was someone giving their time freely so the next person could go further. None of this would exist without them.</p>
+    <p data-i18n="s3-p2">The CTRPluginFramework (CTRPF) — the C++ library that gives plugins access to game memory, input events, and the overlay renderer — was built and maintained by ThePixellizerOSS and contributors. Address offsets and Pokédex data came from PKHeX (kwsch) and PokéAPI. Sprites from Pokémon Database. The bundled Professor Oak Challenge guide was written by Mewlax. My contribution was the overhaul and the features added from v0.3.0 to v0.5.0 — always in collaboration with Claude.</p>
+    <p data-i18n="s3-p3">The workflow was the same as every other project: hit friction while playing, describe what I wished existed, build it in back-and-forth with Claude, test on hardware. I'm not a programmer. I'm a curious player who's good at describing problems clearly — and Claude handled the C++.</p>
 
     <!-- SECTION 4 -->
     <h2 data-i18n="s4-title">Reading Game Memory: How the Spawner Works</h2>
@@ -347,10 +327,10 @@ switch (sysLang) {
     </div>
 
     <!-- SECTION 9 -->
-    <h2 data-i18n="s9-title">Building Without Being a Programmer</h2>
-    <p data-i18n="s9-p1">This project is, in the clearest possible terms, out of scope for what I thought I could build. I'm a video editor. I got into programming because tools I needed didn't exist, and I convinced myself that if I worked with Claude Code, I could describe what I wanted and get working software back.</p>
-    <p data-i18n="s9-p2">Gen6 CTRP Framework Overhauled is proof that this works even in C++, on embedded hardware, in a niche ecosystem with limited documentation. The workflow was the same as it's always been: play the game, notice friction, describe the friction as a feature request, review the code, test on the actual console, repeat.</p>
-    <p data-i18n="s9-p3">The 23-page guide was the last thing built. After everything else was done, the plugin had enough features that a new user genuinely needed a map of what was there. Writing the guide was the most purely human part of the project — explaining every feature in language that assumes no prior modding knowledge, organized the way a player would think about it rather than the way the code was structured.</p>
+    <h2 data-i18n="s9-title">A Curious Player with a Very Patient AI</h2>
+    <p data-i18n="s9-p1">I'll be upfront about this: I'm not a programmer. I'm a curious player — someone who's good at testing, poking at things, and thinking hard about a problem and how it might be solved. Every feature in this plugin came from the same place: being deep in a run, hitting some friction, and thinking "there should be a way to…"</p>
+    <p data-i18n="s9-p2">The collaboration model with Claude is the same one I use for every project: describe the feature, review the code that comes back, test on hardware, adjust. The difference here vs. a JavaScript plugin or a C# utility is that I was working inside a pre-existing C++ codebase, in an ecosystem where the forum posts are ten years old and documentation is sparse. Claude handled the C++; I handled knowing what the game actually needs.</p>
+    <p data-i18n="s9-p3">The 23-page guide was the last thing built — and the most purely human part of the project. No Claude needed for that. It's just a player explaining what they built to another player, organized the way you'd actually think about it mid-game.</p>
 
     <div class="pullquote" data-i18n="q3">"The code is Claude Code's. The friction it solves is mine. That division of labor turns out to be surprisingly effective."</div>
 
@@ -359,6 +339,23 @@ switch (sysLang) {
     <p data-i18n="s10-p1">Gen6 CTRP Framework Overhauled is a free, open source Luma3DS plugin that works on any modded Nintendo 3DS running Pokémon X, Y, Omega Ruby, or Alpha Sapphire. It requires no coding knowledge to install or use. Drop the <code>.3gx</code> file on your SD card in the right folder, boot the game, press the hotkey, and the menu is there.</p>
     <p data-i18n="s10-p2">It has everything I wished existed when I picked up the 3DS again: a spawner that speaks Pokémon names instead of IDs, a PC editor that works like a real tool, battle helpers that explain what the AI is doing, and enough small things (fast text, fast walk, instant eggs) that replaying the game doesn't feel like a chore.</p>
     <p data-i18n="s10-p3">Download, source, and the full feature list: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, free.</p>
+
+    <hr class="divider">
+    <!-- SECTION 11 CREDITS -->
+    <h2 data-i18n="s11-title">Credits</h2>
+    <p data-i18n="s11-p1">This overhaul stands on a long line of freely given volunteer work. In rough lineage order:</p>
+    <ul>
+      <li data-i18n="cr1"><strong>biometrix76</strong> — Gen 6 CTRPluginFramework, the direct parent of this fork</li>
+      <li data-i18n="cr2"><strong>AnalogMan151</strong> — Alolan CTRPluginFramework, the generation before that</li>
+      <li data-i18n="cr3"><strong>ThePixellizerOSS et al.</strong> — 3gxtool and CTRPluginFramework itself</li>
+      <li data-i18n="cr4"><strong>Alexander Hartmann</strong> — the XY &amp; ORAS foundation</li>
+      <li data-i18n="cr5"><strong>PKHeX (kwsch) et al.</strong> — database, documentation, examples, and code</li>
+      <li data-i18n="cr6"><strong>dragonfyre173</strong> — the in-game data viewer overlay</li>
+      <li data-i18n="cr7"><strong>JourneyOver et al.</strong> — the extensive ActionReplay code database</li>
+      <li data-i18n="cr8"><strong>Mewlax</strong> (u/mewlax84) — author of the ORAS and X/Y Professor Oak Challenge guides bundled in-app</li>
+      <li data-i18n="cr9"><strong>Pokémon Database, PokéAPI, Bulbapedia, ORAS Wiki</strong> — sprites, icons, and location data</li>
+    </ul>
+    <p data-i18n="s11-p2">All Pokémon images and names are © Nintendo / Game Freak / The Pokémon Company. This is a free, non-commercial fan tool.</p>
   </article>
 </div>
 
@@ -380,7 +377,7 @@ const i18n = {
     's1-title':'The Problem: The 3DS Modding Scene Wasn\'t Built for Casual Players',
     's1-p1':'I picked up Pokémon Omega Ruby again after years away. I wasn\'t interested in a fresh playthrough — I wanted to experiment: test specific teams, spawn rare Pokémon to see their stats, build competitive sets without grinding for hours. The tools exist for that. Luma3DS, the most popular 3DS custom firmware, supports plugins that run alongside the game. The 3DS modding community is active and technically impressive.',
     's1-p2':'But existing Gen 6 plugins assumed you were already deep in the scene. The interfaces used hex IDs you had to look up on external wikis, the options had no explanations, and there was no in-app help if something wasn\'t obvious. For someone who just wanted to spawn a Garchomp without spending twenty minutes on a setup guide, it was more friction than fun.',
-    's1-p3':'So I built one from scratch. Gen6 CTRP Framework Overhauled is a Luma3DS plugin for Pokémon X, Y, Omega Ruby, and Alpha Sapphire — built with Claude Code in C++, designed so that someone who has never modded a game in their life can open the menu and understand every option immediately.',
+    's1-p3':'The building blocks were already there. Gen6 CTRPluginFramework by biometrix76 — itself built on years of volunteer work going back to the Multi-Pokémon Framework — gave me a foundation. I forked it, overhauled it substantially, and added a large set of new features, all in back-and-forth collaboration with Claude. The goal throughout: every screen should make sense to someone who has never modded a game in their life.',
     'q1':'"The tools existed. They just weren\'t built for people who didn\'t already know how to use them."',
     's2-title':'What It Does',
     's2-p1':'The plugin runs as an overlay on top of the game. Press the hotkey combination, the menu appears. Every section is named in plain language, every option has a description that explains what it does and what happens when you use it.',
@@ -393,10 +390,10 @@ const i18n = {
     'feat7-title':'25 Color Themes','feat7-desc':'Live previews before applying. The entire menu UI changes color instantly.',
     'feat8-title':'23-Page In-App Guide','feat8-desc':'Full documentation inside the plugin itself. No external wiki required.',
     's2-p2':'It also supports quality-of-life options — fast text and walk speed, walk-through-walls, instant eggs, a configurable HUD, rebindable hotkeys, and a favorites system with drag-to-reorder. Seven languages are included: English, French, German, Italian, Japanese, Portuguese (Brazil), and Spanish.',
-    's3-title':'Why C++? Because That\'s What Luma3DS Plugins Are',
-    's3-p1':'The 3DS plugin framework is built on CTRPF — CTRPluginFramework. It\'s a C++ library that gives plugins access to game memory, input events, and an overlay rendering system. There\'s no JavaScript runtime, no Python interpreter, no abstraction layer. If you want to build a Luma3DS plugin, you write C++.',
-    's3-p2':'I had never written C++ before this project. The BeatMarker plugins are JavaScript. MonoStereoToggle is C#. C++ is a different world: manual memory management, pointers, compilation toolchains, headers, makefiles. The kind of thing that has a reputation for being hostile to beginners.',
-    's3-p3':'Claude Code handled it. The approach was the same as every other project: describe the feature in plain language, review the code that comes back, test on hardware, adjust. The CTRPF framework is well-documented, and once the build environment was set up — devkitARM, the 3DS toolchain, the CTRPF headers — adding features was straightforward in practice.',
+    's3-title':'A Fork Built on Giants\' Shoulders',
+    's3-p1':'This project stands on a long line of volunteer work. The plugin lineage runs: Multi-Pokémon Framework → Alolan CTRPluginFramework → Gen 6 CTRPluginFramework (biometrix76) → this overhaul. Each step was someone giving their time freely so the next person could go further. None of this would exist without them.',
+    's3-p2':'The CTRPluginFramework (CTRPF) — the C++ library that gives plugins access to game memory, input events, and the overlay renderer — was built and maintained by ThePixellizerOSS and contributors. Address offsets and Pokédex data came from PKHeX (kwsch) and PokéAPI. Sprites from Pokémon Database. The bundled Professor Oak Challenge guide was written by Mewlax. My contribution was the overhaul and the features added from v0.3.0 to v0.5.0 — always in collaboration with Claude.',
+    's3-p3':'The workflow was the same as every other project: hit friction while playing, describe what I wished existed, build it in back-and-forth with Claude, test on hardware. I\'m not a programmer. I\'m a curious player who\'s good at describing problems clearly — and Claude handled the C++.',
     's4-title':'Reading Game Memory: How the Spawner Works',
     's4-p1':'The Wild Pokémon Spawner works by writing directly to game memory at known addresses. When you enter a grass patch or surf on water, the game loads a "wild encounter slot" — a memory region that defines which Pokémon species will appear, its level range, and its form. The spawner overwrites those values before the encounter triggers.',
     's4-p2':'CTRPF provides memory read/write functions that plugins can call. The offsets for Pokémon X, Y, OR, and AS differ per game, so the plugin detects which game is running at startup and loads the correct address map:',
@@ -423,15 +420,27 @@ const i18n = {
     's8-title':'Seven Languages, One Codebase',
     's8-p1':'Supporting seven languages in a 3DS plugin is not something the framework makes easy. There\'s no built-in i18n system. Every string in the plugin is a candidate for translation, and the 3DS\'s small screen means every translated string has to fit within the available width.',
     's8-p2':'The solution: a centralized string table, one per language, compiled into the binary. The active language is detected from the console\'s system settings at startup and can be overridden from the plugin options menu.',
-    's9-title':'Building Without Being a Programmer',
-    's9-p1':'This project is, in the clearest possible terms, out of scope for what I thought I could build. I\'m a video editor. I got into programming because tools I needed didn\'t exist, and I convinced myself that if I worked with Claude Code, I could describe what I wanted and get working software back.',
-    's9-p2':'Gen6 CTRP Framework Overhauled is proof that this works even in C++, on embedded hardware, in a niche ecosystem with limited documentation. The workflow was the same as always: play the game, notice friction, describe the friction as a feature request, review the code, test on the actual console, repeat.',
-    's9-p3':'The 23-page guide was the last thing built. After everything else was done, the plugin had enough features that a new user genuinely needed a map of what was there. Writing the guide was the most purely human part of the project — explaining every feature in language that assumes no prior modding knowledge, organized the way a player would think about it.',
+    's9-title':'A Curious Player with a Very Patient AI',
+    's9-p1':'I\'ll be upfront about this: I\'m not a programmer. I\'m a curious player — someone who\'s good at testing, poking at things, and thinking hard about a problem and how it might be solved. Every feature in this plugin came from the same place: being deep in a run, hitting some friction, and thinking "there should be a way to…"',
+    's9-p2':'The collaboration model with Claude is the same one I use for every project: describe the feature, review the code that comes back, test on hardware, adjust. The difference here vs. a JavaScript plugin or a C# utility is that I was working inside a pre-existing C++ codebase, in an ecosystem where the forum posts are ten years old and documentation is sparse. Claude handled the C++; I handled knowing what the game actually needs.',
+    's9-p3':'The 23-page guide was the last thing built — and the most purely human part of the project. No Claude needed for that. It\'s just a player explaining what they built to another player, organized the way you\'d actually think about it mid-game.',
     'q3':'"The code is Claude Code\'s. The friction it solves is mine. That division of labor turns out to be surprisingly effective."',
     's10-title':'The Result',
     's10-p1':'Gen6 CTRP Framework Overhauled is a free, open source Luma3DS plugin that works on any modded Nintendo 3DS running Pokémon X, Y, Omega Ruby, or Alpha Sapphire. It requires no coding knowledge to install or use. Drop the <code>.3gx</code> file on your SD card in the right folder, boot the game, press the hotkey, and the menu is there.',
     's10-p2':'It has everything I wished existed when I picked up the 3DS again: a spawner that speaks Pokémon names instead of IDs, a PC editor that works like a real tool, battle helpers that explain what the AI is doing, and enough small things (fast text, fast walk, instant eggs) that replaying the game doesn\'t feel like a chore.',
-    's10-p3':'Download, source, and the full feature list: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, free.'
+    's10-p3':'Download, source, and the full feature list: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, free.',
+    's11-title':'Credits',
+    's11-p1':'This overhaul stands on a long line of freely given volunteer work. In rough lineage order:',
+    'cr1':'<strong>biometrix76</strong> — Gen 6 CTRPluginFramework, the direct parent of this fork',
+    'cr2':'<strong>AnalogMan151</strong> — Alolan CTRPluginFramework, the generation before that',
+    'cr3':'<strong>ThePixellizerOSS et al.</strong> — 3gxtool and CTRPluginFramework itself',
+    'cr4':'<strong>Alexander Hartmann</strong> — the XY &amp; ORAS foundation',
+    'cr5':'<strong>PKHeX (kwsch) et al.</strong> — database, documentation, examples, and code',
+    'cr6':'<strong>dragonfyre173</strong> — the in-game data viewer overlay',
+    'cr7':'<strong>JourneyOver et al.</strong> — the extensive ActionReplay code database',
+    'cr8':'<strong>Mewlax</strong> (u/mewlax84) — author of the ORAS and X/Y Professor Oak Challenge guides bundled in-app',
+    'cr9':'<strong>Pokémon Database, PokéAPI, Bulbapedia, ORAS Wiki</strong> — sprites, icons, and location data',
+    's11-p2':'All Pokémon images and names are © Nintendo / Game Freak / The Pokémon Company. This is a free, non-commercial fan tool.'
   },
   pt: {
     'nav-back':'Portfólio','breadcrumb':'Plugin Pokémon para 3DS','tag':'Plugin · Nintendo 3DS · C++',
@@ -440,7 +449,7 @@ const i18n = {
     's1-title':'O Problema: A Cena de Mods do 3DS Não Foi Feita para Jogadores Casuais',
     's1-p1':'Voltei a jogar Pokémon Omega Ruby depois de anos. Não queria um playthrough do zero — queria experimentar: testar times específicos, spawnar Pokémon raros para ver os stats, montar sets competitivos sem horas de grinding. As ferramentas existem para isso. O Luma3DS, o custom firmware mais popular do 3DS, suporta plugins que rodam junto com o jogo. A comunidade de mods do 3DS é ativa e tecnicamente impressionante.',
     's1-p2':'Mas os plugins existentes de Gen 6 assumiam que você já era do meio. As interfaces usavam IDs hexadecimais que você precisava buscar em wikis externas, as opções não tinham explicações, e não havia ajuda in-app quando algo não era óbvio. Para quem só queria spawnar um Garchomp sem gastar vinte minutos num guia de configuração, era mais atrito do que diversão.',
-    's1-p3':'Então construí um do zero. Gen6 CTRP Framework Overhauled é um plugin Luma3DS para Pokémon X, Y, Omega Ruby e Alpha Sapphire — construído com Claude Code em C++, projetado para que alguém que nunca moddou um jogo na vida possa abrir o menu e entender cada opção imediatamente.',
+    's1-p3':'Os blocos de construção já estavam lá. O Gen6 CTRPluginFramework do biometrix76 — ele mesmo construído sobre anos de trabalho voluntário remontando ao Multi-Pokémon Framework — me deu uma base. Eu fiz um fork, reformulei substancialmente e adicionei um grande conjunto de funcionalidades novas, tudo em colaboração com o Claude. O objetivo ao longo de todo o processo: cada tela deve fazer sentido para alguém que nunca moddou um jogo na vida.',
     'q1':'"As ferramentas existiam. Só não foram construídas para quem ainda não sabia usá-las."',
     's2-title':'O Que Ele Faz',
     's2-p1':'O plugin roda como um overlay em cima do jogo. Pressione a combinação de hotkey, o menu aparece. Cada seção tem nome em linguagem simples, cada opção tem uma descrição que explica o que faz e o que acontece quando você usa.',
@@ -453,10 +462,10 @@ const i18n = {
     'feat7-title':'25 Temas de Cor','feat7-desc':'Prévia ao vivo antes de aplicar. Toda a UI do menu muda de cor instantaneamente.',
     'feat8-title':'Guia In-App de 23 Páginas','feat8-desc':'Documentação completa dentro do próprio plugin. Nenhuma wiki externa necessária.',
     's2-p2':'Também suporta opções de qualidade de vida — texto e caminhada rápidos, atravessar paredes, ovos instantâneos, HUD configurável, hotkeys remapeáveis e sistema de favoritos com arrastar para reordenar. Sete idiomas incluídos: inglês, francês, alemão, italiano, japonês, português (Brasil) e espanhol.',
-    's3-title':'Por Que C++? Porque É Assim que Plugins Luma3DS São Feitos',
-    's3-p1':'O framework de plugins do 3DS é construído sobre CTRPF — CTRPluginFramework. É uma biblioteca C++ que dá aos plugins acesso à memória do jogo, eventos de input e um sistema de renderização de overlay. Não há runtime JavaScript, interpretador Python nem camada de abstração. Se você quer construir um plugin Luma3DS, escreve em C++.',
-    's3-p2':'Nunca tinha escrito C++ antes deste projeto. Os plugins BeatMarker são JavaScript. MonoStereoToggle é C#. C++ é um mundo diferente: gerenciamento manual de memória, ponteiros, toolchains de compilação, headers, makefiles. O tipo de coisa que tem reputação de ser hostil a iniciantes.',
-    's3-p3':'O Claude Code resolveu. A abordagem foi a mesma de todos os outros projetos: descrever a funcionalidade em linguagem simples, revisar o código que volta, testar no hardware, ajustar. O framework CTRPF é bem documentado e, uma vez que o ambiente de build foi configurado — devkitARM, a toolchain do 3DS, os headers do CTRPF — adicionar funcionalidades foi tranquilo na prática.',
+    's3-title':'Um Fork Construído nos Ombros de Gigantes',
+    's3-p1':'Este projeto se apoia em uma longa linha de trabalho voluntário. A linhagem do plugin corre assim: Multi-Pokémon Framework → Alolan CTRPluginFramework → Gen 6 CTRPluginFramework (biometrix76) → esta reformulação. Cada etapa foi alguém doando seu tempo livremente para que a próxima pessoa pudesse ir mais longe. Nada disso existiria sem eles.',
+    's3-p2':'O CTRPluginFramework (CTRPF) — a biblioteca C++ que dá aos plugins acesso à memória do jogo, eventos de input e o renderer de overlay — foi construído e mantido por ThePixellizerOSS e colaboradores. Offsets de endereços e dados da Pokédex vieram do PKHeX (kwsch) e da PokéAPI. Sprites do Pokémon Database. O guia Professor Oak Challenge incluso foi escrito por Mewlax. Minha contribuição foi a reformulação e as funcionalidades adicionadas do v0.3.0 ao v0.5.0 — sempre em colaboração com o Claude.',
+    's3-p3':'O fluxo de trabalho foi o mesmo de todos os outros projetos: sentir atrito jogando, descrever o que eu queria que existisse, construir em bate-bola com o Claude, testar no hardware. Não sou programador. Sou um jogador curioso que é bom em descrever problemas com clareza — e o Claude cuidou do C++.',
     's4-title':'Lendo a Memória do Jogo: Como o Spawner Funciona',
     's4-p1':'O Wild Pokémon Spawner funciona escrevendo diretamente na memória do jogo em endereços conhecidos. Quando você entra numa área de grama ou surfa na água, o jogo carrega um "slot de encontro selvagem" — uma região de memória que define qual espécie de Pokémon aparecerá, sua faixa de nível e forma. O spawner sobrescreve esses valores antes do encontro ser acionado.',
     's4-p2':'O CTRPF fornece funções de leitura/escrita de memória que os plugins podem chamar. Os offsets para Pokémon X, Y, OR e AS diferem por jogo, então o plugin detecta qual jogo está rodando na inicialização e carrega o mapa de endereços correto:',
@@ -483,15 +492,27 @@ const i18n = {
     's8-title':'Sete Idiomas, Uma Codebase',
     's8-p1':'Suportar sete idiomas em um plugin de 3DS não é algo que o framework facilita. Não há sistema de i18n integrado. Cada string no plugin é candidata a tradução, e a tela pequena do 3DS significa que cada string traduzida também precisa caber na largura disponível.',
     's8-p2':'A solução: uma tabela de strings centralizada, uma por idioma, compilada no binário. O idioma ativo é detectado das configurações do sistema do console na inicialização e pode ser alterado no menu de opções do plugin.',
-    's9-title':'Construindo Sem Ser Programador',
-    's9-p1':'Este projeto está, nos termos mais claros possíveis, fora do escopo do que eu achava que conseguia construir. Sou editor de vídeo. Entrei na programação porque ferramentas que precisava não existiam, e me convenci de que se trabalhasse com Claude Code, poderia descrever o que queria e receber software funcionando.',
-    's9-p2':'Gen6 CTRP Framework Overhauled é a prova de que isso funciona mesmo em C++, em hardware embarcado, em um ecossistema de nicho com documentação limitada. O fluxo de trabalho foi o mesmo de sempre: jogar o jogo, notar atrito, descrever o atrito como solicitação de funcionalidade, revisar o código, testar no console real, repetir.',
-    's9-p3':'O guia de 23 páginas foi o último a ser construído. Depois que tudo o mais estava pronto, o plugin tinha funcionalidades suficientes para que um novo usuário genuinamente precisasse de um mapa do que havia lá. Escrever o guia foi a parte mais puramente humana do projeto — explicar cada funcionalidade em linguagem que não assume conhecimento prévio de mods, organizado do jeito que um jogador pensaria.',
+    's9-title':'Um Jogador Curioso com uma IA Muito Paciente',
+    's9-p1':'Vou ser direto sobre isso: não sou programador. Sou um jogador curioso — alguém bom em testar, fuçar nas coisas e pensar duro num problema e em como ele pode ser resolvido. Cada funcionalidade deste plugin veio do mesmo lugar: estar fundo numa jogatina, sentir atrito, e pensar "devia ter uma forma de…"',
+    's9-p2':'O modelo de colaboração com o Claude é o mesmo que uso em todos os projetos: descrever a funcionalidade, revisar o código que volta, testar no hardware, ajustar. A diferença aqui em relação a um plugin JavaScript ou utilitário C# é que eu estava trabalhando dentro de uma codebase C++ pré-existente, num ecossistema onde os posts de fórum têm dez anos e a documentação é escassa. O Claude cuidou do C++; eu cuidei de saber do que o jogo realmente precisa.',
+    's9-p3':'O guia de 23 páginas foi o último a ser construído — e a parte mais puramente humana do projeto. Sem Claude para isso. É só um jogador explicando o que construiu para outro jogador, organizado do jeito que você realmente pensaria durante uma jogatina.',
     'q3':'"O código é do Claude Code. O atrito que ele resolve é meu. Essa divisão de trabalho se mostra surpreendentemente eficaz."',
     's10-title':'O Resultado',
     's10-p1':'Gen6 CTRP Framework Overhauled é um plugin Luma3DS gratuito e open source que funciona em qualquer Nintendo 3DS moddado rodando Pokémon X, Y, Omega Ruby ou Alpha Sapphire. Não requer conhecimento de programação para instalar ou usar. Coloque o arquivo <code>.3gx</code> no SD card na pasta certa, inicie o jogo, pressione o hotkey e o menu está lá.',
     's10-p2':'Tem tudo que eu queria que existisse quando voltei ao 3DS: um spawner que fala nomes de Pokémon em vez de IDs, um editor de PC que funciona como uma ferramenta de verdade, auxiliares de batalha que explicam o que a IA está fazendo, e coisas pequenas suficientes (texto rápido, caminhada rápida, ovos instantâneos) para que rejoggar o game não pareça uma tarefa chata.',
-    's10-p3':'Download, fonte e a lista completa de funcionalidades: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, gratuito.'
+    's10-p3':'Download, fonte e a lista completa de funcionalidades: <a href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" style="color:var(--quote-border)">github.com/samaBR85/Gen6CTRPFrameworkOverhauled</a> — GPL-3.0, gratuito.',
+    's11-title':'Créditos',
+    's11-p1':'Esta reformulação se apoia em uma longa linha de trabalho voluntário livremente dado. Em ordem aproximada de linhagem:',
+    'cr1':'<strong>biometrix76</strong> — Gen 6 CTRPluginFramework, o pai direto deste fork',
+    'cr2':'<strong>AnalogMan151</strong> — Alolan CTRPluginFramework, a geração anterior',
+    'cr3':'<strong>ThePixellizerOSS et al.</strong> — 3gxtool e o próprio CTRPluginFramework',
+    'cr4':'<strong>Alexander Hartmann</strong> — a base XY &amp; ORAS',
+    'cr5':'<strong>PKHeX (kwsch) et al.</strong> — banco de dados, documentação, exemplos e código',
+    'cr6':'<strong>dragonfyre173</strong> — o overlay de visualização de dados in-game',
+    'cr7':'<strong>JourneyOver et al.</strong> — o extenso banco de códigos ActionReplay',
+    'cr8':'<strong>Mewlax</strong> (u/mewlax84) — autor dos guias ORAS e X/Y do Professor Oak Challenge incluídos no app',
+    'cr9':'<strong>Pokémon Database, PokéAPI, Bulbapedia, ORAS Wiki</strong> — sprites, ícones e dados de localização',
+    's11-p2':'Todas as imagens e nomes de Pokémon são © Nintendo / Game Freak / The Pokémon Company. Esta é uma ferramenta de fã gratuita e não-comercial.'
   }
 };
 
