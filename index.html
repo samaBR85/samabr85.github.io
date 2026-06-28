@@ -88,6 +88,9 @@
   ]
   </script>
 
+  <!-- Ko-fi widget -->
+  <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7511353031974828" crossorigin="anonymous"></script>
 
@@ -259,15 +262,9 @@
     }
     .project-card:hover .card-image img { transform: scale(1.03); }
 
-    .kofi-badge {
-      position: absolute; bottom: 10px; right: 10px; z-index: 2;
-      display: inline-flex; align-items: center; gap: 5px;
-      background: #FF5E5B; color: #fff;
-      font-size: 12px; font-weight: 700; letter-spacing: .02em;
-      padding: 5px 12px; border-radius: 20px;
-      opacity: .88; transition: opacity .2s;
+    .kofi-overlay {
+      position: absolute; bottom: 8px; right: 8px; z-index: 2;
     }
-    .kofi-badge:hover { opacity: 1; }
 
     /* Card body */
     .card-body {
@@ -485,7 +482,7 @@
   <div class="project-card">
     <div class="card-image">
       <img src="docs/screenshots/BeatMarkerPremiere/og-image-horiz.png" alt="BeatMarker Premiere screenshot" loading="lazy" />
-      <a class="kofi-badge" href="https://ko-fi.com/samabr" target="_blank" rel="noopener">☕ Ko-fi</a>
+      <div class="kofi-overlay"></div>
     </div>
     <div class="card-body">
       <div>
@@ -528,7 +525,7 @@
   <div class="project-card">
     <div class="card-image">
       <img src="docs/screenshots/BeatMarkerAE/og-image.png" alt="BeatMarker AE screenshot" loading="lazy" />
-      <a class="kofi-badge" href="https://ko-fi.com/samabr" target="_blank" rel="noopener">☕ Ko-fi</a>
+      <div class="kofi-overlay"></div>
     </div>
     <div class="card-body">
       <div>
@@ -571,7 +568,7 @@
   <div class="project-card">
     <div class="card-image">
       <img src="docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" alt="Gen6 CTRP Framework Overhauled screenshot" loading="lazy" />
-      <a class="kofi-badge" href="https://ko-fi.com/samabr" target="_blank" rel="noopener">☕ Ko-fi</a>
+      <div class="kofi-overlay"></div>
     </div>
     <div class="card-body">
       <div>
@@ -606,7 +603,7 @@
   <div class="project-card">
     <div class="card-image">
       <img src="docs/screenshots/MonoStereoToogle/plugin-screen.png" alt="Mono Stereo Toggle screenshot" loading="lazy" />
-      <a class="kofi-badge" href="https://ko-fi.com/samabr" target="_blank" rel="noopener">☕ Ko-fi</a>
+      <div class="kofi-overlay"></div>
     </div>
     <div class="card-body">
       <div>
@@ -874,6 +871,13 @@
   loadStats();
 </script>
 
+
+<script>
+  kofiwidget2.init('Support me on Ko-fi', '#223fa8', 'E5N7227AO5');
+  document.querySelectorAll('.kofi-overlay').forEach(el => {
+    el.innerHTML = kofiwidget2.draw();
+  });
+</script>
 
 <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
 <script>
