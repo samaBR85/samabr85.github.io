@@ -555,6 +555,40 @@
     <span class="article-teaser-link" data-i18n="teaser-read">LEIA MAIS →</span>
   </a>
 
+  <!-- Gen6 CTRP Framework Overhauled -->
+  <div class="project-card">
+    <div class="card-image">
+      <img src="docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" alt="Gen6 CTRP Framework Overhauled screenshot" loading="lazy" />
+    </div>
+    <div class="card-body">
+      <div>
+        <div class="project-tag"><span class="tag-dot" style="background:#7c5be5"></span><span data-i18n="tag-gen6">Plugin · Nintendo 3DS</span></div>
+        <h2 style="color:#7c5be5">Gen6 CTRP Framework Overhauled</h2>
+        <p data-i18n="desc-gen6">A beginner-friendly Nintendo 3DS plugin for Pokémon X, Y, Omega Ruby, and Alpha Sapphire — wild spawner, PC editor, battle tools, 25 color themes, and a 23-page in-app guide, all without needing to code.</p>
+        <div class="project-stats">
+          <span class="stat" id="stars-gen6">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            —
+          </span>
+          <span class="stat" id="dl-gen6">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            —
+          </span>
+        </div>
+        <div class="platform-badges">
+          <span class="badge">Nintendo 3DS</span>
+          <span class="badge">C++</span>
+          <span class="badge">Pokémon X/Y/OR/AS</span>
+          <span class="badge" data-i18n="free">Free</span>
+        </div>
+      </div>
+      <div class="project-links">
+        <a class="btn btn-primary" href="https://samabr85.github.io/Gen6CTRPFrameworkOverhauled/" target="_blank">↗ Site</a>
+        <a class="btn btn-ghost" href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </div>
+
   <!-- Mono Stereo Toggle -->
   <div class="project-card">
     <div class="card-image">
@@ -676,6 +710,8 @@
       'desc-ae':       'Beat detection plugin for Adobe After Effects — auto-generates colored beat markers on audio layers for music-synced editing.',
       'tag-mst':       'Utility · Windows 11',
       'desc-mst':      'A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.',
+      'tag-gen6':      'Plugin · Nintendo 3DS',
+      'desc-gen6':     'A beginner-friendly Nintendo 3DS plugin for Pokémon X, Y, Omega Ruby, and Alpha Sapphire — wild spawner, PC editor, battle tools, 25 color themes, and a 23-page in-app guide, all without needing to code.',
       'free':          'Free',
       'desktop-app':   'Desktop App',
       'footer':           'Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source',
@@ -716,6 +752,8 @@
       'desc-ae':       'Plugin de detecção de batidas para o Adobe After Effects — gera automaticamente marcadores coloridos nas camadas de áudio para edição sincronizada com a música.',
       'tag-mst':       'Utilitário · Windows 11',
       'desc-mst':      'Um utilitário leve para Windows 11 que permite alternar instantaneamente a saída de áudio entre os modos Mono e Estéreo — a mesma configuração encontrada em Configurações do Windows → Sistema → Som.',
+      'tag-gen6':      'Plugin · Nintendo 3DS',
+      'desc-gen6':     'Um plugin para Nintendo 3DS amigável a iniciantes para Pokémon X, Y, Omega Ruby e Alpha Sapphire — spawner de selvagens, editor de PC, ferramentas de batalha, 25 temas de cor e um guia in-app de 23 páginas, tudo sem precisar programar.',
       'free':          'Grátis',
       'desktop-app':   'App Desktop',
       'footer':           'Feito por <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Código Aberto',
@@ -801,7 +839,8 @@
   const STATS_TARGETS = {
     'BeatMarker-PremierePlugin': { starsEl: document.getElementById('stars-premiere'), dlEl: document.getElementById('dl-premiere') },
     'BeatMarker-AEPlugin':       { starsEl: document.getElementById('stars-ae'),       dlEl: document.getElementById('dl-ae') },
-    'MonoStereoToggle':          { starsEl: document.getElementById('stars-mst'),      dlEl: document.getElementById('dl-mst') }
+    'MonoStereoToggle':          { starsEl: document.getElementById('stars-mst'),      dlEl: document.getElementById('dl-mst') },
+    'Gen6CTRPFrameworkOverhauled': { starsEl: document.getElementById('stars-gen6'),    dlEl: document.getElementById('dl-gen6') }
   };
 
   async function loadStats() {
