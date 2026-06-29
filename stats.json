@@ -1,11 +1,11 @@
 {
   "BeatMarker-PremierePlugin": {
     "stars": 3,
-    "downloads": 272
+    "downloads": 273
   },
   "BeatMarker-AEPlugin": {
     "stars": 1,
-    "downloads": 163
+    "downloads": 164
   },
   "MonoStereoToggle": {
     "stars": 1,
@@ -13,6 +13,6 @@
   },
   "Gen6CTRPFrameworkOverhauled": {
     "stars": 3,
-    "downloads": 87
+    "downloads": 94
   }
 }
