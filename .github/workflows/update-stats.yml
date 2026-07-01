@@ -24,7 +24,7 @@ jobs:
         run: |
           set -e
           OWNER=samaBR85
-          REPOS=(BeatMarker-PremierePlugin BeatMarker-AEPlugin MonoStereoToggle Gen6CTRPFrameworkOverhauled)
+          REPOS=(BeatMarker-PremierePlugin BeatMarker-AEPlugin MonoStereoToggle Gen6CTRPFrameworkOverhauled 3DSnickerStream)
 
           json='{'
           first=1
