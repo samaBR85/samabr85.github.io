@@ -5,7 +5,7 @@
   },
   "BeatMarker-AEPlugin": {
     "stars": 1,
-    "downloads": 184
+    "downloads": 185
   },
   "MonoStereoToggle": {
     "stars": 1,
@@ -14,5 +14,9 @@
   "Gen6CTRPFrameworkOverhauled": {
     "stars": 3,
     "downloads": 133
+  },
+  "3DSnickerStream": {
+    "stars": 1,
+    "downloads": 1
   }
 }
