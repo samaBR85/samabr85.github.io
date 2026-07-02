@@ -88,358 +88,282 @@
   ]
   </script>
 
-  <!-- Ko-fi widget -->
-  <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7511353031974828" crossorigin="anonymous"></script>
 
   <style>
     /* ── THEMES ── */
     :root[data-theme="dark"] {
-      --bg:     #0e0e0e;
-      --bg2:    #161616;
-      --bg3:    #1e1e1e;
-      --border: #2a2a2a;
-      --text:   #e8e8e8;
-      --muted:  #888;
+      --bg:     #101013;   /* sheet */
+      --bg2:    #17171b;   /* cards */
+      --bg3:    #1e1e23;
+      --border: #26262c;
+      --text:   #ececf1;
+      --muted:  #8a8a93;
       --green:  #34c759;
-      --shadow: rgba(0,0,0,0.4);
+      --shadow: rgba(0,0,0,0.5);
+      --glow-a: rgba(124,91,229,.16);
+      --glow-b: rgba(10,132,255,.13);
+      --glow-c: rgba(213,58,58,.10);
     }
     :root[data-theme="light"] {
-      --bg:     #f4f4f5;
+      --bg:     #f7f7f8;
       --bg2:    #ffffff;
-      --bg3:    #e8e8eb;
-      --border: #d4d4d8;
-      --text:   #18181b;
+      --bg3:    #ededf0;
+      --border: #e4e4e9;
+      --text:   #17171a;
       --muted:  #71717a;
       --green:  #16a34a;
-      --shadow: rgba(0,0,0,0.08);
+      --shadow: rgba(20,20,30,0.07);
+      --glow-a: rgba(186,140,255,.28);
+      --glow-b: rgba(120,180,255,.25);
+      --glow-c: rgba(255,150,170,.22);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
+      background: #000;
       color: var(--text);
       font-family: 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
       font-size: 16px;
       line-height: 1.6;
       min-height: 100vh;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      transition: background .25s, color .25s;
+      transition: color .25s;
     }
+
+    /* ── SHEET (rounded canvas, Mintly-style) ── */
+    .sheet {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      border-radius: 28px;
+      overflow: hidden;
+      transition: background .25s;
+    }
+    /* pastel glows bleeding from the edges */
+    .sheet::before {
+      content: '';
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(600px 520px at 92% 12%, var(--glow-a), transparent 65%),
+        radial-gradient(520px 460px at 97% 70%, var(--glow-b), transparent 60%),
+        radial-gradient(520px 420px at 4% 96%, var(--glow-c), transparent 60%);
+    }
+    /* film grain */
+    .sheet::after {
+      content: '';
+      position: absolute; inset: 0;
+      pointer-events: none;
+      opacity: .035;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .sheet > * { position: relative; z-index: 1; }
 
     a { color: inherit; text-decoration: none; }
 
-    /* ── NAV ── */
+    /* ── NAV (minimal, borderless) ── */
     nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(14,14,14,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px; height: 56px;
+      position: sticky; top: 12px; z-index: 100;
+      background: color-mix(in srgb, var(--bg) 72%, transparent);
+      backdrop-filter: blur(14px);
+      padding: 0 36px; height: 64px;
       display: flex; align-items: center; justify-content: space-between;
-      transition: background .25s, border-color .25s;
-    }
-    :root[data-theme="light"] nav {
-      background: rgba(244,244,245,0.92);
+      transition: background .25s;
     }
     .nav-logo {
       font-size: 17px; font-weight: 800; letter-spacing: .02em;
     }
     .nav-logo span { color: var(--muted); font-weight: 400; }
 
-    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .nav-actions { display: flex; align-items: center; gap: 22px; }
 
     /* Language toggle */
     .lang-toggle {
-      height: 36px;
-      padding: 0 12px;
+      height: 34px;
+      padding: 0 10px;
+      border: none;
       border-radius: 8px;
-      border: 1px solid var(--border);
       background: transparent;
       color: var(--muted);
       cursor: pointer;
       display: flex; align-items: center; gap: 6px;
       font-size: 13px; font-weight: 700; letter-spacing: .04em;
-      transition: color .2s, border-color .2s;
+      transition: color .2s;
       flex-shrink: 0;
     }
-    .lang-toggle:hover { color: var(--text); border-color: #555; }
+    .lang-toggle:hover { color: var(--text); }
 
     /* Theme toggle */
     .theme-toggle {
-      width: 36px; height: 36px;
+      width: 34px; height: 34px;
+      border: none;
       border-radius: 8px;
-      border: 1px solid var(--border);
       background: transparent;
       color: var(--muted);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: color .2s, border-color .2s;
+      transition: color .2s;
       flex-shrink: 0;
     }
-    .theme-toggle:hover { color: var(--text); border-color: #555; }
+    .theme-toggle:hover { color: var(--text); }
     .icon-sun, .icon-moon { width: 16px; height: 16px; }
     :root[data-theme="dark"]  .icon-sun  { display: none; }
     :root[data-theme="light"] .icon-moon { display: none; }
 
     .nav-about {
       display: flex; align-items: center;
-      font-size: 13px; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 8px;
-      padding: 6px 14px; transition: color .2s, border-color .2s;
+      font-size: 14px; color: var(--muted);
+      transition: color .2s;
     }
-    .nav-about:hover { color: var(--text); border-color: #555; }
+    .nav-about:hover { color: var(--text); }
 
     .nav-gh {
       display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 8px;
-      padding: 6px 14px; transition: color .2s, border-color .2s;
+      font-size: 14px; font-weight: 700; color: var(--text);
+      transition: opacity .2s;
     }
-    .nav-gh:hover { color: var(--text); border-color: #555; }
+    .nav-gh:hover { opacity: .7; }
 
-    /* ── HERO ── */
+    /* ── HERO (Mintly: giant fading words, left-aligned) ── */
     .hero {
-      padding: 80px 24px 64px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
-    .hero-eyebrow {
-      font-size: 12px; font-weight: 700; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 20px;
+      max-width: 1200px; margin: 0 auto; width: 100%;
+      padding: 72px 36px 12px;
     }
     .hero h1 {
-      font-size: clamp(36px, 7vw, 64px);
-      font-weight: 900; letter-spacing: -.03em; line-height: 1.1;
-      margin-bottom: 20px;
+      font-size: clamp(52px, 9vw, 108px);
+      font-weight: 800; letter-spacing: -.045em; line-height: 1.02;
+      margin-bottom: 28px;
+      white-space: nowrap;
     }
-    .hero h1 .accent { color: var(--green); }
+    .hero h1 .w1 { color: var(--text); }
+    .hero h1 .w2 { color: var(--text); opacity: .45; }
+    .hero h1 .w3 { color: var(--text); opacity: .22; }
+    .hero-row {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 24px; flex-wrap: wrap;
+    }
     .hero-desc {
-      font-size: 18px; color: var(--muted);
-      max-width: 520px; margin: 0 auto;
+      font-size: 15px; color: var(--muted);
+      max-width: 460px;
     }
 
-    /* ── PROJECTS HEADER ── */
-    .projects-header {
-      max-width: 1100px; margin: 0 auto;
-      padding: 64px 24px 0;
+    /* ── FILTER TABS ── */
+    .filter-tabs {
+      display: flex; gap: 26px;
+      overflow-x: auto;
     }
-    .projects-header h2 {
-      font-size: clamp(48px, 8vw, 96px);
-      font-weight: 900;
-      letter-spacing: -.04em;
-      line-height: 1;
-      color: var(--text);
-      margin-bottom: 12px;
-    }
-    .projects-header p {
-      font-size: 15px;
+    .filter-tabs button {
+      background: none; border: none; cursor: pointer;
+      font-size: 14px; font-weight: 600;
+      font-family: inherit;
       color: var(--muted);
+      padding: 6px 0 10px;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .filter-tabs button:hover { color: var(--text); }
+    .filter-tabs button.active {
+      color: var(--text);
+      border-bottom-color: var(--text);
     }
 
-    /* ── PROJECTS ── */
+    /* ── PROJECTS (Mintly cards: no photos, line-art, roomy) ── */
     .projects {
       flex: 1;
       max-width: 1200px; margin: 0 auto; width: 100%;
-      padding: 24px 24px 64px;
+      padding: 28px 36px 72px;
       display: grid;
-      grid-template-columns: 1.6fr 1fr 1fr;
-      grid-template-rows: auto auto;
+      grid-template-columns: repeat(3, 1fr);
       gap: 20px;
       align-items: stretch;
     }
 
-    /* Hero card — BeatMarker Premiere spans both rows */
-    .projects > .project-card:first-child {
-      grid-column: 1;
-      grid-row: 1 / 3;
-      display: flex;
-      flex-direction: column;
-    }
-    .projects > .project-card:first-child .card-image {
-      height: 280px;
-      flex-shrink: 0;
-    }
-    .projects > .project-card:first-child .card-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .projects > .project-card:first-child .card-body > div:first-child {
-      flex: 1;
-    }
-    .projects > .project-card:first-child .project-links {
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-
     .project-card {
+      display: flex;
+      flex-direction: column;
       background: var(--bg2);
       border: 1px solid transparent;
-      border-radius: 20px;
-      overflow: hidden;
-      transition: border-color .2s, transform .2s, box-shadow .2s;
+      border-radius: 22px;
+      padding: 28px;
+      min-height: 320px;
+      transition: border-color .2s, transform .2s, box-shadow .25s;
+    }
+    :root[data-theme="light"] .project-card {
+      box-shadow: 0 2px 14px var(--shadow);
     }
     .project-card:hover {
-      border-color: rgba(255,255,255,0.14);
-      transform: translateY(-4px);
-      box-shadow: 0 16px 48px var(--shadow);
-    }
-    :root[data-theme="light"] .project-card:hover {
-      border-color: rgba(0,0,0,0.12);
-    }
-
-    /* Light mode: tints too strong — use white card with accent border instead */
-    :root[data-theme="light"] .project-card {
-      background: var(--bg2) !important;
-      border: 1px solid var(--border);
-    }
-
-    /* Compact cards (non-hero): stack content above buttons, truncate description */
-    .projects > .project-card:not(:first-child) .card-image {
-      height: 130px;
-    }
-    .projects > .project-card:not(:first-child) p {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .projects > .project-card:not(:first-child) .card-body {
-      display: flex;
-      flex-direction: column;
-      padding: 20px 24px;
-      gap: 12px;
-    }
-    .projects > .project-card:not(:first-child) .card-body > div:first-child {
-      flex: 1;
-    }
-    .projects > .project-card:not(:first-child) .project-links {
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 8px;
-      margin-top: 4px;
-    }
-    .projects > .project-card:not(:first-child) h2 {
-      font-size: 18px;
-      margin-bottom: 6px;
-    }
-    .projects > .project-card:not(:first-child) .platform-badges {
-      display: none;
-    }
-    .projects > .project-card:not(:first-child) .project-stats {
-      margin-top: 8px;
-    }
-    /* Ko-fi redundant in small cards — floating widget handles it */
-    .projects > .project-card:not(:first-child) .btn-container {
-      display: none !important;
-    }
-
-    /* Card image */
-    .card-image {
-      width: 100%; height: 160px;
-      overflow: hidden;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      background: var(--bg3);
-      position: relative;
-    }
-    :root[data-theme="light"] .card-image {
-      border-bottom-color: var(--border);
-    }
-    .card-image img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      object-position: top;
-      display: block;
-      transition: transform .4s;
-    }
-    .project-card:hover .card-image img { transform: scale(1.03); }
-
-
-    /* Card body */
-    .card-body {
-      padding: 28px 32px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      align-items: stretch;
-    }
-
-    .project-tag {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 11px; font-weight: 700; letter-spacing: .1em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 10px;
-    }
-    .tag-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      flex-shrink: 0;
+      border-color: var(--border);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 44px var(--shadow);
     }
 
     .project-card h2 {
-      font-size: 22px; font-weight: 800; margin-bottom: 10px;
+      font-size: 20px; font-weight: 800; margin-bottom: 6px;
       letter-spacing: -.02em;
     }
-    .project-card p {
-      font-size: 14px; color: var(--muted); line-height: 1.7;
-      max-width: 560px;
+    .card-tagline {
+      font-size: 13px; color: var(--muted); line-height: 1.6;
+    }
+    .card-platforms {
+      font-size: 12px; color: var(--muted); opacity: .75;
+      margin-top: 6px;
     }
 
-    /* Stats row */
-    .project-stats {
-      display: flex; gap: 16px; margin-top: 14px;
+    /* line-art illustration */
+    .card-art {
+      width: 70%;
+      max-width: 200px;
+      height: 110px;
+      margin: 26px 0 18px;
+      flex: 1;
+      align-self: flex-start;
     }
+
+    /* footer row: stats left, action circles right */
+    .card-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+      margin-top: auto;
+    }
+    .card-stats { display: flex; gap: 14px; flex-wrap: wrap; }
     .stat {
       display: flex; align-items: center; gap: 5px;
       font-size: 12px; color: var(--muted); font-weight: 600;
     }
     .stat svg { opacity: .7; }
 
-    .platform-badges {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;
+    .card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .icon-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .2s, opacity .2s, color .2s, border-color .2s;
     }
-    .badge {
-      font-size: 11px; font-weight: 600; padding: 3px 10px;
-      border-radius: 20px; border: 1px solid var(--border);
-      color: var(--muted);
+    .icon-btn.solid {
+      background: var(--text); color: var(--bg);
+      font-size: 17px; font-weight: 700;
     }
-
-    .project-links {
-      display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-      flex-shrink: 0;
+    .icon-btn.solid:hover { transform: scale(1.08); }
+    .icon-btn.ghost {
+      border: 1px solid var(--border); color: var(--muted);
     }
-    .project-links > *:last-child { margin-top: auto; }
-    .btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 16px; border-radius: 8px;
-      font-size: 13px; font-weight: 600;
-      white-space: nowrap; transition: opacity .2s;
-    }
-    .btn:hover { opacity: .8; }
-    .btn-primary { background: var(--text); color: var(--bg); }
-    .btn-ghost {
-      background: transparent; color: var(--muted);
-      border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { color: var(--text); border-color: #555; }
+    .icon-btn.ghost:hover { color: var(--text); border-color: var(--muted); }
 
     /* ── BLOG SECTION ── */
     .blog-section {
-      border-top: 1px solid var(--border);
-      padding: 64px 24px;
-      background: var(--bg2);
+      padding: 40px 36px 72px;
     }
     .blog-inner {
-      max-width: 900px; margin: 0 auto;
+      max-width: 1200px; margin: 0 auto;
     }
     .section-header { margin-bottom: 36px; }
     .section-eyebrow {
@@ -464,83 +388,72 @@
     .blog-card {
       display: flex;
       flex-direction: column;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px 32px;
-      transition: border-color .2s, transform .2s, box-shadow .2s;
+      background: var(--bg2);
+      border: 1px solid transparent;
+      border-radius: 22px;
+      padding: 28px;
+      transition: border-color .2s, transform .2s, box-shadow .25s;
       cursor: pointer;
     }
+    :root[data-theme="light"] .blog-card {
+      box-shadow: 0 2px 14px var(--shadow);
+    }
     .blog-card:hover {
-      border-color: #555;
+      border-color: var(--border);
       transform: translateY(-2px);
-      box-shadow: 0 8px 32px var(--shadow);
+      box-shadow: 0 12px 36px var(--shadow);
     }
     .blog-card-meta {
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; gap: 10px;
       margin-bottom: 12px;
     }
     .blog-tag {
       font-size: 11px; font-weight: 700; letter-spacing: .08em;
       text-transform: uppercase; color: var(--muted);
-      background: var(--bg3); border: 1px solid var(--border);
-      padding: 3px 10px; border-radius: 20px;
     }
-    .blog-date { font-size: 12px; color: var(--muted); }
+    .blog-date { font-size: 12px; color: var(--muted); opacity: .75; }
     .blog-card-title {
-      font-size: 20px; font-weight: 800; letter-spacing: -.02em;
+      font-size: 19px; font-weight: 800; letter-spacing: -.02em;
       margin-bottom: 10px; color: var(--text);
     }
     .blog-card-desc {
-      font-size: 14px; color: var(--muted); line-height: 1.7;
-      margin-bottom: 12px; flex: 1;
+      font-size: 13px; color: var(--muted); line-height: 1.7;
+      margin-bottom: 14px; flex: 1;
     }
     .blog-read-more {
-      font-size: 13px; font-weight: 700; color: #d53a3a;
+      font-size: 13px; font-weight: 700; color: var(--text);
       margin-top: auto;
     }
 
     /* ── FOOTER ── */
     footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 24px;
+      padding: 28px 36px 32px;
       text-align: center;
       font-size: 13px; color: var(--muted);
     }
     footer a { color: var(--muted); }
     footer a:hover { color: var(--text); }
 
-    @media (max-width: 900px) {
-      .projects {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto;
-      }
-      .projects > .project-card:first-child {
-        grid-column: 1 / 3;
-        grid-row: auto;
-        flex-direction: column;
-      }
-      .projects > .project-card:first-child .card-image { height: 200px; }
-      .projects > .project-card:first-child .project-links {
-        flex-direction: column;
-        align-items: flex-end;
-      }
-      .blog-grid { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 1000px) {
+      .projects { grid-template-columns: 1fr 1fr; }
     }
-    @media (max-width: 600px) {
-      .projects { grid-template-columns: 1fr; }
-      .projects > .project-card:first-child { grid-column: 1; }
+    @media (max-width: 640px) {
+      body { padding: 8px; }
+      .sheet { border-radius: 20px; }
+      nav { padding: 0 20px; top: 8px; }
+      .nav-actions { gap: 12px; }
+      .hero { padding: 48px 20px 8px; }
+      .hero h1 { white-space: normal; }
+      .projects { grid-template-columns: 1fr; padding: 24px 20px 56px; }
       .blog-grid { grid-template-columns: 1fr; }
-      .card-body { grid-template-columns: 1fr; }
-      .project-links { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
-      .card-image { height: 140px; }
-      .nav-actions { gap: 6px; }
-      .projects-header h2 { font-size: 40px; }
-      .section-title { font-size: 32px; }
+      .blog-section { padding: 24px 20px 56px; }
+      .section-title { font-size: 34px; }
     }
   </style>
 </head>
 <body>
+
+<div class="sheet">
 
 <nav>
   <div class="nav-logo">samaBR <span>/ portfolio</span></div>
@@ -571,192 +484,230 @@
 </nav>
 
 <div class="hero">
-  <div class="hero-eyebrow" data-i18n="eyebrow">Open Source · Free Tools</div>
-  <h1 data-i18n="h1">Tools for<br><span class="accent">video editors</span></h1>
-  <p class="hero-desc" data-i18n="desc">Plugins and utilities built to speed up music-synced editing in Adobe Premiere Pro, After Effects, and Windows.</p>
-</div>
-
-<div class="projects-header">
-  <h2 data-i18n="projects-title">Projects</h2>
-  <p data-i18n="projects-subtitle">Open source tools built for video editors and tinkerers.</p>
+  <h1 data-i18n="h1"><span class="w1">Build.</span> <span class="w2">Sync.</span> <span class="w3">Play.</span></h1>
+  <div class="hero-row">
+    <p class="hero-desc" data-i18n="desc">Plugins and utilities built to speed up music-synced editing in Adobe Premiere Pro, After Effects, and Windows.</p>
+    <div class="filter-tabs" id="filterTabs">
+      <button data-filter="all" class="active" data-i18n="tab-all">All</button>
+      <button data-filter="adobe" data-i18n="tab-adobe">Adobe</button>
+      <button data-filter="3ds" data-i18n="tab-3ds">Nintendo 3DS</button>
+      <button data-filter="windows" data-i18n="tab-windows">Windows</button>
+    </div>
+  </div>
 </div>
 
 <div class="projects">
 
   <!-- BeatMarker Premiere -->
-  <div class="project-card" style="background:rgba(213,58,58,0.13)">
-    <div class="card-image">
-      <img src="docs/screenshots/BeatMarkerPremiere/og-image-horiz.png" alt="BeatMarker Premiere screenshot" loading="lazy" />
+  <div class="project-card" data-cat="adobe">
+    <div class="card-top">
+      <h2>BeatMarker Premiere</h2>
+      <p class="card-tagline" data-i18n="desc-premiere-short">Auto beat markers for music-synced editing in Premiere Pro.</p>
+      <p class="card-platforms">Windows · Mac · UXP</p>
     </div>
-    <div class="card-body">
-      <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#d53a3a"></span><span data-i18n="tag-premiere">Plugin · Adobe Premiere Pro</span></div>
-        <h2 style="color:#d53a3a">BeatMarker Premiere</h2>
-        <p data-i18n="desc-premiere">Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.</p>
-        <div class="project-stats">
-          <span class="stat" id="stars-premiere">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            —
-          </span>
-          <span class="stat" id="dl-premiere">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            —
-          </span>
-        </div>
-        <div class="platform-badges">
-          <span class="badge">Windows</span>
-          <span class="badge">Mac</span>
-          <span class="badge">UXP Plugin</span>
-          <span class="badge" data-i18n="free">Free</span>
-        </div>
-      </div>
-      <div class="project-links">
-        <a class="btn btn-primary" href="https://samabr85.github.io/BeatMarker-PremierePlugin/" target="_blank">↗ Site</a>
-        <a class="btn btn-ghost" href="https://github.com/samaBR85/BeatMarker-PremierePlugin" target="_blank">GitHub</a>
-        <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#223fa8', 'E5N7227AO5');kofiwidget2.draw();</script>
-      </div>
+    <svg class="card-art" viewBox="0 0 220 120" fill="none" stroke="#d53a3a" stroke-width="1.5" stroke-linecap="round">
+      <line x1="10" y1="96" x2="210" y2="96" opacity=".5"/>
+      <line x1="25" y1="96" x2="25" y2="62"/>
+      <line x1="40" y1="96" x2="40" y2="78"/>
+      <line x1="55" y1="96" x2="55" y2="42"/>
+      <line x1="70" y1="96" x2="70" y2="72"/>
+      <line x1="85" y1="96" x2="85" y2="58"/>
+      <line x1="100" y1="96" x2="100" y2="32"/>
+      <line x1="115" y1="96" x2="115" y2="74"/>
+      <line x1="130" y1="96" x2="130" y2="52"/>
+      <line x1="145" y1="96" x2="145" y2="37"/>
+      <line x1="160" y1="96" x2="160" y2="70"/>
+      <line x1="175" y1="96" x2="175" y2="60"/>
+      <line x1="190" y1="96" x2="190" y2="82"/>
+      <rect x="49.5" y="24.5" width="9" height="9" transform="rotate(45 55 29)"/>
+      <rect x="94.5" y="14.5" width="9" height="9" transform="rotate(45 100 19)"/>
+      <rect x="139.5" y="19.5" width="9" height="9" transform="rotate(45 145 24)"/>
+    </svg>
+    <div class="card-foot">
+      <span class="card-stats">
+        <span class="stat" id="stars-premiere">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          —
+        </span>
+        <span class="stat" id="dl-premiere">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          —
+        </span>
+      </span>
+      <span class="card-actions">
+        <a class="icon-btn ghost" href="https://github.com/samaBR85/BeatMarker-PremierePlugin" target="_blank" aria-label="GitHub">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a class="icon-btn solid" href="https://samabr85.github.io/BeatMarker-PremierePlugin/" target="_blank" aria-label="Open site">→</a>
+      </span>
     </div>
   </div>
 
   <!-- BeatMarker AE -->
-  <div class="project-card" style="background:rgba(192,57,43,0.13)">
-    <div class="card-image">
-      <img src="docs/screenshots/BeatMarkerAE/og-image.png" alt="BeatMarker AE screenshot" loading="lazy" />
+  <div class="project-card" data-cat="adobe">
+    <div class="card-top">
+      <h2>BeatMarker AE</h2>
+      <p class="card-tagline" data-i18n="desc-ae-short">Beat detection and colored markers for After Effects.</p>
+      <p class="card-platforms">Windows · CEP · AE 2026</p>
     </div>
-    <div class="card-body">
-      <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#c0392b"></span><span data-i18n="tag-ae">Plugin · Adobe After Effects</span></div>
-        <h2 style="color:#c0392b">BeatMarker AE</h2>
-        <p data-i18n="desc-ae">Beat detection plugin for Adobe After Effects — auto-generates colored beat markers on audio layers for music-synced editing.</p>
-        <div class="project-stats">
-          <span class="stat" id="stars-ae">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            —
-          </span>
-          <span class="stat" id="dl-ae">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            —
-          </span>
-        </div>
-        <div class="platform-badges">
-          <span class="badge">Windows</span>
-          <span class="badge">CEP Panel</span>
-          <span class="badge">AE 2026</span>
-          <span class="badge" data-i18n="free">Free</span>
-        </div>
-      </div>
-      <div class="project-links">
-        <a class="btn btn-primary" href="https://samabr85.github.io/BeatMarker-AEPlugin/" target="_blank">↗ Site</a>
-        <a class="btn btn-ghost" href="https://github.com/samaBR85/BeatMarker-AEPlugin" target="_blank">GitHub</a>
-        <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#223fa8', 'E5N7227AO5');kofiwidget2.draw();</script>
-      </div>
-    </div>
-  </div>
-
-  <!-- Gen6 CTRP Framework Overhauled -->
-  <div class="project-card" style="background:rgba(124,91,229,0.13)">
-    <div class="card-image">
-      <img src="docs/screenshots/Gen6CTRPFrameworkOverhauled/og-image.png" alt="Gen6 CTRP Framework Overhauled screenshot" loading="lazy" />
-    </div>
-    <div class="card-body">
-      <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#7c5be5"></span><span data-i18n="tag-gen6">Plugin · Nintendo 3DS</span></div>
-        <h2 style="color:#7c5be5">Gen6 CTRP Framework Overhauled</h2>
-        <p data-i18n="desc-gen6">A beginner-friendly Nintendo 3DS plugin for Pokémon X, Y, Omega Ruby, and Alpha Sapphire — wild spawner, PC editor, battle tools, 25 color themes, and a 23-page in-app guide, all without needing to code.</p>
-        <div class="project-stats">
-          <span class="stat" id="stars-gen6">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            —
-          </span>
-          <span class="stat" id="dl-gen6">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            —
-          </span>
-        </div>
-        <div class="platform-badges">
-          <span class="badge">Nintendo 3DS</span>
-          <span class="badge">C++</span>
-          <span class="badge">Pokémon X/Y/OR/AS</span>
-          <span class="badge" data-i18n="free">Free</span>
-        </div>
-      </div>
-      <div class="project-links">
-        <a class="btn btn-primary" href="https://samabr85.github.io/Gen6CTRPFrameworkOverhauled/" target="_blank">↗ Site</a>
-        <a class="btn btn-ghost" href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" target="_blank">GitHub</a>
-        <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#223fa8', 'E5N7227AO5');kofiwidget2.draw();</script>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3DSnickerStream -->
-  <div class="project-card" style="background:rgba(10,132,255,0.13)">
-    <div class="card-image" style="background:#1c1c24;display:flex;align-items:center;justify-content:center;">
-      <img src="docs/screenshots/3DSnickerStream/og-image.png" alt="3DSnickerStream screenshot" loading="lazy" style="object-fit:contain;object-position:center;width:auto;height:100%;max-width:100%;" />
-    </div>
-    <div class="card-body">
-      <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#0A84FF"></span><span data-i18n="tag-nicker">App · Nintendo 3DS</span></div>
-        <h2 style="color:#0A84FF">3DSnickerStream</h2>
-        <p data-i18n="desc-nicker">Stream your Nintendo 3DS to your PC over Wi-Fi — a fast, modern NTR/HzMod remoteplay client for Windows and macOS with dual-screen display, per-screen color tuning, zoom, and clean capture mode.</p>
-        <div class="project-stats">
-          <span class="stat" id="stars-nicker">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            —
-          </span>
-          <span class="stat" id="dl-nicker">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            —
-          </span>
-        </div>
-        <div class="platform-badges">
-          <span class="badge">Nintendo 3DS</span>
-          <span class="badge">Windows</span>
-          <span class="badge">macOS</span>
-          <span class="badge" data-i18n="free">Free</span>
-        </div>
-      </div>
-      <div class="project-links">
-        <a class="btn btn-primary" href="https://samabr85.github.io/3DSnickerStream/" target="_blank">↗ Site</a>
-        <a class="btn btn-ghost" href="https://github.com/samaBR85/3DSnickerStream" target="_blank">GitHub</a>
-        <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#223fa8', 'E5N7227AO5');kofiwidget2.draw();</script>
-      </div>
+    <svg class="card-art" viewBox="0 0 220 120" fill="none" stroke="#c0392b" stroke-width="1.5">
+      <circle cx="78" cy="60" r="10"/>
+      <circle cx="78" cy="60" r="22"/>
+      <circle cx="78" cy="60" r="34"/>
+      <circle cx="78" cy="60" r="46"/>
+      <circle cx="78" cy="60" r="2.5" fill="#c0392b" stroke="none"/>
+      <line x1="146" y1="60" x2="212" y2="60" opacity=".5"/>
+      <circle cx="168" cy="60" r="3" fill="#c0392b" stroke="none"/>
+      <circle cx="192" cy="60" r="3" fill="#c0392b" stroke="none"/>
+    </svg>
+    <div class="card-foot">
+      <span class="card-stats">
+        <span class="stat" id="stars-ae">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          —
+        </span>
+        <span class="stat" id="dl-ae">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          —
+        </span>
+      </span>
+      <span class="card-actions">
+        <a class="icon-btn ghost" href="https://github.com/samaBR85/BeatMarker-AEPlugin" target="_blank" aria-label="GitHub">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a class="icon-btn solid" href="https://samabr85.github.io/BeatMarker-AEPlugin/" target="_blank" aria-label="Open site">→</a>
+      </span>
     </div>
   </div>
 
   <!-- Mono Stereo Toggle -->
-  <div class="project-card" style="background:rgba(74,158,255,0.13)">
-    <div class="card-image">
-      <img src="docs/screenshots/MonoStereoToogle/plugin-screen.png" alt="Mono Stereo Toggle screenshot" loading="lazy" />
+  <div class="project-card" data-cat="windows">
+    <div class="card-top">
+      <h2>Mono Stereo Toggle</h2>
+      <p class="card-tagline" data-i18n="desc-mst-short">One hotkey to switch Windows audio between mono and stereo.</p>
+      <p class="card-platforms">Windows 11 · .NET 8</p>
     </div>
-    <div class="card-body">
-      <div>
-        <div class="project-tag"><span class="tag-dot" style="background:#4a9eff"></span><span data-i18n="tag-mst">Utility · Windows 11</span></div>
-        <h2 style="color:#4a9eff">Mono Stereo Toggle</h2>
-        <p data-i18n="desc-mst">A lightweight Windows 11 desktop utility that lets you instantly switch your audio output between Mono and Stereo modes — the same setting found in Windows Settings → System → Sound.</p>
-        <div class="project-stats">
-          <span class="stat" id="stars-mst">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            —
-          </span>
-          <span class="stat" id="dl-mst">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            —
-          </span>
-        </div>
-        <div class="platform-badges">
-          <span class="badge">Windows 11</span>
-          <span class="badge" data-i18n="desktop-app">Desktop App</span>
-          <span class="badge" data-i18n="free">Free</span>
-        </div>
-      </div>
-      <div class="project-links">
-        <a class="btn btn-primary" href="https://samabr85.github.io/MonoStereoToggle/" target="_blank">↗ Site</a>
-        <a class="btn btn-ghost" href="https://github.com/samaBR85/MonoStereoToggle" target="_blank">GitHub</a>
-        <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#223fa8', 'E5N7227AO5');kofiwidget2.draw();</script>
-      </div>
+    <svg class="card-art" viewBox="0 0 220 120" fill="none" stroke="#4a9eff" stroke-width="1.5" stroke-linecap="round">
+      <path d="M14 45 q 14 -28 28 0 t 28 0 t 28 0"/>
+      <path d="M14 75 q 14 28 28 0 t 28 0 t 28 0"/>
+      <line x1="112" y1="60" x2="140" y2="60" opacity=".5"/>
+      <path d="M148 60 q 14 -24 28 0 t 28 0"/>
+      <circle cx="144" cy="60" r="3" fill="#4a9eff" stroke="none"/>
+    </svg>
+    <div class="card-foot">
+      <span class="card-stats">
+        <span class="stat" id="stars-mst">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          —
+        </span>
+        <span class="stat" id="dl-mst">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          —
+        </span>
+      </span>
+      <span class="card-actions">
+        <a class="icon-btn ghost" href="https://github.com/samaBR85/MonoStereoToggle" target="_blank" aria-label="GitHub">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a class="icon-btn solid" href="https://samabr85.github.io/MonoStereoToggle/" target="_blank" aria-label="Open site">→</a>
+      </span>
     </div>
   </div>
 
+  <!-- Gen6 CTRP Framework Overhauled -->
+  <div class="project-card" data-cat="3ds">
+    <div class="card-top">
+      <h2>Gen6 CTRP Framework Overhauled</h2>
+      <p class="card-tagline" data-i18n="desc-gen6-short">Pokémon gen-6 plugin — wild spawner, PC editor, battle tools.</p>
+      <p class="card-platforms">Nintendo 3DS · C++ · X/Y/OR/AS</p>
+    </div>
+    <svg class="card-art" viewBox="0 0 220 120" fill="none" stroke="#7c5be5" stroke-width="1.5">
+      <circle cx="88" cy="45" r="28"/>
+      <circle cx="64" cy="80" r="28"/>
+      <circle cx="112" cy="80" r="28"/>
+      <line x1="160" y1="45" x2="204" y2="45" opacity=".5"/>
+      <line x1="160" y1="62" x2="192" y2="62" opacity=".5"/>
+      <line x1="160" y1="79" x2="200" y2="79" opacity=".5"/>
+    </svg>
+    <div class="card-foot">
+      <span class="card-stats">
+        <span class="stat" id="stars-gen6">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          —
+        </span>
+        <span class="stat" id="dl-gen6">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          —
+        </span>
+      </span>
+      <span class="card-actions">
+        <a class="icon-btn ghost" href="https://github.com/samaBR85/Gen6CTRPFrameworkOverhauled" target="_blank" aria-label="GitHub">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a class="icon-btn solid" href="https://samabr85.github.io/Gen6CTRPFrameworkOverhauled/" target="_blank" aria-label="Open site">→</a>
+      </span>
+    </div>
+  </div>
+
+  <!-- 3DSnickerStream -->
+  <div class="project-card" data-cat="3ds">
+    <div class="card-top">
+      <h2>3DSnickerStream</h2>
+      <p class="card-tagline" data-i18n="desc-nicker-short">Stream your Nintendo 3DS to your PC over Wi-Fi.</p>
+      <p class="card-platforms">Nintendo 3DS · Windows · macOS</p>
+    </div>
+    <svg class="card-art" viewBox="0 0 220 120" fill="none" stroke="#0A84FF" stroke-width="1.5" stroke-linecap="round">
+      <rect x="20" y="22" width="76" height="46" rx="6"/>
+      <rect x="32" y="76" width="52" height="32" rx="6"/>
+      <path d="M124 52 a 26 26 0 0 1 0 16" opacity=".9"/>
+      <path d="M132 42 a 40 40 0 0 1 0 36" opacity=".6"/>
+      <path d="M140 32 a 54 54 0 0 1 0 56" opacity=".35"/>
+      <rect x="162" y="30" width="44" height="60" rx="5"/>
+      <line x1="170" y1="98" x2="198" y2="98"/>
+    </svg>
+    <div class="card-foot">
+      <span class="card-stats">
+        <span class="stat" id="stars-nicker">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          —
+        </span>
+        <span class="stat" id="dl-nicker">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          —
+        </span>
+      </span>
+      <span class="card-actions">
+        <a class="icon-btn ghost" href="https://github.com/samaBR85/3DSnickerStream" target="_blank" aria-label="GitHub">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a class="icon-btn solid" href="https://samabr85.github.io/3DSnickerStream/" target="_blank" aria-label="Open site">→</a>
+      </span>
+    </div>
+  </div>
+
+  <!-- Blog link card (always visible) -->
+  <a class="project-card" href="/blog/">
+    <div class="card-top">
+      <h2 data-i18n="blogcard-title">From the Build Log</h2>
+      <p class="card-tagline" data-i18n="blogcard-desc">Technical deep-dives written while building these tools.</p>
+      <p class="card-platforms">Blog · EN / PT</p>
+    </div>
+    <svg class="card-art" viewBox="0 0 220 120" fill="none" stroke="#34c759" stroke-width="1.5" stroke-linecap="round">
+      <line x1="16" y1="22" x2="150" y2="22"/>
+      <line x1="16" y1="42" x2="196" y2="42" opacity=".7"/>
+      <line x1="16" y1="62" x2="170" y2="62" opacity=".55"/>
+      <line x1="16" y1="82" x2="188" y2="82" opacity=".4"/>
+      <line x1="16" y1="102" x2="120" y2="102" opacity=".3"/>
+    </svg>
+    <div class="card-foot">
+      <span class="card-stats">
+        <span class="stat" data-i18n="blogcard-count">6 articles</span>
+      </span>
+      <span class="card-actions">
+        <span class="icon-btn solid" aria-hidden="true">→</span>
+      </span>
+    </div>
+  </a>
 
 </div>
 
@@ -837,15 +788,26 @@
   <p data-i18n="footer">Made by <a href="https://github.com/samaBR85" target="_blank">samaBR</a> · Open Source</p>
 </footer>
 
+</div><!-- /sheet -->
+
 <script>
   /* ── TRANSLATIONS ── */
   const i18n = {
     en: {
-      'eyebrow':          'Open Source · Free Tools',
-      'h1':               'Tools for<br><span class="accent">video editors</span>',
+      'h1':               '<span class="w1">Build.</span> <span class="w2">Sync.</span> <span class="w3">Play.</span>',
       'desc':             'Plugins and utilities built to speed up music-synced editing in Adobe Premiere Pro, After Effects, and Windows.',
-      'projects-title':   'Projects',
-      'projects-subtitle':'Open source tools built for video editors and tinkerers.',
+      'tab-all':          'All',
+      'tab-adobe':        'Adobe',
+      'tab-3ds':          'Nintendo 3DS',
+      'tab-windows':      'Windows',
+      'desc-premiere-short': 'Auto beat markers for music-synced editing in Premiere Pro.',
+      'desc-ae-short':       'Beat detection and colored markers for After Effects.',
+      'desc-gen6-short':     'Pokémon gen-6 plugin — wild spawner, PC editor, battle tools.',
+      'desc-nicker-short':   'Stream your Nintendo 3DS to your PC over Wi-Fi.',
+      'desc-mst-short':      'One hotkey to switch Windows audio between mono and stereo.',
+      'blogcard-title':      'From the Build Log',
+      'blogcard-desc':       'Technical deep-dives written while building these tools.',
+      'blogcard-count':      '6 articles',
       'tag-premiere':  'Plugin · Adobe Premiere Pro',
       'desc-premiere': 'Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.',
       'tag-ae':        'Plugin · Adobe After Effects',
@@ -866,14 +828,6 @@
       'blog-desc':        'Technical deep-dives written while building these tools — for video editors who want to code.',
       'nav-blog':         'Blog',
       'nav-about':        'About',
-      'teaser-label':     '📝 From the blog',
-      'teaser-read':      'READ MORE →',
-      'teaser1-title':    'UXP Plugin Development: What Adobe Doesn\'t Tell You',
-      'teaser1-text':     'UXP is Adobe\'s modern plugin runtime and it runs a completely different JavaScript environment from what you\'re used to. No AudioContext. No Worker. No readFileSync. This is the production reference built while shipping BeatMarker — every quirk confirmed in production.',
-      'teaser2-title':    'CEP for After Effects 2026: The Underground Plugin Guide',
-      'teaser2-text':     'Every tutorial on CEP says the same install paths. In After Effects 2026, those paths do nothing — no error, no log, just silence. Claude Code found the real path by reverse-engineering Adobe\'s own bundled extension. This is the guide that didn\'t exist.',
-      'teaser3-title':    'Building a Windows Utility in C#: Hotkeys, Tray Icons, and Admin Rights',
-      'teaser3-text':     'Switching between stereo and mono happens dozens of times a day for a video editor who checks audio mixes. Windows buries the toggle three clicks deep in Accessibility Settings. One keyboard shortcut was the fix — and that meant building a native C# utility from scratch, for the first time.',
       'blog-art1-title':  'UXP Plugin Development: What Adobe Doesn\'t Tell You',
       'blog-art1-desc':   'A production reference built while shipping BeatMarker — filesystem quirks, the marker API lies, transaction limits, and why WASM will crash Premiere every single time.',
       'blog-art2-title':  'CEP for After Effects 2026: The Underground Plugin Guide',
@@ -889,11 +843,20 @@
       'blog-read':        'Read article →',
     },
     pt: {
-      'eyebrow':          'Código Aberto · Ferramentas Gratuitas',
-      'h1':               'Ferramentas para<br><span class="accent">editores de vídeo</span>',
+      'h1':               '<span class="w1">Criar.</span> <span class="w2">Sincronizar.</span> <span class="w3">Jogar.</span>',
       'desc':             'Plugins e utilitários criados para agilizar a edição sincronizada com música no Adobe Premiere Pro, After Effects e Windows.',
-      'projects-title':   'Projetos',
-      'projects-subtitle':'Ferramentas open source para editores de vídeo e curiosos.',
+      'tab-all':          'Todos',
+      'tab-adobe':        'Adobe',
+      'tab-3ds':          'Nintendo 3DS',
+      'tab-windows':      'Windows',
+      'desc-premiere-short': 'Marcadores de batida automáticos para edição musical no Premiere Pro.',
+      'desc-ae-short':       'Detecção de batidas e marcadores coloridos para o After Effects.',
+      'desc-gen6-short':     'Plugin Pokémon gen-6 — spawner de selvagens, editor de PC, batalha.',
+      'desc-nicker-short':   'Transmita seu Nintendo 3DS para o PC via Wi-Fi.',
+      'desc-mst-short':      'Um atalho para alternar o áudio do Windows entre mono e estéreo.',
+      'blogcard-title':      'Do Diário de Desenvolvimento',
+      'blogcard-desc':       'Deep-dives técnicos escritos durante o desenvolvimento dessas ferramentas.',
+      'blogcard-count':      '6 artigos',
       'tag-premiere':  'Plugin · Adobe Premiere Pro',
       'desc-premiere': 'Plugin de detecção de batidas para o Adobe Premiere Pro — gera automaticamente marcadores coloridos nos clipes para edição sincronizada com a música.',
       'tag-ae':        'Plugin · Adobe After Effects',
@@ -914,14 +877,6 @@
       'blog-desc':        'Deep-dives técnicos escritos durante o desenvolvimento dessas ferramentas — para editores de vídeo que querem programar.',
       'nav-blog':         'Blog',
       'nav-about':        'Sobre',
-      'teaser-label':     '📝 Do blog',
-      'teaser-read':      'LEIA MAIS →',
-      'teaser1-title':    'Desenvolvimento de Plugin UXP: O Que a Adobe Não Te Conta',
-      'teaser1-text':     'O UXP é o runtime moderno de plugins da Adobe e roda em um ambiente JavaScript completamente diferente do que você está acostumado. Sem AudioContext. Sem Worker. Sem readFileSync. Esta é a referência de produção construída durante o desenvolvimento do BeatMarker — cada quirk confirmado em produção.',
-      'teaser2-title':    'CEP para After Effects 2026: O Guia Underground de Plugins',
-      'teaser2-text':     'Todo tutorial sobre CEP mostra os mesmos caminhos de instalação. No After Effects 2026, esses caminhos não fazem nada — sem erro, sem log, só silêncio. O Claude Code encontrou o caminho real fazendo engenharia reversa na própria extensão da Adobe. Este é o guia que não existia.',
-      'teaser3-title':    'Construindo um Utilitário Windows em C#: Hotkeys, Bandeja e Permissões',
-      'teaser3-text':     'Alternar entre estéreo e mono acontece dezenas de vezes por dia para um editor de vídeo que revisa mixagens. O Windows enterra o toggle três cliques abaixo nas Configurações de Acessibilidade. Um atalho de teclado era a solução — e isso significava construir um utilitário C# nativo do zero, pela primeira vez.',
       'blog-art1-title':  'Desenvolvimento de Plugin UXP: O Que a Adobe Não Te Conta',
       'blog-art1-desc':   'Uma referência de produção construída durante o desenvolvimento do BeatMarker — quirks do filesystem, mentiras da API de markers, limites de transação, e por que WASM vai travar o Premiere toda vez.',
       'blog-art2-title':  'CEP para After Effects 2026: O Guia Underground de Plugins',
@@ -981,6 +936,18 @@
   document.getElementById('langToggle').addEventListener('click', () => {
     currentLang = currentLang === 'en' ? 'pt' : 'en';
     applyLang(currentLang);
+  });
+
+  /* ── PROJECT FILTER TABS ── */
+  document.querySelectorAll('#filterTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelector('#filterTabs .active').classList.remove('active');
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.projects [data-cat]').forEach(card => {
+        card.style.display = (f === 'all' || card.dataset.cat === f) ? '' : 'none';
+      });
+    });
   });
 
   /* ── GITHUB STATS ──
