@@ -692,6 +692,41 @@
     </div>
   </div>
 
+  <!-- 1-Click Transfer -->
+  <div class="project-card" data-cat="windows">
+    <div class="card-top">
+      <h2><a href="https://samabr85.github.io/1clicktransfer/" target="_blank">1-Click Transfer</a></h2>
+      <p class="card-tagline" data-i18n="desc-1ct-short">One button copies a file to a folder or FTP server.</p>
+      <p class="card-platforms">Windows 10/11 · PowerShell · FTP/FTPS</p>
+    </div>
+    <svg class="card-art" viewBox="0 0 220 120" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round">
+      <rect x="14" y="42" width="40" height="36" rx="5"/>
+      <line x1="60" y1="60" x2="86" y2="60" stroke-dasharray="4 5"/>
+      <circle cx="110" cy="60" r="26"/>
+      <path d="M101 60 h18 M112 51 l9 9 -9 9"/>
+      <line x1="140" y1="60" x2="166" y2="60" stroke-dasharray="4 5"/>
+      <rect x="172" y="34" width="48" height="52" rx="6"/>
+    </svg>
+    <div class="card-foot">
+      <span class="card-stats">
+        <span class="stat" id="stars-1ct">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          —
+        </span>
+        <span class="stat" id="dl-1ct">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          —
+        </span>
+      </span>
+      <span class="card-actions">
+        <a class="icon-btn ghost" href="https://github.com/samaBR85/1clicktransfer" target="_blank" aria-label="GitHub">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a class="icon-btn solid" href="https://samabr85.github.io/1clicktransfer/" target="_blank" aria-label="Open site">→</a>
+      </span>
+    </div>
+  </div>
+
   <!-- Blog link card (always visible) -->
   <a class="project-card" href="/blog/">
     <div class="card-top">
@@ -728,6 +763,16 @@
     </div>
 
     <div class="blog-grid">
+    <a class="blog-card" href="blog/1clicktransfer/">
+      <div class="blog-card-meta">
+        <span class="blog-tag">App · Windows · PowerShell</span>
+        <span class="blog-date">July 2026</span>
+      </div>
+      <h3 class="blog-card-title" data-i18n="blog-art8-title">Building 1-Click Transfer: A One-Button File Copier for Windows</h3>
+      <p class="blog-card-desc" data-i18n="blog-art8-desc">A tiny PowerShell + WinForms app that copies a pre-chosen file to a folder or FTP server with one click — profiles, DPAPI-encrypted passwords, no installer. Built in collaboration with Claude.</p>
+      <span class="blog-read-more" data-i18n="blog-read">Read article →</span>
+    </a>
+
     <a class="blog-card" href="blog/3dsnickerstream/">
       <div class="blog-card-meta">
         <span class="blog-tag">App · macOS · Windows</span>
@@ -822,9 +867,10 @@
       'desc-gen6-short':     'Pokémon gen-6 plugin — wild spawner, PC editor, battle tools.',
       'desc-nicker-short':   'Stream your Nintendo 3DS to your PC over Wi-Fi.',
       'desc-mst-short':      'One hotkey to switch Windows audio between mono and stereo.',
+      'desc-1ct-short':      'One button copies a file to a folder or FTP server.',
       'blogcard-title':      'From the Build Log',
       'blogcard-desc':       'Technical deep-dives written while building these tools.',
-      'blogcard-count':      '7 articles',
+      'blogcard-count':      '8 articles',
       'tag-premiere':  'Plugin · Adobe Premiere Pro',
       'desc-premiere': 'Beat detection plugin for Adobe Premiere Pro — auto-generates colored beat markers on source clips for music-synced editing.',
       'tag-ae':        'Plugin · Adobe After Effects',
@@ -859,6 +905,8 @@
       'blog-art6-desc':   'How a curious player forked and overhauled a Luma3DS plugin for Pokémon X, Y, OR, and AS — wild spawner, PC editor, battle tools, 25 color themes, and a 23-page in-app guide. Built in collaboration with Claude.',
       'blog-art7-title':  'Building 3DSnickerStream: A Native 3DS Streaming App for Mac and Windows',
       'blog-art7-desc':   'How a native SwiftUI app for Mac, then a matching WPF/.NET app for Windows, came out of reverse-engineering the NTR and HzMod protocols from an AutoIt original. Built in collaboration with Claude.',
+      'blog-art8-title':  'Building 1-Click Transfer: A One-Button File Copier for Windows',
+      'blog-art8-desc':   'A tiny PowerShell + WinForms app that copies a pre-chosen file to a folder or FTP server with one click — profiles, DPAPI-encrypted passwords, no installer. Built in collaboration with Claude.',
       'blog-read':        'Read article →',
     },
     pt: {
@@ -873,9 +921,10 @@
       'desc-gen6-short':     'Plugin Pokémon gen-6 — spawner de selvagens, editor de PC, batalha.',
       'desc-nicker-short':   'Transmita seu Nintendo 3DS para o PC via Wi-Fi.',
       'desc-mst-short':      'Um atalho para alternar o áudio do Windows entre mono e estéreo.',
+      'desc-1ct-short':      'Um botão copia um arquivo para uma pasta ou servidor FTP.',
       'blogcard-title':      'Do Diário de Desenvolvimento',
       'blogcard-desc':       'Deep-dives técnicos escritos durante o desenvolvimento dessas ferramentas.',
-      'blogcard-count':      '7 artigos',
+      'blogcard-count':      '8 artigos',
       'tag-premiere':  'Plugin · Adobe Premiere Pro',
       'desc-premiere': 'Plugin de detecção de batidas para o Adobe Premiere Pro — gera automaticamente marcadores coloridos nos clipes para edição sincronizada com a música.',
       'tag-ae':        'Plugin · Adobe After Effects',
@@ -910,6 +959,8 @@
       'blog-art6-desc':   'Como um jogador curioso fez o fork e reformulou um plugin Luma3DS para Pokémon X, Y, OR e AS — spawner de selvagens, editor de PC, ferramentas de batalha, 25 temas de cor e um guia in-app de 23 páginas. Construído em colaboração com o Claude.',
       'blog-art7-title':  'Construindo o 3DSnickerStream: Um App Nativo de Streaming do 3DS para Mac e Windows',
       'blog-art7-desc':   'Como um app SwiftUI nativo para Mac, depois um app WPF/.NET equivalente para Windows, nasceu da engenharia reversa dos protocolos NTR e HzMod a partir de um original em AutoIt. Construído em colaboração com o Claude.',
+      'blog-art8-title':  'Construindo o 1-Click Transfer: Um Copiador de Arquivos de Um Botão para Windows',
+      'blog-art8-desc':   'Um pequeno app PowerShell + WinForms que copia um arquivo pré-escolhido para uma pasta ou servidor FTP com um clique — perfis, senhas criptografadas com DPAPI, sem instalador. Construído em colaboração com o Claude.',
       'blog-read':        'Ler artigo →',
     }
   };
@@ -981,7 +1032,8 @@
     'BeatMarker-AEPlugin':       { starsEl: document.getElementById('stars-ae'),       dlEl: document.getElementById('dl-ae') },
     'MonoStereoToggle':          { starsEl: document.getElementById('stars-mst'),      dlEl: document.getElementById('dl-mst') },
     'Gen6CTRPFrameworkOverhauled': { starsEl: document.getElementById('stars-gen6'),    dlEl: document.getElementById('dl-gen6') },
-    '3DSnickerStream':             { starsEl: document.getElementById('stars-nicker'),  dlEl: document.getElementById('dl-nicker') }
+    '3DSnickerStream':             { starsEl: document.getElementById('stars-nicker'),  dlEl: document.getElementById('dl-nicker') },
+    '1clicktransfer':              { starsEl: document.getElementById('stars-1ct'),     dlEl: document.getElementById('dl-1ct') }
   };
 
   async function loadStats() {

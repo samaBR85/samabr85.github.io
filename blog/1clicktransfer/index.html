@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building 1-Click Transfer: A One-Button File Copier for Windows — samaBR</title>
+  <meta name="description" content="A tiny PowerShell + WinForms app that copies a pre-chosen file to a pre-chosen folder or FTP server with one click — profiles, DPAPI-encrypted FTP passwords, no installer. Built in collaboration with Claude." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/1clicktransfer/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/1clicktransfer/" />
+  <meta property="og:title"       content="Building 1-Click Transfer: A One-Button File Copier for Windows" />
+  <meta property="og:description" content="A tiny PowerShell + WinForms app that copies a pre-chosen file to a pre-chosen folder or FTP server with one click — profiles, DPAPI-encrypted FTP passwords, no installer. Built in collaboration with Claude." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/1clicktransfer/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/1clicktransfer/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Building 1-Click Transfer: A One-Button File Copier for Windows",
+    "description": "A tiny PowerShell + WinForms app that copies a pre-chosen file to a pre-chosen folder or FTP server with one click — built in collaboration with Claude.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-07-02",
+    "dateModified": "2026-07-02",
+    "url": "https://samabr85.github.io/blog/1clicktransfer/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "PowerShell, WinForms, Windows, FTP, FTPS, DPAPI, file transfer, automation, open source"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#1f1608;--quote-border:#f5a623;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#fff6e6;--quote-border:#e0921f;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ffc670;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+    .article-screenshot{margin:0 0 40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)}
+    .article-screenshot img{width:100%;height:auto;display:block}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">1-Click Transfer</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">📤 <span data-i18n="tag">App · Windows · PowerShell</span></div>
+    <h1 class="article-title" data-i18n="title">Building 1-Click Transfer: A One-Button<br>File Copier for Windows</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">July 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~7 min read</span>
+    </div>
+  </header>
+
+  <figure class="article-screenshot">
+    <img src="../../docs/screenshots/1clicktransfer/og-image.png" alt="1-Click Transfer app window" loading="lazy" />
+  </figure>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: The Same File, The Same Place, Every Single Day</h2>
+    <p data-i18n="s1-p1">Some chores are too small to think about and too repetitive to ignore. Mine was this: a file gets updated, and it needs to go to the same folder — sometimes a network share, sometimes an FTP server — every time, with no variation in the steps. Open the file explorer, navigate, drag, wait, confirm overwrite, close. A minute of clicking for zero minutes of actual decision-making.</p>
+    <p data-i18n="s1-p2">There are proper sync tools for this — rsync, FTP clients with watch folders, scheduled tasks. All of them were more setup than the problem justified, and most assumed I wanted continuous syncing rather than "copy this one file, right now, when I press a button."</p>
+    <p data-i18n="s1-p3">So the shape of the fix was obvious before any code existed: one button, one pre-chosen source, one pre-chosen destination. Everything else — profiles, FTP support, action modes — got added because the first version immediately showed where a single hardcoded path fell short.</p>
+
+    <div class="pullquote" data-i18n="q1">"The best automation for a one-minute chore isn't a pipeline. It's a button that remembers what you always do."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">What It Does</h2>
+    <p data-i18n="s2-p1">A dark-mode WinForms window opens, source and destination panels list their files, and one big <strong>TRANSFER</strong> button does the copy — to a local/network folder or straight to an FTP/FTPS server.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">📤</div>
+        <div class="fi-title" data-i18n="feat1-title">1-Click Transfer</div>
+        <div class="fi-desc" data-i18n="feat1-desc">One button copies the pre-chosen file to the pre-chosen destination — folder or FTP/FTPS.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🗂️</div>
+        <div class="fi-title" data-i18n="feat2-title">Profiles</div>
+        <div class="fi-desc" data-i18n="feat2-desc">Save multiple source+destination presets, including FTP with password, and switch from a dropdown.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔁</div>
+        <div class="fi-title" data-i18n="feat3-title">Action Modes</div>
+        <div class="fi-desc" data-i18n="feat3-desc">Replace, Replace if newer, or Don't replace — chosen once per profile, applied every transfer.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📁</div>
+        <div class="fi-title" data-i18n="feat4-title">Source/Destination Panels</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Lists files on both ends, with a Refresh button and a built-in FTP folder browser.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🌓</div>
+        <div class="fi-title" data-i18n="feat5-title">Dark / Light Mode</div>
+        <div class="fi-desc" data-i18n="feat5-desc">Dark by default, resizable window, configurable keyboard shortcut for the transfer itself.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🌐</div>
+        <div class="fi-title" data-i18n="feat6-title">Bilingual UI</div>
+        <div class="fi-desc" data-i18n="feat6-desc">Portuguese and English, switchable in Settings at any time.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔒</div>
+        <div class="fi-title" data-i18n="feat7-title">Encrypted FTP Password</div>
+        <div class="fi-desc" data-i18n="feat7-desc">Stored with Windows DPAPI, per user — never written to disk in plain text.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">💾</div>
+        <div class="fi-title" data-i18n="feat8-title">Portable Settings</div>
+        <div class="fi-desc" data-i18n="feat8-desc"><code>settings.json</code> lives next to the .exe — no installer, no registry, copy the folder anywhere.</div>
+      </div>
+    </div>
+
+    <p data-i18n="s2-p2">No installation step exists because there's nothing to install: unzip the release, run <code>1clickTransfer.exe</code>, done. Windows SmartScreen will flag it on first run since it isn't code-signed — the usual "More info → Run anyway," and the full source is public to check.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">Why PowerShell + WinForms</h2>
+    <p data-i18n="s3-p1">The obvious modern choice for a small Windows utility is a .NET app, maybe with WPF or MAUI for the UI. I went a level more minimal: PowerShell driving WinForms directly, compiled to a single .exe with <a href="https://github.com/MScholtes/PS2EXE" style="color:var(--quote-border)">PS2EXE</a>.</p>
+    <p data-i18n="s3-p2">The reasoning was about the runtime, not the language. Windows PowerShell 5.1 ships built into every Windows 10/11 install — there's nothing to download, nothing to check the version of, nothing that can be "not installed" on the machine this needs to run on. WinForms gives a real, native, resizable window without pulling in a heavier UI framework for what's fundamentally two panels and a button.</p>
+    <p data-i18n="s3-p3">The tradeoff is real: PowerShell's WinForms bindings are clunkier to write than C# and the startup is a hair slower than a compiled .NET binary. For an app whose entire job is "click once, wait a second, done," that tradeoff was worth it for zero-dependency portability.</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">One Button, Two Kinds of Destination</h2>
+    <p data-i18n="s4-p1">The TRANSFER button doesn't know or care whether the destination is a folder or a server — that distinction lives entirely in the profile, resolved once when the profile is selected. A local/network destination is a straightforward file copy with overwrite handling; an FTP/FTPS destination opens a connection, authenticates, and uploads the file to the browsed remote path.</p>
+    <p data-i18n="s4-p2">The three action modes apply the same way to both destination types: <strong>Replace</strong> always overwrites, <strong>Replace if newer</strong> compares timestamps and skips the copy if the destination file is already current, and <strong>Don't replace</strong> refuses if a file already exists at the destination — useful for one-way archival transfers where an overwrite would be a mistake.</p>
+    <p data-i18n="s4-p3">Keeping this logic behind one abstraction meant the UI never needed a "which kind of transfer is this" branch anywhere except in the profile editor — the transfer button, the keyboard shortcut, and the status messages all stayed identical regardless of destination type.</p>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">Encrypting the FTP Password with DPAPI</h2>
+    <p data-i18n="s5-p1">An FTP profile needs to store a password somewhere, and <code>settings.json</code> sitting in plain text next to the .exe is not where a password should live. The fix didn't need a third-party library or a master password to manage — Windows already ships exactly the right tool: the <strong>Data Protection API</strong> (DPAPI), available from .NET's <code>System.Security.Cryptography.ProtectedData</code>.</p>
+    <p data-i18n="s5-p2">DPAPI encrypts a blob of data using a key derived from the logged-in Windows user's credentials, with no key file to manage or lose. The encrypted bytes are only decryptable by that same Windows user account on that same machine — so the password in <code>settings.json</code> is useless if the file is copied elsewhere or read by another user.</p>
+
+    <pre><code># Encrypt (saving a profile)
+Add-Type -AssemblyName System.Security
+$bytes = [System.Text.Encoding]::UTF8.GetBytes($plainPassword)
+$encrypted = [System.Security.Cryptography.ProtectedData]::Protect(
+  $bytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser
+)
+$profile.ftpPasswordEncrypted = [Convert]::ToBase64String($encrypted)
+
+# Decrypt (loading a profile to connect)
+$encrypted = [Convert]::FromBase64String($profile.ftpPasswordEncrypted)
+$bytes = [System.Security.Cryptography.ProtectedData]::Unprotect(
+  $encrypted, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser
+)
+$plainPassword = [System.Text.Encoding]::UTF8.GetString($bytes)</code></pre>
+
+    <p data-i18n="s5-p3">Because the scope is <code>CurrentUser</code> rather than <code>LocalMachine</code>, a copy of the whole app folder — settings and all — doesn't leak the password to whoever it's shared with, or even to another account on the same PC. That was the whole requirement, solved with an API that's been in Windows since 2000.</p>
+
+    <div class="pullquote" data-i18n="q2">"The password doesn't need a vault. It needs to be worthless to anyone who isn't already logged in as me."</div>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">Profiles: Switching Source and Destination in One Click</h2>
+    <p data-i18n="s6-p1">One profile was never going to be enough — different files go to different places, and switching between them shouldn't mean reconfiguring the app each time. Profiles bundle a source path, a destination (folder or FTP, including the encrypted credentials for the latter), and an action mode into one saved unit, picked from a dropdown on the home screen.</p>
+    <p data-i18n="s6-p2">Selecting a profile re-populates the source and destination panels immediately — the file lists refresh, the FTP browser reconnects if needed, and the TRANSFER button is live again with the new context, all without leaving the main window.</p>
+    <p data-i18n="s6-p3">The profile list itself lives in the same portable <code>settings.json</code> as everything else, so moving the app to another machine or restoring from a backup carries every saved profile along with it — encrypted passwords included, though those specifically only decrypt again under the same Windows user account.</p>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">Built with Claude</h2>
+    <p data-i18n="s7-p1">Same as every other project on this site: I didn't write this code alone. I described the chore, described what a fix should feel like — one button, remembers what I always do — and built it with Claude, testing each version against real folders and a real FTP server until the edge cases (a locked destination file, a dropped FTP connection mid-upload, a profile with no destination set yet) stopped surprising me.</p>
+    <p data-i18n="s7-p2">This one started smaller than most of my projects and grew through actual daily use rather than an upfront feature list. Profiles, action modes, and the FTP browser all got added after the single-hardcoded-path version ran into a wall within the first week of using it for real.</p>
+    <p data-i18n="s7-p3">The DPAPI decision is a good example of the working style: I knew a password shouldn't sit in plain text, I didn't know DPAPI existed, and the conversation that found it took about as long as writing this sentence did.</p>
+
+    <div class="pullquote" data-i18n="q3">"A chore small enough to fix in an afternoon is still worth fixing. It just doesn't need a roadmap — it needs a button."</div>
+
+    <!-- SECTION 8 -->
+    <hr class="divider">
+    <h2 data-i18n="s8-title">Credits, License & Result</h2>
+    <p data-i18n="s8-p1">1-Click Transfer is a free, open source Windows app built with PowerShell, WinForms, and <a href="https://github.com/MScholtes/PS2EXE" style="color:var(--quote-border)">PS2EXE</a> for the .exe packaging, written in collaboration with Claude. Licensed under the <strong>MIT License</strong>.</p>
+    <p data-i18n="s8-p2">It's the app I wanted from the start: no install, no runtime to check, one button that does exactly the same thing every time, and a password that stays safe even if the whole folder gets copied somewhere it shouldn't.</p>
+    <p data-i18n="s8-p3">Download, source, and the full feature list: <a href="https://github.com/samaBR85/1clicktransfer" style="color:var(--quote-border)">github.com/samaBR85/1clicktransfer</a> — MIT, free.</p>
+
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'1-Click Transfer','tag':'App · Windows · PowerShell',
+    'title':'Building 1-Click Transfer: A One-Button<br>File Copier for Windows',
+    'date':'July 2026','readtime':'⏱ ~7 min read',
+    's1-title':'The Problem: The Same File, The Same Place, Every Single Day',
+    's1-p1':'Some chores are too small to think about and too repetitive to ignore. Mine was this: a file gets updated, and it needs to go to the same folder — sometimes a network share, sometimes an FTP server — every time, with no variation in the steps. Open the file explorer, navigate, drag, wait, confirm overwrite, close. A minute of clicking for zero minutes of actual decision-making.',
+    's1-p2':'There are proper sync tools for this — rsync, FTP clients with watch folders, scheduled tasks. All of them were more setup than the problem justified, and most assumed I wanted continuous syncing rather than "copy this one file, right now, when I press a button."',
+    's1-p3':'So the shape of the fix was obvious before any code existed: one button, one pre-chosen source, one pre-chosen destination. Everything else — profiles, FTP support, action modes — got added because the first version immediately showed where a single hardcoded path fell short.',
+    'q1':'"The best automation for a one-minute chore isn\'t a pipeline. It\'s a button that remembers what you always do."',
+    's2-title':'What It Does',
+    's2-p1':'A dark-mode WinForms window opens, source and destination panels list their files, and one big <strong>TRANSFER</strong> button does the copy — to a local/network folder or straight to an FTP/FTPS server.',
+    'feat1-title':'1-Click Transfer','feat1-desc':'One button copies the pre-chosen file to the pre-chosen destination — folder or FTP/FTPS.',
+    'feat2-title':'Profiles','feat2-desc':'Save multiple source+destination presets, including FTP with password, and switch from a dropdown.',
+    'feat3-title':'Action Modes','feat3-desc':'Replace, Replace if newer, or Don\'t replace — chosen once per profile, applied every transfer.',
+    'feat4-title':'Source/Destination Panels','feat4-desc':'Lists files on both ends, with a Refresh button and a built-in FTP folder browser.',
+    'feat5-title':'Dark / Light Mode','feat5-desc':'Dark by default, resizable window, configurable keyboard shortcut for the transfer itself.',
+    'feat6-title':'Bilingual UI','feat6-desc':'Portuguese and English, switchable in Settings at any time.',
+    'feat7-title':'Encrypted FTP Password','feat7-desc':'Stored with Windows DPAPI, per user — never written to disk in plain text.',
+    'feat8-title':'Portable Settings','feat8-desc':'<code>settings.json</code> lives next to the .exe — no installer, no registry, copy the folder anywhere.',
+    's2-p2':'No installation step exists because there\'s nothing to install: unzip the release, run <code>1clickTransfer.exe</code>, done. Windows SmartScreen will flag it on first run since it isn\'t code-signed — the usual "More info → Run anyway," and the full source is public to check.',
+    's3-title':'Why PowerShell + WinForms',
+    's3-p1':'The obvious modern choice for a small Windows utility is a .NET app, maybe with WPF or MAUI for the UI. I went a level more minimal: PowerShell driving WinForms directly, compiled to a single .exe with <a href="https://github.com/MScholtes/PS2EXE" style="color:var(--quote-border)">PS2EXE</a>.',
+    's3-p2':'The reasoning was about the runtime, not the language. Windows PowerShell 5.1 ships built into every Windows 10/11 install — there\'s nothing to download, nothing to check the version of, nothing that can be "not installed" on the machine this needs to run on. WinForms gives a real, native, resizable window without pulling in a heavier UI framework for what\'s fundamentally two panels and a button.',
+    's3-p3':'The tradeoff is real: PowerShell\'s WinForms bindings are clunkier to write than C# and the startup is a hair slower than a compiled .NET binary. For an app whose entire job is "click once, wait a second, done," that tradeoff was worth it for zero-dependency portability.',
+    's4-title':'One Button, Two Kinds of Destination',
+    's4-p1':'The TRANSFER button doesn\'t know or care whether the destination is a folder or a server — that distinction lives entirely in the profile, resolved once when the profile is selected. A local/network destination is a straightforward file copy with overwrite handling; an FTP/FTPS destination opens a connection, authenticates, and uploads the file to the browsed remote path.',
+    's4-p2':'The three action modes apply the same way to both destination types: <strong>Replace</strong> always overwrites, <strong>Replace if newer</strong> compares timestamps and skips the copy if the destination file is already current, and <strong>Don\'t replace</strong> refuses if a file already exists at the destination — useful for one-way archival transfers where an overwrite would be a mistake.',
+    's4-p3':'Keeping this logic behind one abstraction meant the UI never needed a "which kind of transfer is this" branch anywhere except in the profile editor — the transfer button, the keyboard shortcut, and the status messages all stayed identical regardless of destination type.',
+    's5-title':'Encrypting the FTP Password with DPAPI',
+    's5-p1':'An FTP profile needs to store a password somewhere, and <code>settings.json</code> sitting in plain text next to the .exe is not where a password should live. The fix didn\'t need a third-party library or a master password to manage — Windows already ships exactly the right tool: the <strong>Data Protection API</strong> (DPAPI), available from .NET\'s <code>System.Security.Cryptography.ProtectedData</code>.',
+    's5-p2':'DPAPI encrypts a blob of data using a key derived from the logged-in Windows user\'s credentials, with no key file to manage or lose. The encrypted bytes are only decryptable by that same Windows user account on that same machine — so the password in <code>settings.json</code> is useless if the file is copied elsewhere or read by another user.',
+    's5-p3':'Because the scope is <code>CurrentUser</code> rather than <code>LocalMachine</code>, a copy of the whole app folder — settings and all — doesn\'t leak the password to whoever it\'s shared with, or even to another account on the same PC. That was the whole requirement, solved with an API that\'s been in Windows since 2000.',
+    'q2':'"The password doesn\'t need a vault. It needs to be worthless to anyone who isn\'t already logged in as me."',
+    's6-title':'Profiles: Switching Source and Destination in One Click',
+    's6-p1':'One profile was never going to be enough — different files go to different places, and switching between them shouldn\'t mean reconfiguring the app each time. Profiles bundle a source path, a destination (folder or FTP, including the encrypted credentials for the latter), and an action mode into one saved unit, picked from a dropdown on the home screen.',
+    's6-p2':'Selecting a profile re-populates the source and destination panels immediately — the file lists refresh, the FTP browser reconnects if needed, and the TRANSFER button is live again with the new context, all without leaving the main window.',
+    's6-p3':'The profile list itself lives in the same portable <code>settings.json</code> as everything else, so moving the app to another machine or restoring from a backup carries every saved profile along with it — encrypted passwords included, though those specifically only decrypt again under the same Windows user account.',
+    's7-title':'Built with Claude',
+    's7-p1':'Same as every other project on this site: I didn\'t write this code alone. I described the chore, described what a fix should feel like — one button, remembers what I always do — and built it with Claude, testing each version against real folders and a real FTP server until the edge cases (a locked destination file, a dropped FTP connection mid-upload, a profile with no destination set yet) stopped surprising me.',
+    's7-p2':'This one started smaller than most of my projects and grew through actual daily use rather than an upfront feature list. Profiles, action modes, and the FTP browser all got added after the single-hardcoded-path version ran into a wall within the first week of using it for real.',
+    's7-p3':'The DPAPI decision is a good example of the working style: I knew a password shouldn\'t sit in plain text, I didn\'t know DPAPI existed, and the conversation that found it took about as long as writing this sentence did.',
+    'q3':'"A chore small enough to fix in an afternoon is still worth fixing. It just doesn\'t need a roadmap — it needs a button."',
+    's8-title':'Credits, License & Result',
+    's8-p1':'1-Click Transfer is a free, open source Windows app built with PowerShell, WinForms, and <a href="https://github.com/MScholtes/PS2EXE" style="color:var(--quote-border)">PS2EXE</a> for the .exe packaging, written in collaboration with Claude. Licensed under the <strong>MIT License</strong>.',
+    's8-p2':'It\'s the app I wanted from the start: no install, no runtime to check, one button that does exactly the same thing every time, and a password that stays safe even if the whole folder gets copied somewhere it shouldn\'t.',
+    's8-p3':'Download, source, and the full feature list: <a href="https://github.com/samaBR85/1clicktransfer" style="color:var(--quote-border)">github.com/samaBR85/1clicktransfer</a> — MIT, free.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'1-Click Transfer','tag':'App · Windows · PowerShell',
+    'title':'Construindo o 1-Click Transfer: Um Copiador<br>de Arquivos de Um Botão para Windows',
+    'date':'Julho de 2026','readtime':'⏱ ~7 min de leitura',
+    's1-title':'O Problema: O Mesmo Arquivo, O Mesmo Lugar, Todo Santo Dia',
+    's1-p1':'Algumas tarefas são pequenas demais pra pensar e repetitivas demais pra ignorar. A minha era essa: um arquivo é atualizado, e precisa ir pra mesma pasta — às vezes um compartilhamento de rede, às vezes um servidor FTP — toda vez, sem nenhuma variação nos passos. Abrir o explorador de arquivos, navegar, arrastar, esperar, confirmar substituição, fechar. Um minuto de clique para zero minutos de decisão de verdade.',
+    's1-p2':'Existem ferramentas de sincronização de verdade pra isso — rsync, clientes FTP com pastas monitoradas, tarefas agendadas. Todas exigiam mais configuração do que o problema justificava, e a maioria assumia que eu queria sincronização contínua em vez de "copiar este arquivo, agora, quando eu apertar um botão".',
+    's1-p3':'Então a forma da solução era óbvia antes de qualquer código existir: um botão, uma origem pré-escolhida, um destino pré-escolhido. Tudo o resto — perfis, suporte a FTP, modos de ação — foi adicionado porque a primeira versão mostrou na hora onde um caminho fixo único não dava conta.',
+    'q1':'"A melhor automação para uma tarefa de um minuto não é um pipeline. É um botão que lembra o que você sempre faz."',
+    's2-title':'O Que Ele Faz',
+    's2-p1':'Uma janela WinForms em modo escuro abre, os painéis de origem e destino listam seus arquivos, e um botão grande de <strong>TRANSFERIR</strong> faz a cópia — para uma pasta local/rede ou direto para um servidor FTP/FTPS.',
+    'feat1-title':'Transferência em 1 Clique','feat1-desc':'Um botão copia o arquivo pré-escolhido para o destino pré-escolhido — pasta ou FTP/FTPS.',
+    'feat2-title':'Perfis','feat2-desc':'Salve vários conjuntos de origem+destino, incluindo FTP com senha, e troque por um seletor.',
+    'feat3-title':'Modos de Ação','feat3-desc':'Substituir, Substituir se mais recente, ou Não substituir — escolhido uma vez por perfil, aplicado em toda transferência.',
+    'feat4-title':'Painéis de Origem/Destino','feat4-desc':'Lista arquivos dos dois lados, com botão Atualizar e um navegador de pastas FTP embutido.',
+    'feat5-title':'Modo Escuro / Claro','feat5-desc':'Escuro por padrão, janela redimensionável, atalho de teclado configurável para a própria transferência.',
+    'feat6-title':'Interface Bilíngue','feat6-desc':'Português e inglês, trocável em Configurações a qualquer momento.',
+    'feat7-title':'Senha FTP Criptografada','feat7-desc':'Guardada com o DPAPI do Windows, por usuário — nunca escrita em texto puro no disco.',
+    'feat8-title':'Configurações Portáteis','feat8-desc':'O <code>settings.json</code> fica ao lado do .exe — sem instalador, sem registro, copie a pasta pra qualquer lugar.',
+    's2-p2':'Não existe etapa de instalação porque não há nada pra instalar: descompacte o release, execute <code>1clickTransfer.exe</code>, pronto. O SmartScreen do Windows vai alertar na primeira execução já que o app não é assinado — o já conhecido "Mais informações → Executar assim mesmo", e o código-fonte completo está público pra conferir.',
+    's3-title':'Por Que PowerShell + WinForms',
+    's3-p1':'A escolha moderna óbvia para um utilitário pequeno de Windows é um app .NET, talvez com WPF ou MAUI pra UI. Fui um nível mais minimalista: PowerShell controlando WinForms diretamente, compilado num único .exe com o <a href="https://github.com/MScholtes/PS2EXE" style="color:var(--quote-border)">PS2EXE</a>.',
+    's3-p2':'A lógica era sobre o runtime, não sobre a linguagem. O Windows PowerShell 5.1 já vem embutido em toda instalação de Windows 10/11 — não há nada pra baixar, nada pra checar a versão, nada que possa estar "não instalado" na máquina onde isso precisa rodar. O WinForms dá uma janela real, nativa e redimensionável sem trazer um framework de UI mais pesado pra algo que é fundamentalmente dois painéis e um botão.',
+    's3-p3':'A troca é real: as bindings de WinForms do PowerShell são mais desajeitadas de escrever do que C#, e o startup é um pouco mais lento que um binário .NET compilado. Para um app cujo trabalho inteiro é "clicar uma vez, esperar um segundo, pronto", essa troca valeu a pena pela portabilidade sem dependências.',
+    's4-title':'Um Botão, Dois Tipos de Destino',
+    's4-p1':'O botão TRANSFERIR não sabe nem se importa se o destino é uma pasta ou um servidor — essa distinção fica inteiramente no perfil, resolvida uma vez quando o perfil é selecionado. Um destino local/rede é uma cópia de arquivo direta com tratamento de substituição; um destino FTP/FTPS abre uma conexão, autentica e envia o arquivo pro caminho remoto navegado.',
+    's4-p2':'Os três modos de ação se aplicam da mesma forma aos dois tipos de destino: <strong>Substituir</strong> sempre sobrescreve, <strong>Substituir se mais recente</strong> compara timestamps e pula a cópia se o arquivo de destino já está atual, e <strong>Não substituir</strong> recusa se já existe um arquivo no destino — útil para transferências de arquivamento unidirecional onde uma substituição seria um erro.',
+    's4-p3':'Manter essa lógica atrás de uma única abstração significou que a UI nunca precisou de um desvio "que tipo de transferência é essa" em lugar nenhum além do editor de perfil — o botão de transferência, o atalho de teclado e as mensagens de status permaneceram idênticos independente do tipo de destino.',
+    's5-title':'Criptografando a Senha FTP com DPAPI',
+    's5-p1':'Um perfil FTP precisa guardar uma senha em algum lugar, e o <code>settings.json</code> sentado em texto puro ao lado do .exe não é onde uma senha deveria morar. A solução não precisou de uma biblioteca de terceiros nem de uma senha mestra pra gerenciar — o Windows já vem com exatamente a ferramenta certa: a <strong>Data Protection API</strong> (DPAPI), disponível em <code>System.Security.Cryptography.ProtectedData</code> do .NET.',
+    's5-p2':'O DPAPI criptografa um blob de dados usando uma chave derivada das credenciais do usuário logado no Windows, sem nenhum arquivo de chave pra gerenciar ou perder. Os bytes criptografados só são decriptáveis por aquela mesma conta de usuário do Windows naquela mesma máquina — então a senha no <code>settings.json</code> é inútil se o arquivo for copiado pra outro lugar ou lido por outro usuário.',
+    's5-p3':'Como o escopo é <code>CurrentUser</code> em vez de <code>LocalMachine</code>, uma cópia da pasta inteira do app — configurações e tudo — não vaza a senha pra quem quer que ela seja compartilhada, nem mesmo pra outra conta no mesmo PC. Esse era o requisito inteiro, resolvido com uma API que existe no Windows desde 2000.',
+    'q2':'"A senha não precisa de um cofre. Precisa ser inútil pra qualquer um que não esteja já logado como eu."',
+    's6-title':'Perfis: Trocando Origem e Destino com Um Clique',
+    's6-p1':'Um perfil nunca ia ser suficiente — arquivos diferentes vão pra lugares diferentes, e trocar entre eles não deveria significar reconfigurar o app toda vez. Perfis agrupam um caminho de origem, um destino (pasta ou FTP, incluindo as credenciais criptografadas nesse último caso) e um modo de ação numa única unidade salva, escolhida por um seletor na tela inicial.',
+    's6-p2':'Selecionar um perfil repopula os painéis de origem e destino imediatamente — as listas de arquivos atualizam, o navegador FTP reconecta se necessário, e o botão TRANSFERIR fica ativo de novo com o novo contexto, tudo sem sair da janela principal.',
+    's6-p3':'A lista de perfis em si fica no mesmo <code>settings.json</code> portátil que tudo o resto, então mover o app pra outra máquina ou restaurar de um backup carrega cada perfil salvo junto — senhas criptografadas incluídas, embora essas especificamente só decriptem de novo sob a mesma conta de usuário do Windows.',
+    's7-title':'Construído com o Claude',
+    's7-p1':'Igual a todo outro projeto neste site: não escrevi este código sozinho. Descrevi a tarefa chata, descrevi como uma solução deveria parecer — um botão, que lembra o que eu sempre faço — e construí com o Claude, testando cada versão contra pastas reais e um servidor FTP real até os casos extremos (um arquivo de destino travado, uma conexão FTP caindo no meio do upload, um perfil sem destino ainda configurado) pararem de me surpreender.',
+    's7-p2':'Este projeto começou menor que a maioria dos meus e cresceu através do uso diário real em vez de uma lista de funcionalidades definida antes. Perfis, modos de ação e o navegador FTP foram todos adicionados depois que a versão de caminho fixo único esbarrou numa parede na primeira semana de uso real.',
+    's7-p3':'A decisão do DPAPI é um bom exemplo do jeito de trabalhar: eu sabia que uma senha não deveria ficar em texto puro, eu não sabia que o DPAPI existia, e a conversa que encontrou isso levou mais ou menos o tempo de ler esta frase.',
+    'q3':'"Uma tarefa pequena o suficiente pra resolver numa tarde ainda vale a pena resolver. Só não precisa de roadmap — precisa de um botão."',
+    's8-title':'Créditos, Licença e Resultado',
+    's8-p1':'O 1-Click Transfer é um app Windows gratuito e open source, construído com PowerShell, WinForms e <a href="https://github.com/MScholtes/PS2EXE" style="color:var(--quote-border)">PS2EXE</a> para empacotar o .exe, escrito em colaboração com o Claude. Licenciado sob a <strong>Licença MIT</strong>.',
+    's8-p2':'É o app que eu queria desde o início: sem instalação, sem runtime pra checar, um botão que faz exatamente a mesma coisa toda vez, e uma senha que continua segura mesmo se a pasta inteira for copiada pra algum lugar que não deveria.',
+    's8-p3':'Download, código-fonte e a lista completa de funcionalidades: <a href="https://github.com/samaBR85/1clicktransfer" style="color:var(--quote-border)">github.com/samaBR85/1clicktransfer</a> — MIT, gratuito.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>
