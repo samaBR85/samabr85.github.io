@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Building 3DSnickerStream: A Native 3DS Streaming App for Mac and Windows — samaBR</title>
-  <meta name="description" content="How a native SwiftUI app for Mac (then a matching WPF/.NET app for Windows) came out of reverse-engineering the NTR and HzMod protocols from an AutoIt original — built in collaboration with Claude." />
+  <meta name="description" content="How a native SwiftUI app for Mac (then a matching WPF/.NET app for Windows) came out of reverse-engineering the NTR and HzMod protocols from an AutoIt original — built in collaboration with Claude Code." />
   <meta name="author" content="samaBR" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://samabr85.github.io/blog/3dsnickerstream/" />
@@ -12,7 +12,7 @@
   <meta property="og:type"        content="article" />
   <meta property="og:url"         content="https://samabr85.github.io/blog/3dsnickerstream/" />
   <meta property="og:title"       content="Building 3DSnickerStream: A Native 3DS Streaming App for Mac and Windows" />
-  <meta property="og:description" content="How a native SwiftUI app for Mac, then a matching WPF/.NET app for Windows, came out of reverse-engineering the NTR and HzMod protocols — built in collaboration with Claude." />
+  <meta property="og:description" content="How a native SwiftUI app for Mac, then a matching WPF/.NET app for Windows, came out of reverse-engineering the NTR and HzMod protocols — built in collaboration with Claude Code." />
   <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/3DSnickerStream/og-image.png" />
   <meta name="twitter:card"       content="summary_large_image" />
   <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/3DSnickerStream/og-image.png" />
@@ -22,7 +22,7 @@
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": "Building 3DSnickerStream: A Native 3DS Streaming App for Mac and Windows",
-    "description": "How a native SwiftUI app for Mac, then a matching WPF/.NET app for Windows, came out of reverse-engineering the NTR and HzMod protocols — built in collaboration with Claude.",
+    "description": "How a native SwiftUI app for Mac, then a matching WPF/.NET app for Windows, came out of reverse-engineering the NTR and HzMod protocols — built in collaboration with Claude Code.",
     "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
     "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
     "datePublished": "2026-07-01",
@@ -214,8 +214,8 @@
 
     <!-- SECTION 3 -->
     <h2 data-i18n="s3-title">Two Native Apps, Not One Port</h2>
-    <p data-i18n="s3-p1">The macOS app is SwiftUI, built for Apple Silicon, using ImageIO and Core Graphics for JPEG decoding and a layer-backed view to keep both screens smooth. The Windows app lives on a separate branch and is WPF on .NET, published as a self-contained single-file executable via <code>dotnet publish -c Release -r win-x64 --self-contained</code>.</p>
-    <p data-i18n="s3-p2">Neither one started from the original project's C++/AutoIt codebase. Both were written fresh, each in the idioms of its platform — but both had to speak the exact same wire protocols the 3DS expects, because the 3DS side of NTR and HzMod isn't something you get to redesign.</p>
+    <p data-i18n="s3-p1">The macOS app is SwiftUI, built for Apple Silicon, using ImageIO and Core Graphics for JPEG decoding and a layer-backed view to keep both screens smooth. The Windows app lives on a separate branch and is WPF on .NET, published as a self-contained build via <code>dotnet publish -c Release -r win-x64 --self-contained</code> (the executable ships with its <code>x64</code> and <code>tessdata</code> folders alongside it).</p>
+    <p data-i18n="s3-p2">Neither one started from the original project's AutoIt codebase. Both were written fresh, each in the idioms of its platform — but both had to speak the exact same wire protocols the 3DS expects, because the 3DS side of NTR and HzMod isn't something you get to redesign.</p>
     <p data-i18n="s3-p3">That meant the actual work wasn't "port this app" — it was "figure out what bytes the 3DS is sending and expecting, twice, in two different languages, and make sure both implementations agree with real hardware."</p>
 
     <!-- SECTION 4 -->
@@ -286,20 +286,20 @@ func onBytes(_ chunk: Data) {
     <p data-i18n="s7-p3">Zoom goes from a fit-to-window mode up to 300% native, and a single key (<code>H</code>) hides every bit of app chrome for a clean recording or screenshot — just the streamed screens, nothing else.</p>
 
     <!-- SECTION 8 -->
-    <h2 data-i18n="s8-title">Building Two Codebases at Once with Claude</h2>
-    <p data-i18n="s8-p1">I'll say the same thing here I say about every project: I didn't hand-write this code myself. I built it together with Claude — describing what I wanted, reviewing what came back, and testing every change against my own 3DS until it actually worked, not just compiled.</p>
+    <h2 data-i18n="s8-title">Building Two Codebases at Once with Claude Code</h2>
+    <p data-i18n="s8-p1">I'll say the same thing here I say about every project: I didn't hand-write this code myself. I built it together with Claude Code — describing what I wanted, reviewing what came back, and testing every change against my own 3DS until it actually worked, not just compiled.</p>
     <p data-i18n="s8-p2">What made this project different from the others is that there wasn't one codebase to iterate on — there were two, in two different languages, that both had to independently agree with the same 3DS hardware behavior. Getting the Swift version's frame reassembly right didn't automatically get the C# version right; each had to be tested and debugged against a real console separately.</p>
-    <p data-i18n="s8-p3">The split in practice: Claude wrote and rewrote the Swift and C# implementations as I described symptoms — a torn frame, a color that looked off, a reconnect that hung — and I was the one standing in front of a 3DS confirming whether the fix actually changed what showed up on screen.</p>
+    <p data-i18n="s8-p3">The split in practice: Claude Code wrote and rewrote the Swift and C# implementations as I described symptoms — a torn frame, a color that looked off, a reconnect that hung — and I was the one standing in front of a 3DS confirming whether the fix actually changed what showed up on screen.</p>
 
     <div class="pullquote" data-i18n="q3">"Two languages, one protocol, one 3DS on my desk to check the truth against. That last part doesn't get automated."</div>
 
     <!-- SECTION 9 -->
     <h2 data-i18n="s9-title">Credits & License</h2>
-    <p data-i18n="s9-p1">3DSnickerStream follows the protocols and license of the original project it's built on. In order:</p>
+    <p data-i18n="s9-p1">3DSnickerStream is a GPLv3 fork of the original Snickerstream — the shipping code is a fresh native rewrite, not a copy, but it follows the same protocols and license as the original it's built on. Credits, in order:</p>
     <ul>
       <li data-i18n="cr1"><strong>RattletraPM</strong> — original Snickerstream project and the NTR/HzMod protocol groundwork this app reverse-engineers from</li>
       <li data-i18n="cr2"><strong>samaBR</strong> — native macOS (SwiftUI) and Windows (WPF/.NET) rewrite</li>
-      <li data-i18n="cr3"><strong>Claude</strong> — implementation collaborator on both platforms</li>
+      <li data-i18n="cr3"><strong>Claude Code</strong> (Anthropic's agentic coding tool) — wrote and iterated the Swift and C# implementations from my ideas, descriptions, and hardware testing</li>
     </ul>
     <p data-i18n="s9-p2">Licensed under <strong>GPLv3</strong>, same as the original. Not affiliated with or endorsed by Nintendo.</p>
 
@@ -346,8 +346,8 @@ const i18n = {
     'feat9-title':'Remappable Shortcuts','feat9-desc':'Every action is a rebindable key, including screenshots to disk or straight to the clipboard.',
     's2-p2':'A few smaller things matter more than they sound: a playback FPS cap that limits redraw without touching what the 3DS actually sends, sharp/linear/smooth scaling with optional rotation, an ambient glow that lifts colors off whatever\'s on screen, and — maybe the most useful one — the app doesn\'t just show a black screen and give up if the 3DS doesn\'t answer immediately. It retries.',
     's3-title':'Two Native Apps, Not One Port',
-    's3-p1':'The macOS app is SwiftUI, built for Apple Silicon, using ImageIO and Core Graphics for JPEG decoding and a layer-backed view to keep both screens smooth. The Windows app lives on a separate branch and is WPF on .NET, published as a self-contained single-file executable via <code>dotnet publish -c Release -r win-x64 --self-contained</code>.',
-    's3-p2':'Neither one started from the original project\'s C++/AutoIt codebase. Both were written fresh, each in the idioms of its platform — but both had to speak the exact same wire protocols the 3DS expects, because the 3DS side of NTR and HzMod isn\'t something you get to redesign.',
+    's3-p1':'The macOS app is SwiftUI, built for Apple Silicon, using ImageIO and Core Graphics for JPEG decoding and a layer-backed view to keep both screens smooth. The Windows app lives on a separate branch and is WPF on .NET, published as a self-contained build via <code>dotnet publish -c Release -r win-x64 --self-contained</code> (the executable ships with its <code>x64</code> and <code>tessdata</code> folders alongside it).',
+    's3-p2':'Neither one started from the original project\'s AutoIt codebase. Both were written fresh, each in the idioms of its platform — but both had to speak the exact same wire protocols the 3DS expects, because the 3DS side of NTR and HzMod isn\'t something you get to redesign.',
     's3-p3':'That meant the actual work wasn\'t "port this app" — it was "figure out what bytes the 3DS is sending and expecting, twice, in two different languages, and make sure both implementations agree with real hardware."',
     's4-title':'Reverse-Engineering NTR: 84 Bytes and a JPEG Stream',
     's4-p1':'NTR\'s remoteplay protocol isn\'t publicly documented anywhere I could find — the closest thing is the original Snickerstream\'s <code>include/ntr.au3</code> AutoIt source, which builds and sends the handshake by hand. Reading it gave the shape of the protocol: connect to the 3DS on TCP port <code>8000</code>, then send an 84-byte command packet carrying a magic number, a command ID, and the priority/quality/QoS settings the user picked.',
@@ -365,16 +365,16 @@ const i18n = {
     's7-p1':'The 3DS has two screens with very different jobs — top for the game, bottom usually for touch UI — and different games use them differently. The layout system supports stacked, side-by-side, or a single screen at a time, with adjustable spacing between them and independent scale per screen so one can be bigger than the other.',
     's7-p2':'Color adjustment is per screen too: brightness, contrast, saturation, highlights, and shadows can each be tuned separately for top and bottom. It\'s a small thing, but a game with a bright top screen and a dim menu on the bottom looks noticeably better once they\'re not forced through the same curve.',
     's7-p3':'Zoom goes from a fit-to-window mode up to 300% native, and a single key (<code>H</code>) hides every bit of app chrome for a clean recording or screenshot — just the streamed screens, nothing else.',
-    's8-title':'Building Two Codebases at Once with Claude',
-    's8-p1':'I\'ll say the same thing here I say about every project: I didn\'t hand-write this code myself. I built it together with Claude — describing what I wanted, reviewing what came back, and testing every change against my own 3DS until it actually worked, not just compiled.',
+    's8-title':'Building Two Codebases at Once with Claude Code',
+    's8-p1':'I\'ll say the same thing here I say about every project: I didn\'t hand-write this code myself. I built it together with Claude Code — describing what I wanted, reviewing what came back, and testing every change against my own 3DS until it actually worked, not just compiled.',
     's8-p2':'What made this project different from the others is that there wasn\'t one codebase to iterate on — there were two, in two different languages, that both had to independently agree with the same 3DS hardware behavior. Getting the Swift version\'s frame reassembly right didn\'t automatically get the C# version right; each had to be tested and debugged against a real console separately.',
-    's8-p3':'The split in practice: Claude wrote and rewrote the Swift and C# implementations as I described symptoms — a torn frame, a color that looked off, a reconnect that hung — and I was the one standing in front of a 3DS confirming whether the fix actually changed what showed up on screen.',
+    's8-p3':'The split in practice: Claude Code wrote and rewrote the Swift and C# implementations as I described symptoms — a torn frame, a color that looked off, a reconnect that hung — and I was the one standing in front of a 3DS confirming whether the fix actually changed what showed up on screen.',
     'q3':'"Two languages, one protocol, one 3DS on my desk to check the truth against. That last part doesn\'t get automated."',
     's9-title':'Credits & License',
-    's9-p1':'3DSnickerStream follows the protocols and license of the original project it\'s built on. In order:',
+    's9-p1':'3DSnickerStream is a GPLv3 fork of the original Snickerstream — the shipping code is a fresh native rewrite, not a copy, but it follows the same protocols and license as the original it\'s built on. Credits, in order:',
     'cr1':'<strong>RattletraPM</strong> — original Snickerstream project and the NTR/HzMod protocol groundwork this app reverse-engineers from',
     'cr2':'<strong>samaBR</strong> — native macOS (SwiftUI) and Windows (WPF/.NET) rewrite',
-    'cr3':'<strong>Claude</strong> — implementation collaborator on both platforms',
+    'cr3':'<strong>Claude Code</strong> (Anthropic\'s agentic coding tool) — wrote and iterated the Swift and C# implementations from my ideas, descriptions, and hardware testing',
     's9-p2':'Licensed under <strong>GPLv3</strong>, same as the original. Not affiliated with or endorsed by Nintendo.',
     's10-title':'The Result',
     's10-p1':'3DSnickerStream is a free, open source, GPLv3 app that streams a Nintendo 3DS\'s two screens to a real, native window on macOS 13+ (Apple Silicon) or Windows 10/11. No coding knowledge needed to use it — unzip, allow it through the firewall/Gatekeeper on first launch, point it at a 3DS running NTR remoteplay, and connect.',
@@ -403,8 +403,8 @@ const i18n = {
     'feat9-title':'Atalhos Remapeáveis','feat9-desc':'Cada ação é uma tecla remapeável, incluindo screenshots para o disco ou direto pra área de transferência.',
     's2-p2':'Algumas coisas pequenas importam mais do que parecem: um cap de FPS de playback que limita a redesenho sem tocar no que o 3DS realmente envia, escalonamento sharp/linear/smooth com rotação opcional, um glow ambiente que puxa cores do que está na tela e — talvez a mais útil — o app não simplesmente mostra uma tela preta e desiste se o 3DS não responde de imediato. Ele tenta de novo.',
     's3-title':'Dois Apps Nativos, Não Um Port',
-    's3-p1':'O app de macOS é SwiftUI, feito para Apple Silicon, usando ImageIO e Core Graphics para decodificar JPEG e uma view layer-backed para manter as duas telas fluidas. O app de Windows vive numa branch separada e é WPF em .NET, publicado como um executável single-file self-contained via <code>dotnet publish -c Release -r win-x64 --self-contained</code>.',
-    's3-p2':'Nenhum dos dois partiu da codebase C++/AutoIt do projeto original. Ambos foram escritos do zero, cada um nos idiomas da sua plataforma — mas os dois tinham que falar exatamente os mesmos protocolos de rede que o 3DS espera, porque o lado do 3DS no NTR e no HzMod não é algo que você pode redesenhar.',
+    's3-p1':'O app de macOS é SwiftUI, feito para Apple Silicon, usando ImageIO e Core Graphics para decodificar JPEG e uma view layer-backed para manter as duas telas fluidas. O app de Windows vive numa branch separada e é WPF em .NET, publicado como um build self-contained via <code>dotnet publish -c Release -r win-x64 --self-contained</code> (o executável vem com as pastas <code>x64</code> e <code>tessdata</code> ao lado dele).',
+    's3-p2':'Nenhum dos dois partiu da codebase AutoIt do projeto original. Ambos foram escritos do zero, cada um nos idiomas da sua plataforma — mas os dois tinham que falar exatamente os mesmos protocolos de rede que o 3DS espera, porque o lado do 3DS no NTR e no HzMod não é algo que você pode redesenhar.',
     's3-p3':'Isso significou que o trabalho real não era "portar este app" — era "descobrir quais bytes o 3DS está enviando e esperando, duas vezes, em duas linguagens diferentes, e garantir que as duas implementações concordem com o hardware real."',
     's4-title':'Engenharia Reversa do NTR: 84 Bytes e um Stream de JPEG',
     's4-p1':'O protocolo de remoteplay do NTR não é documentado publicamente em lugar nenhum que eu tenha encontrado — o mais próximo disso é o código-fonte AutoIt <code>include/ntr.au3</code> do Snickerstream original, que monta e envia o handshake manualmente. Lê-lo deu a forma do protocolo: conectar ao 3DS na porta TCP <code>8000</code>, depois enviar um pacote de comando de 84 bytes carregando um número mágico, um ID de comando, e as configurações de prioridade/qualidade/QoS escolhidas pelo usuário.',
@@ -422,16 +422,16 @@ const i18n = {
     's7-p1':'O 3DS tem duas telas com funções bem diferentes — a de cima pro jogo, a de baixo geralmente pra UI de toque — e jogos diferentes usam elas de formas diferentes. O sistema de layout suporta empilhado, lado a lado, ou uma tela por vez, com espaçamento ajustável entre elas e escala independente por tela para que uma possa ser maior que a outra.',
     's7-p2':'O ajuste de cor também é por tela: brilho, contraste, saturação, realces e sombras podem ser ajustados separadamente para cima e para baixo. É uma coisa pequena, mas um jogo com a tela de cima clara e um menu escuro embaixo fica visivelmente melhor quando elas não são forçadas pela mesma curva.',
     's7-p3':'O zoom vai de um modo de ajuste à janela até 300% nativo, e uma única tecla (<code>H</code>) esconde toda a UI do app para uma gravação ou screenshot limpa — só as telas transmitidas, nada mais.',
-    's8-title':'Construindo Duas Codebases ao Mesmo Tempo com o Claude',
-    's8-p1':'Vou dizer aqui a mesma coisa que digo sobre todo projeto: não escrevi este código sozinho. Construí junto com o Claude — descrevendo o que eu queria, revisando o que voltava, e testando cada mudança no meu próprio 3DS até realmente funcionar, não só compilar.',
+    's8-title':'Construindo Duas Codebases ao Mesmo Tempo com o Claude Code',
+    's8-p1':'Vou dizer aqui a mesma coisa que digo sobre todo projeto: não escrevi este código sozinho. Construí junto com o Claude Code — descrevendo o que eu queria, revisando o que voltava, e testando cada mudança no meu próprio 3DS até realmente funcionar, não só compilar.',
     's8-p2':'O que tornou este projeto diferente dos outros é que não havia uma codebase pra iterar — havia duas, em duas linguagens diferentes, que precisavam concordar independentemente com o mesmo comportamento de hardware do 3DS. Acertar o reassembly de frames na versão Swift não acertava automaticamente a versão C#; cada uma teve que ser testada e debugada contra um console real separadamente.',
-    's8-p3':'A divisão na prática: o Claude escrevia e reescrevia as implementações em Swift e C# conforme eu descrevia sintomas — um frame rasgado, uma cor que parecia errada, uma reconexão que travava — e eu era quem ficava na frente de um 3DS confirmando se o fix realmente mudava o que aparecia na tela.',
+    's8-p3':'A divisão na prática: o Claude Code escrevia e reescrevia as implementações em Swift e C# conforme eu descrevia sintomas — um frame rasgado, uma cor que parecia errada, uma reconexão que travava — e eu era quem ficava na frente de um 3DS confirmando se o fix realmente mudava o que aparecia na tela.',
     'q3':'"Duas linguagens, um protocolo, um 3DS na minha mesa pra checar a verdade. Essa última parte não dá pra automatizar."',
     's9-title':'Créditos e Licença',
-    's9-p1':'O 3DSnickerStream segue os protocolos e a licença do projeto original em que se baseia. Em ordem:',
+    's9-p1':'O 3DSnickerStream é um fork GPLv3 do Snickerstream original — o código é uma reescrita nativa nova, não uma cópia, mas segue os mesmos protocolos e a mesma licença do original em que se baseia. Créditos, em ordem:',
     'cr1':'<strong>RattletraPM</strong> — o projeto Snickerstream original e a base dos protocolos NTR/HzMod dos quais este app faz engenharia reversa',
     'cr2':'<strong>samaBR</strong> — reescrita nativa para macOS (SwiftUI) e Windows (WPF/.NET)',
-    'cr3':'<strong>Claude</strong> — colaborador de implementação nas duas plataformas',
+    'cr3':'<strong>Claude Code</strong> (ferramenta de codificação agêntica da Anthropic) — escreveu e iterou as implementações em Swift e C# a partir das minhas ideias, descrições e testes no hardware',
     's9-p2':'Licenciado sob <strong>GPLv3</strong>, igual ao original. Sem afiliação ou endosso da Nintendo.',
     's10-title':'O Resultado',
     's10-p1':'O 3DSnickerStream é um app gratuito, open source, GPLv3, que transmite as duas telas de um Nintendo 3DS para uma janela real e nativa no macOS 13+ (Apple Silicon) ou Windows 10/11. Não precisa de conhecimento de programação pra usar — descompacte, permita pelo firewall/Gatekeeper na primeira execução, aponte para um 3DS rodando NTR remoteplay, e conecte.',
