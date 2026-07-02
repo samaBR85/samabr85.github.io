@@ -1,22 +1,26 @@
 {
   "BeatMarker-PremierePlugin": {
     "stars": 3,
-    "downloads": 305
+    "downloads": 306
   },
   "BeatMarker-AEPlugin": {
     "stars": 1,
-    "downloads": 195
+    "downloads": 197
   },
   "MonoStereoToggle": {
     "stars": 1,
-    "downloads": 7
+    "downloads": 8
   },
   "Gen6CTRPFrameworkOverhauled": {
     "stars": 4,
-    "downloads": 146
+    "downloads": 153
   },
   "3DSnickerStream": {
     "stars": 3,
     "downloads": 6
+  },
+  "1clicktransfer": {
+    "stars": 0,
+    "downloads": 0
   }
 }
