@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building 3DSnickerStream: A Native 3DS Streaming App for Mac and Windows — samaBR</title>
+  <meta name="description" content="How a native SwiftUI app for Mac (then a matching WPF/.NET app for Windows) came out of reverse-engineering the NTR and HzMod protocols from an AutoIt original — built in collaboration with Claude." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/3dsnickerstream/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/3dsnickerstream/" />
+  <meta property="og:title"       content="Building 3DSnickerStream: A Native 3DS Streaming App for Mac and Windows" />
+  <meta property="og:description" content="How a native SwiftUI app for Mac, then a matching WPF/.NET app for Windows, came out of reverse-engineering the NTR and HzMod protocols — built in collaboration with Claude." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/3DSnickerStream/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/3DSnickerStream/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Building 3DSnickerStream: A Native 3DS Streaming App for Mac and Windows",
+    "description": "How a native SwiftUI app for Mac, then a matching WPF/.NET app for Windows, came out of reverse-engineering the NTR and HzMod protocols — built in collaboration with Claude.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-07-01",
+    "dateModified": "2026-07-01",
+    "url": "https://samabr85.github.io/blog/3dsnickerstream/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "Nintendo 3DS, NTR, HzMod, SwiftUI, WPF, .NET, remoteplay, streaming, macOS, Windows, open source"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#0d1b2a;--quote-border:#0A84FF;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#eaf3ff;--quote-border:#0A84FF;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7cc0ff;background:rgba(10,132,255,.12);border:1px solid rgba(10,132,255,.25);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+    .article-screenshot{margin:0 0 40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center}
+    .article-screenshot img{width:100%;max-width:280px;height:auto;display:block;margin:32px auto}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">3DS Streaming App</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">📡 <span data-i18n="tag">App · macOS · Windows</span></div>
+    <h1 class="article-title" data-i18n="title">Building 3DSnickerStream: A Native<br>3DS Streaming App for Mac and Windows</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">July 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~8 min read</span>
+    </div>
+  </header>
+
+  <figure class="article-screenshot">
+    <img src="../../docs/screenshots/3DSnickerStream/og-image.png" alt="3DSnickerStream app icon" loading="lazy" />
+  </figure>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: Streaming a 3DS Meant Booting Into Windows</h2>
+    <p data-i18n="s1-p1"><a href="https://github.com/RattletraPM/Snickerstream" style="color:var(--quote-border)">Snickerstream</a> by RattletraPM is a genuinely good tool — it streams a 3DS's two screens to a computer over Wi-Fi using the NTR and HzMod custom-firmware protocols. The problem was where it runs: Windows only, and not a native app even there. I use a Mac day to day, and I wanted to stream my 3DS while I was on it, not after switching machines.</p>
+    <p data-i18n="s1-p2">I didn't want a compatibility-layer workaround either. I wanted a resizable window that behaves like a Mac window, controls that respond instantly, and colors that look like what's actually on the 3DS screen instead of whatever a translation layer decides to do to them.</p>
+    <p data-i18n="s1-p3">So instead of trying to port the existing project, I built something new: a native SwiftUI app for Apple Silicon Macs first, then a matching native app for Windows using WPF and .NET. Neither is a copy of the original code — the NTR and HzMod protocols were reverse-engineered by reading the original project's AutoIt source, then re-implemented from scratch on each platform.</p>
+
+    <div class="pullquote" data-i18n="q1">"The tool existed. It just didn't run where I actually sit. So I built it twice — once for each place I sit."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">What It Does</h2>
+    <p data-i18n="s2-p1">Point it at a 3DS running NTR CFW (or HzMod) with remoteplay enabled, and both screens show up in a real, resizable window within a couple of seconds.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">🎮</div>
+        <div class="fi-title" data-i18n="feat1-title">NTR Remoteplay</div>
+        <div class="fi-desc" data-i18n="feat1-desc">The main protocol — tested and working reliably on real hardware.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🧪</div>
+        <div class="fi-title" data-i18n="feat2-title">HzMod (Beta)</div>
+        <div class="fi-desc" data-i18n="feat2-desc">The original's other protocol, reconstructed from source — connects and streams, top screen only.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📡</div>
+        <div class="fi-title" data-i18n="feat3-title">Find My 3DS</div>
+        <div class="fi-desc" data-i18n="feat3-desc">Scan the local network and pick the console instead of typing an IP. Optional scan-on-startup and auto-reconnect.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🖥️</div>
+        <div class="fi-title" data-i18n="feat4-title">Flexible Layouts</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Stacked, side by side, or one screen at a time — with adjustable gap and per-screen scale.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🎨</div>
+        <div class="fi-title" data-i18n="feat5-title">Per-Screen Color</div>
+        <div class="fi-desc" data-i18n="feat5-desc">Brightness, contrast, saturation, highlights, and shadows — tuned independently for each screen.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔍</div>
+        <div class="fi-title" data-i18n="feat6-title">Zoom & Clean Mode</div>
+        <div class="fi-desc" data-i18n="feat6-desc">Fit or 100–300% native zoom, plus a one-key clean mode that hides every bit of UI.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔖</div>
+        <div class="fi-title" data-i18n="feat7-title">Saved Consoles</div>
+        <div class="fi-desc" data-i18n="feat7-desc">Bookmark an IP once, reconnect with a single click from then on.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🎚️</div>
+        <div class="fi-title" data-i18n="feat8-title">Quality Presets</div>
+        <div class="fi-desc" data-i18n="feat8-desc">Built-in quality/framerate presets, plus room to define your own.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">⌨️</div>
+        <div class="fi-title" data-i18n="feat9-title">Remappable Shortcuts</div>
+        <div class="fi-desc" data-i18n="feat9-desc">Every action is a rebindable key, including screenshots to disk or straight to the clipboard.</div>
+      </div>
+    </div>
+
+    <p data-i18n="s2-p2">A few smaller things matter more than they sound: a playback FPS cap that limits redraw without touching what the 3DS actually sends, sharp/linear/smooth scaling with optional rotation, an ambient glow that lifts colors off whatever's on screen, and — maybe the most useful one — the app doesn't just show a black screen and give up if the 3DS doesn't answer immediately. It retries.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">Two Native Apps, Not One Port</h2>
+    <p data-i18n="s3-p1">The macOS app is SwiftUI, built for Apple Silicon, using ImageIO and Core Graphics for JPEG decoding and a layer-backed view to keep both screens smooth. The Windows app lives on a separate branch and is WPF on .NET, published as a self-contained single-file executable via <code>dotnet publish -c Release -r win-x64 --self-contained</code>.</p>
+    <p data-i18n="s3-p2">Neither one started from the original project's C++/AutoIt codebase. Both were written fresh, each in the idioms of its platform — but both had to speak the exact same wire protocols the 3DS expects, because the 3DS side of NTR and HzMod isn't something you get to redesign.</p>
+    <p data-i18n="s3-p3">That meant the actual work wasn't "port this app" — it was "figure out what bytes the 3DS is sending and expecting, twice, in two different languages, and make sure both implementations agree with real hardware."</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">Reverse-Engineering NTR: 84 Bytes and a JPEG Stream</h2>
+    <p data-i18n="s4-p1">NTR's remoteplay protocol isn't publicly documented anywhere I could find — the closest thing is the original Snickerstream's <code>include/ntr.au3</code> AutoIt source, which builds and sends the handshake by hand. Reading it gave the shape of the protocol: connect to the 3DS on TCP port <code>8000</code>, then send an 84-byte command packet carrying a magic number, a command ID, and the priority/quality/QoS settings the user picked.</p>
+    <p data-i18n="s4-p2">Once the 3DS accepts that command, it starts streaming JPEG frames as UDP packets to the app on port <code>8001</code> — no acknowledgment, no retransmission, just a continuous stream. Each UDP packet carries a small header (frame id, which screen it belongs to plus a last-packet flag, and a packet index) followed by a slice of JPEG data. The app buffers packets by frame id until the last-packet flag shows up, concatenates the slices in order, and decodes the result.</p>
+
+    <pre><code>// NTR handshake — simplified
+struct NTRCommand {
+  UInt32 magic = 0x12345678
+  UInt32 seq
+  UInt32 type
+  UInt32 cmd    = 901          // remoteplay start
+  UInt32 args[16]              // priority, quality, qos, screen mask...
+  // padded to 84 bytes total
+}
+
+func sendHandshake(to socket: TCPSocket, quality: Int, priority: Int) {
+  var packet = NTRCommand()
+  packet.args[0] = UInt32(priority)
+  packet.args[1] = UInt32(quality)
+  socket.write(packet.serialized())   // 3DS:8000
+}
+
+// UDP frame reassembly — simplified
+func onPacket(_ data: Data) {
+  let header = parseHeader(data)      // frameId, screen, isLast, packetIndex
+  buffers[header.frameId, default: []].append(data.jpegSlice)
+  if header.isLast {
+    let jpeg = buffers[header.frameId]!.joined()
+    decode(jpeg, screen: header.screen)
+    buffers[header.frameId] = nil
+  }
+}</code></pre>
+
+    <p data-i18n="s4-p3">There's no error correction anywhere in this. If a UDP packet drops, that frame just never completes and gets discarded — the next one arrives a few milliseconds later. It's a fragile-sounding design that works fine on a local Wi-Fi network, which is presumably why the original project never needed anything sturdier.</p>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">HzMod: The Beta Protocol</h2>
+    <p data-i18n="s5-p1">HzMod is the original project's second protocol, reconstructed from its <code>include/HzMod.au3</code> source the same way. It works differently from NTR: the app connects to the 3DS on TCP port <code>6464</code>, sends a packet with a CPU-limit value, a quality setting, and a start flag, then reads the response stream back over the same TCP connection.</p>
+    <p data-i18n="s5-p2">The tricky part was the frame boundaries. The header layout I could reconstruct from the AutoIt source was ambiguous enough that trusting a parsed length field felt risky. The more robust fix: don't parse a header for framing at all — just scan the incoming byte stream for a complete JPEG, marked by the standard <code>FF D8</code> start-of-image and <code>FF D9</code> end-of-image bytes, and decode whatever's between them.</p>
+
+    <pre><code>// HzMod framing — simplified
+var buffer = Data()
+
+func onBytes(_ chunk: Data) {
+  buffer.append(chunk)
+  while let start = buffer.range(of: [0xFF, 0xD8]),
+        let end   = buffer.range(of: [0xFF, 0xD9], from: start.upperBound) {
+    let jpeg = buffer[start.lowerBound..<end.upperBound]
+    decode(jpeg, screen: .top)          // HzMod streams top screen only
+    buffer.removeSubrange(buffer.startIndex..<end.upperBound)
+  }
+}</code></pre>
+
+    <div class="pullquote" data-i18n="q2">"HzMod connects. It streams. I couldn't test every case it might hit — so it ships labeled beta, honestly, instead of quietly."</div>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">Finding Your 3DS Without Typing an IP</h2>
+    <p data-i18n="s6-p1">Typing a 3DS's IP address every session gets old fast, especially on a home network where DHCP hands out a new one every so often. The "Find on network" button scans the local subnet for a 3DS answering on the NTR/HzMod ports and lists it for a one-click connect. There's an option to run that scan automatically on startup, too.</p>
+    <p data-i18n="s6-p2">Saved consoles solve the rest: bookmark an IP once with the ribbon icon next to the address field, and it's available for one-click reconnect from then on — along with an optional auto-connect to the last device used.</p>
+    <p data-i18n="s6-p3">One small design choice that mattered more than expected: if the 3DS doesn't answer right away, the app doesn't just show a black screen and call it connected. It keeps retrying the handshake until the stream actually starts, or the user cancels. A remoteplay tool that silently "succeeds" at nothing is worse than one that's honest about still trying.</p>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">Two Screens, Arranged However You Want</h2>
+    <p data-i18n="s7-p1">The 3DS has two screens with very different jobs — top for the game, bottom usually for touch UI — and different games use them differently. The layout system supports stacked, side-by-side, or a single screen at a time, with adjustable spacing between them and independent scale per screen so one can be bigger than the other.</p>
+    <p data-i18n="s7-p2">Color adjustment is per screen too: brightness, contrast, saturation, highlights, and shadows can each be tuned separately for top and bottom. It's a small thing, but a game with a bright top screen and a dim menu on the bottom looks noticeably better once they're not forced through the same curve.</p>
+    <p data-i18n="s7-p3">Zoom goes from a fit-to-window mode up to 300% native, and a single key (<code>H</code>) hides every bit of app chrome for a clean recording or screenshot — just the streamed screens, nothing else.</p>
+
+    <!-- SECTION 8 -->
+    <h2 data-i18n="s8-title">Building Two Codebases at Once with Claude</h2>
+    <p data-i18n="s8-p1">I'll say the same thing here I say about every project: I didn't hand-write this code myself. I built it together with Claude — describing what I wanted, reviewing what came back, and testing every change against my own 3DS until it actually worked, not just compiled.</p>
+    <p data-i18n="s8-p2">What made this project different from the others is that there wasn't one codebase to iterate on — there were two, in two different languages, that both had to independently agree with the same 3DS hardware behavior. Getting the Swift version's frame reassembly right didn't automatically get the C# version right; each had to be tested and debugged against a real console separately.</p>
+    <p data-i18n="s8-p3">The split in practice: Claude wrote and rewrote the Swift and C# implementations as I described symptoms — a torn frame, a color that looked off, a reconnect that hung — and I was the one standing in front of a 3DS confirming whether the fix actually changed what showed up on screen.</p>
+
+    <div class="pullquote" data-i18n="q3">"Two languages, one protocol, one 3DS on my desk to check the truth against. That last part doesn't get automated."</div>
+
+    <!-- SECTION 9 -->
+    <h2 data-i18n="s9-title">Credits & License</h2>
+    <p data-i18n="s9-p1">3DSnickerStream follows the protocols and license of the original project it's built on. In order:</p>
+    <ul>
+      <li data-i18n="cr1"><strong>RattletraPM</strong> — original Snickerstream project and the NTR/HzMod protocol groundwork this app reverse-engineers from</li>
+      <li data-i18n="cr2"><strong>samaBR</strong> — native macOS (SwiftUI) and Windows (WPF/.NET) rewrite</li>
+      <li data-i18n="cr3"><strong>Claude</strong> — implementation collaborator on both platforms</li>
+    </ul>
+    <p data-i18n="s9-p2">Licensed under <strong>GPLv3</strong>, same as the original. Not affiliated with or endorsed by Nintendo.</p>
+
+    <!-- SECTION 10 -->
+    <hr class="divider">
+    <h2 data-i18n="s10-title">The Result</h2>
+    <p data-i18n="s10-p1">3DSnickerStream is a free, open source, GPLv3 app that streams a Nintendo 3DS's two screens to a real, native window on macOS 13+ (Apple Silicon) or Windows 10/11. No coding knowledge needed to use it — unzip, allow it through the firewall/Gatekeeper on first launch, point it at a 3DS running NTR remoteplay, and connect.</p>
+    <p data-i18n="s10-p2">It's the tool I wanted when I first went looking: native on the platform I'm actually using, honest about connection state instead of showing a black screen, tunable per screen instead of one-size-fits-all, and fully keyboard-driven once it's set up.</p>
+    <p data-i18n="s10-p3">Downloads (both macOS and Windows builds ship in every release), source, and the full feature list: <a href="https://github.com/samaBR85/3DSnickerStream" style="color:var(--quote-border)">github.com/samaBR85/3DSnickerStream</a> — GPLv3, free.</p>
+
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'3DS Streaming App','tag':'App · macOS · Windows',
+    'title':'Building 3DSnickerStream: A Native<br>3DS Streaming App for Mac and Windows',
+    'date':'July 2026','readtime':'⏱ ~8 min read',
+    's1-title':'The Problem: Streaming a 3DS Meant Booting Into Windows',
+    's1-p1':'<a href="https://github.com/RattletraPM/Snickerstream" style="color:var(--quote-border)">Snickerstream</a> by RattletraPM is a genuinely good tool — it streams a 3DS\'s two screens to a computer over Wi-Fi using the NTR and HzMod custom-firmware protocols. The problem was where it runs: Windows only, and not a native app even there. I use a Mac day to day, and I wanted to stream my 3DS while I was on it, not after switching machines.',
+    's1-p2':'I didn\'t want a compatibility-layer workaround either. I wanted a resizable window that behaves like a Mac window, controls that respond instantly, and colors that look like what\'s actually on the 3DS screen instead of whatever a translation layer decides to do to them.',
+    's1-p3':'So instead of trying to port the existing project, I built something new: a native SwiftUI app for Apple Silicon Macs first, then a matching native app for Windows using WPF and .NET. Neither is a copy of the original code — the NTR and HzMod protocols were reverse-engineered by reading the original project\'s AutoIt source, then re-implemented from scratch on each platform.',
+    'q1':'"The tool existed. It just didn\'t run where I actually sit. So I built it twice — once for each place I sit."',
+    's2-title':'What It Does',
+    's2-p1':'Point it at a 3DS running NTR CFW (or HzMod) with remoteplay enabled, and both screens show up in a real, resizable window within a couple of seconds.',
+    'feat1-title':'NTR Remoteplay','feat1-desc':'The main protocol — tested and working reliably on real hardware.',
+    'feat2-title':'HzMod (Beta)','feat2-desc':'The original\'s other protocol, reconstructed from source — connects and streams, top screen only.',
+    'feat3-title':'Find My 3DS','feat3-desc':'Scan the local network and pick the console instead of typing an IP. Optional scan-on-startup and auto-reconnect.',
+    'feat4-title':'Flexible Layouts','feat4-desc':'Stacked, side by side, or one screen at a time — with adjustable gap and per-screen scale.',
+    'feat5-title':'Per-Screen Color','feat5-desc':'Brightness, contrast, saturation, highlights, and shadows — tuned independently for each screen.',
+    'feat6-title':'Zoom & Clean Mode','feat6-desc':'Fit or 100–300% native zoom, plus a one-key clean mode that hides every bit of UI.',
+    'feat7-title':'Saved Consoles','feat7-desc':'Bookmark an IP once, reconnect with a single click from then on.',
+    'feat8-title':'Quality Presets','feat8-desc':'Built-in quality/framerate presets, plus room to define your own.',
+    'feat9-title':'Remappable Shortcuts','feat9-desc':'Every action is a rebindable key, including screenshots to disk or straight to the clipboard.',
+    's2-p2':'A few smaller things matter more than they sound: a playback FPS cap that limits redraw without touching what the 3DS actually sends, sharp/linear/smooth scaling with optional rotation, an ambient glow that lifts colors off whatever\'s on screen, and — maybe the most useful one — the app doesn\'t just show a black screen and give up if the 3DS doesn\'t answer immediately. It retries.',
+    's3-title':'Two Native Apps, Not One Port',
+    's3-p1':'The macOS app is SwiftUI, built for Apple Silicon, using ImageIO and Core Graphics for JPEG decoding and a layer-backed view to keep both screens smooth. The Windows app lives on a separate branch and is WPF on .NET, published as a self-contained single-file executable via <code>dotnet publish -c Release -r win-x64 --self-contained</code>.',
+    's3-p2':'Neither one started from the original project\'s C++/AutoIt codebase. Both were written fresh, each in the idioms of its platform — but both had to speak the exact same wire protocols the 3DS expects, because the 3DS side of NTR and HzMod isn\'t something you get to redesign.',
+    's3-p3':'That meant the actual work wasn\'t "port this app" — it was "figure out what bytes the 3DS is sending and expecting, twice, in two different languages, and make sure both implementations agree with real hardware."',
+    's4-title':'Reverse-Engineering NTR: 84 Bytes and a JPEG Stream',
+    's4-p1':'NTR\'s remoteplay protocol isn\'t publicly documented anywhere I could find — the closest thing is the original Snickerstream\'s <code>include/ntr.au3</code> AutoIt source, which builds and sends the handshake by hand. Reading it gave the shape of the protocol: connect to the 3DS on TCP port <code>8000</code>, then send an 84-byte command packet carrying a magic number, a command ID, and the priority/quality/QoS settings the user picked.',
+    's4-p2':'Once the 3DS accepts that command, it starts streaming JPEG frames as UDP packets to the app on port <code>8001</code> — no acknowledgment, no retransmission, just a continuous stream. Each UDP packet carries a small header (frame id, which screen it belongs to plus a last-packet flag, and a packet index) followed by a slice of JPEG data. The app buffers packets by frame id until the last-packet flag shows up, concatenates the slices in order, and decodes the result.',
+    's4-p3':'There\'s no error correction anywhere in this. If a UDP packet drops, that frame just never completes and gets discarded — the next one arrives a few milliseconds later. It\'s a fragile-sounding design that works fine on a local Wi-Fi network, which is presumably why the original project never needed anything sturdier.',
+    's5-title':'HzMod: The Beta Protocol',
+    's5-p1':'HzMod is the original project\'s second protocol, reconstructed from its <code>include/HzMod.au3</code> source the same way. It works differently from NTR: the app connects to the 3DS on TCP port <code>6464</code>, sends a packet with a CPU-limit value, a quality setting, and a start flag, then reads the response stream back over the same TCP connection.',
+    's5-p2':'The tricky part was the frame boundaries. The header layout I could reconstruct from the AutoIt source was ambiguous enough that trusting a parsed length field felt risky. The more robust fix: don\'t parse a header for framing at all — just scan the incoming byte stream for a complete JPEG, marked by the standard <code>FF D8</code> start-of-image and <code>FF D9</code> end-of-image bytes, and decode whatever\'s between them.',
+    'q2':'"HzMod connects. It streams. I couldn\'t test every case it might hit — so it ships labeled beta, honestly, instead of quietly."',
+    's6-title':'Finding Your 3DS Without Typing an IP',
+    's6-p1':'Typing a 3DS\'s IP address every session gets old fast, especially on a home network where DHCP hands out a new one every so often. The "Find on network" button scans the local subnet for a 3DS answering on the NTR/HzMod ports and lists it for a one-click connect. There\'s an option to run that scan automatically on startup, too.',
+    's6-p2':'Saved consoles solve the rest: bookmark an IP once with the ribbon icon next to the address field, and it\'s available for one-click reconnect from then on — along with an optional auto-connect to the last device used.',
+    's6-p3':'One small design choice that mattered more than expected: if the 3DS doesn\'t answer right away, the app doesn\'t just show a black screen and call it connected. It keeps retrying the handshake until the stream actually starts, or the user cancels. A remoteplay tool that silently "succeeds" at nothing is worse than one that\'s honest about still trying.',
+    's7-title':'Two Screens, Arranged However You Want',
+    's7-p1':'The 3DS has two screens with very different jobs — top for the game, bottom usually for touch UI — and different games use them differently. The layout system supports stacked, side-by-side, or a single screen at a time, with adjustable spacing between them and independent scale per screen so one can be bigger than the other.',
+    's7-p2':'Color adjustment is per screen too: brightness, contrast, saturation, highlights, and shadows can each be tuned separately for top and bottom. It\'s a small thing, but a game with a bright top screen and a dim menu on the bottom looks noticeably better once they\'re not forced through the same curve.',
+    's7-p3':'Zoom goes from a fit-to-window mode up to 300% native, and a single key (<code>H</code>) hides every bit of app chrome for a clean recording or screenshot — just the streamed screens, nothing else.',
+    's8-title':'Building Two Codebases at Once with Claude',
+    's8-p1':'I\'ll say the same thing here I say about every project: I didn\'t hand-write this code myself. I built it together with Claude — describing what I wanted, reviewing what came back, and testing every change against my own 3DS until it actually worked, not just compiled.',
+    's8-p2':'What made this project different from the others is that there wasn\'t one codebase to iterate on — there were two, in two different languages, that both had to independently agree with the same 3DS hardware behavior. Getting the Swift version\'s frame reassembly right didn\'t automatically get the C# version right; each had to be tested and debugged against a real console separately.',
+    's8-p3':'The split in practice: Claude wrote and rewrote the Swift and C# implementations as I described symptoms — a torn frame, a color that looked off, a reconnect that hung — and I was the one standing in front of a 3DS confirming whether the fix actually changed what showed up on screen.',
+    'q3':'"Two languages, one protocol, one 3DS on my desk to check the truth against. That last part doesn\'t get automated."',
+    's9-title':'Credits & License',
+    's9-p1':'3DSnickerStream follows the protocols and license of the original project it\'s built on. In order:',
+    'cr1':'<strong>RattletraPM</strong> — original Snickerstream project and the NTR/HzMod protocol groundwork this app reverse-engineers from',
+    'cr2':'<strong>samaBR</strong> — native macOS (SwiftUI) and Windows (WPF/.NET) rewrite',
+    'cr3':'<strong>Claude</strong> — implementation collaborator on both platforms',
+    's9-p2':'Licensed under <strong>GPLv3</strong>, same as the original. Not affiliated with or endorsed by Nintendo.',
+    's10-title':'The Result',
+    's10-p1':'3DSnickerStream is a free, open source, GPLv3 app that streams a Nintendo 3DS\'s two screens to a real, native window on macOS 13+ (Apple Silicon) or Windows 10/11. No coding knowledge needed to use it — unzip, allow it through the firewall/Gatekeeper on first launch, point it at a 3DS running NTR remoteplay, and connect.',
+    's10-p2':'It\'s the tool I wanted when I first went looking: native on the platform I\'m actually using, honest about connection state instead of showing a black screen, tunable per screen instead of one-size-fits-all, and fully keyboard-driven once it\'s set up.',
+    's10-p3':'Downloads (both macOS and Windows builds ship in every release), source, and the full feature list: <a href="https://github.com/samaBR85/3DSnickerStream" style="color:var(--quote-border)">github.com/samaBR85/3DSnickerStream</a> — GPLv3, free.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'App de Streaming do 3DS','tag':'App · macOS · Windows',
+    'title':'Construindo o 3DSnickerStream: Um App Nativo<br>de Streaming do 3DS para Mac e Windows',
+    'date':'Julho de 2026','readtime':'⏱ ~8 min de leitura',
+    's1-title':'O Problema: Transmitir um 3DS Significava Bootar no Windows',
+    's1-p1':'O <a href="https://github.com/RattletraPM/Snickerstream" style="color:var(--quote-border)">Snickerstream</a> do RattletraPM é uma ferramenta genuinamente boa — transmite as duas telas de um 3DS para um computador via Wi-Fi usando os protocolos de custom firmware NTR e HzMod. O problema era onde ele roda: só Windows, e nem lá é um app nativo. Eu uso um Mac no dia a dia, e queria transmitir meu 3DS enquanto estava nele, não depois de trocar de máquina.',
+    's1-p2':'Também não queria uma gambiarra de camada de compatibilidade. Queria uma janela redimensionável que se comporta como uma janela de Mac, controles que respondem instantaneamente, e cores que parecem o que realmente está na tela do 3DS, em vez do que uma camada de tradução decide fazer com elas.',
+    's1-p3':'Então, em vez de tentar portar o projeto existente, construí algo novo: um app SwiftUI nativo para Macs com Apple Silicon primeiro, depois um app nativo equivalente para Windows usando WPF e .NET. Nenhum dos dois é uma cópia do código original — os protocolos NTR e HzMod foram feitos por engenharia reversa lendo o código-fonte AutoIt do projeto original, e reimplementados do zero em cada plataforma.',
+    'q1':'"A ferramenta existia. Só não rodava onde eu realmente estou. Então construí duas vezes — uma para cada lugar onde estou."',
+    's2-title':'O Que Ele Faz',
+    's2-p1':'Aponte para um 3DS rodando NTR CFW (ou HzMod) com remoteplay ativado, e as duas telas aparecem numa janela real e redimensionável em poucos segundos.',
+    'feat1-title':'NTR Remoteplay','feat1-desc':'O protocolo principal — testado e funcionando de forma confiável em hardware real.',
+    'feat2-title':'HzMod (Beta)','feat2-desc':'O outro protocolo do original, reconstruído a partir do código-fonte — conecta e transmite, só a tela de cima.',
+    'feat3-title':'Achar Meu 3DS','feat3-desc':'Escaneia a rede local e escolhe o console em vez de digitar um IP. Scan na inicialização e reconexão automática opcionais.',
+    'feat4-title':'Layouts Flexíveis','feat4-desc':'Empilhado, lado a lado ou uma tela por vez — com espaçamento ajustável e escala independente por tela.',
+    'feat5-title':'Cor por Tela','feat5-desc':'Brilho, contraste, saturação, realces e sombras — ajustados independentemente para cada tela.',
+    'feat6-title':'Zoom e Modo Limpo','feat6-desc':'Zoom de ajuste ou 100–300% nativo, mais um modo limpo de uma tecla que esconde toda a UI.',
+    'feat7-title':'Consoles Salvos','feat7-desc':'Marque um IP uma vez, reconecte com um único clique a partir daí.',
+    'feat8-title':'Presets de Qualidade','feat8-desc':'Presets de qualidade/framerate prontos, mais espaço para definir os seus.',
+    'feat9-title':'Atalhos Remapeáveis','feat9-desc':'Cada ação é uma tecla remapeável, incluindo screenshots para o disco ou direto pra área de transferência.',
+    's2-p2':'Algumas coisas pequenas importam mais do que parecem: um cap de FPS de playback que limita a redesenho sem tocar no que o 3DS realmente envia, escalonamento sharp/linear/smooth com rotação opcional, um glow ambiente que puxa cores do que está na tela e — talvez a mais útil — o app não simplesmente mostra uma tela preta e desiste se o 3DS não responde de imediato. Ele tenta de novo.',
+    's3-title':'Dois Apps Nativos, Não Um Port',
+    's3-p1':'O app de macOS é SwiftUI, feito para Apple Silicon, usando ImageIO e Core Graphics para decodificar JPEG e uma view layer-backed para manter as duas telas fluidas. O app de Windows vive numa branch separada e é WPF em .NET, publicado como um executável single-file self-contained via <code>dotnet publish -c Release -r win-x64 --self-contained</code>.',
+    's3-p2':'Nenhum dos dois partiu da codebase C++/AutoIt do projeto original. Ambos foram escritos do zero, cada um nos idiomas da sua plataforma — mas os dois tinham que falar exatamente os mesmos protocolos de rede que o 3DS espera, porque o lado do 3DS no NTR e no HzMod não é algo que você pode redesenhar.',
+    's3-p3':'Isso significou que o trabalho real não era "portar este app" — era "descobrir quais bytes o 3DS está enviando e esperando, duas vezes, em duas linguagens diferentes, e garantir que as duas implementações concordem com o hardware real."',
+    's4-title':'Engenharia Reversa do NTR: 84 Bytes e um Stream de JPEG',
+    's4-p1':'O protocolo de remoteplay do NTR não é documentado publicamente em lugar nenhum que eu tenha encontrado — o mais próximo disso é o código-fonte AutoIt <code>include/ntr.au3</code> do Snickerstream original, que monta e envia o handshake manualmente. Lê-lo deu a forma do protocolo: conectar ao 3DS na porta TCP <code>8000</code>, depois enviar um pacote de comando de 84 bytes carregando um número mágico, um ID de comando, e as configurações de prioridade/qualidade/QoS escolhidas pelo usuário.',
+    's4-p2':'Assim que o 3DS aceita esse comando, ele começa a transmitir frames JPEG como pacotes UDP para o app na porta <code>8001</code> — sem confirmação, sem retransmissão, apenas um fluxo contínuo. Cada pacote UDP carrega um pequeno cabeçalho (id do frame, a qual tela pertence mais uma flag de último pacote, e um índice de pacote) seguido de uma fatia de dados JPEG. O app armazena os pacotes por id de frame até a flag de último pacote aparecer, concatena as fatias em ordem e decodifica o resultado.',
+    's4-p3':'Não há correção de erro em lugar nenhum disso. Se um pacote UDP se perde, aquele frame simplesmente nunca se completa e é descartado — o próximo chega alguns milissegundos depois. É um design que parece frágil mas funciona bem numa rede Wi-Fi local, o que provavelmente explica por que o projeto original nunca precisou de nada mais robusto.',
+    's5-title':'HzMod: O Protocolo Beta',
+    's5-p1':'HzMod é o segundo protocolo do projeto original, reconstruído a partir do <code>include/HzMod.au3</code> da mesma forma. Funciona diferente do NTR: o app conecta ao 3DS na porta TCP <code>6464</code>, envia um pacote com um valor de limite de CPU, uma configuração de qualidade e uma flag de início, e depois lê o stream de resposta pela mesma conexão TCP.',
+    's5-p2':'A parte complicada foram os limites de frame. O layout de cabeçalho que consegui reconstruir do código AutoIt era ambíguo o suficiente para que confiar num campo de tamanho parseado parecesse arriscado. A solução mais robusta: não parsear um cabeçalho para framing de jeito nenhum — só escanear o stream de bytes recebido em busca de um JPEG completo, marcado pelos bytes padrão <code>FF D8</code> de início de imagem e <code>FF D9</code> de fim de imagem, e decodificar o que estiver entre eles.',
+    'q2':'"O HzMod conecta. Ele transmite. Eu não conseguia testar todo caso que ele pudesse encontrar — então ele sai marcado como beta, honestamente, em vez de silenciosamente."',
+    's6-title':'Achando Seu 3DS Sem Digitar um IP',
+    's6-p1':'Digitar o endereço IP do 3DS toda sessão cansa rápido, especialmente numa rede doméstica onde o DHCP dá um novo de vez em quando. O botão "Find on network" escaneia a sub-rede local em busca de um 3DS respondendo nas portas do NTR/HzMod e lista pra conectar com um clique. Também tem a opção de rodar esse scan automaticamente na inicialização.',
+    's6-p2':'Consoles salvos resolvem o resto: marque um IP uma vez com o ícone de fita ao lado do campo de endereço, e ele fica disponível pra reconexão com um clique a partir daí — junto com uma auto-conexão opcional ao último dispositivo usado.',
+    's6-p3':'Uma decisão pequena de design que importou mais do que eu esperava: se o 3DS não responde na hora, o app não simplesmente mostra uma tela preta e chama isso de conectado. Ele continua tentando o handshake até o stream realmente começar, ou o usuário cancelar. Uma ferramenta de remoteplay que "tem sucesso" silenciosamente em nada é pior do que uma que é honesta sobre ainda estar tentando.',
+    's7-title':'Duas Telas, Do Jeito Que Você Quiser',
+    's7-p1':'O 3DS tem duas telas com funções bem diferentes — a de cima pro jogo, a de baixo geralmente pra UI de toque — e jogos diferentes usam elas de formas diferentes. O sistema de layout suporta empilhado, lado a lado, ou uma tela por vez, com espaçamento ajustável entre elas e escala independente por tela para que uma possa ser maior que a outra.',
+    's7-p2':'O ajuste de cor também é por tela: brilho, contraste, saturação, realces e sombras podem ser ajustados separadamente para cima e para baixo. É uma coisa pequena, mas um jogo com a tela de cima clara e um menu escuro embaixo fica visivelmente melhor quando elas não são forçadas pela mesma curva.',
+    's7-p3':'O zoom vai de um modo de ajuste à janela até 300% nativo, e uma única tecla (<code>H</code>) esconde toda a UI do app para uma gravação ou screenshot limpa — só as telas transmitidas, nada mais.',
+    's8-title':'Construindo Duas Codebases ao Mesmo Tempo com o Claude',
+    's8-p1':'Vou dizer aqui a mesma coisa que digo sobre todo projeto: não escrevi este código sozinho. Construí junto com o Claude — descrevendo o que eu queria, revisando o que voltava, e testando cada mudança no meu próprio 3DS até realmente funcionar, não só compilar.',
+    's8-p2':'O que tornou este projeto diferente dos outros é que não havia uma codebase pra iterar — havia duas, em duas linguagens diferentes, que precisavam concordar independentemente com o mesmo comportamento de hardware do 3DS. Acertar o reassembly de frames na versão Swift não acertava automaticamente a versão C#; cada uma teve que ser testada e debugada contra um console real separadamente.',
+    's8-p3':'A divisão na prática: o Claude escrevia e reescrevia as implementações em Swift e C# conforme eu descrevia sintomas — um frame rasgado, uma cor que parecia errada, uma reconexão que travava — e eu era quem ficava na frente de um 3DS confirmando se o fix realmente mudava o que aparecia na tela.',
+    'q3':'"Duas linguagens, um protocolo, um 3DS na minha mesa pra checar a verdade. Essa última parte não dá pra automatizar."',
+    's9-title':'Créditos e Licença',
+    's9-p1':'O 3DSnickerStream segue os protocolos e a licença do projeto original em que se baseia. Em ordem:',
+    'cr1':'<strong>RattletraPM</strong> — o projeto Snickerstream original e a base dos protocolos NTR/HzMod dos quais este app faz engenharia reversa',
+    'cr2':'<strong>samaBR</strong> — reescrita nativa para macOS (SwiftUI) e Windows (WPF/.NET)',
+    'cr3':'<strong>Claude</strong> — colaborador de implementação nas duas plataformas',
+    's9-p2':'Licenciado sob <strong>GPLv3</strong>, igual ao original. Sem afiliação ou endosso da Nintendo.',
+    's10-title':'O Resultado',
+    's10-p1':'O 3DSnickerStream é um app gratuito, open source, GPLv3, que transmite as duas telas de um Nintendo 3DS para uma janela real e nativa no macOS 13+ (Apple Silicon) ou Windows 10/11. Não precisa de conhecimento de programação pra usar — descompacte, permita pelo firewall/Gatekeeper na primeira execução, aponte para um 3DS rodando NTR remoteplay, e conecte.',
+    's10-p2':'É a ferramenta que eu queria quando comecei a procurar: nativa na plataforma que eu realmente uso, honesta sobre o estado da conexão em vez de mostrar tela preta, ajustável por tela em vez de tamanho único, e totalmente controlável pelo teclado depois de configurado.',
+    's10-p3':'Downloads (as builds de macOS e Windows saem em cada release), código-fonte e a lista completa de funcionalidades: <a href="https://github.com/samaBR85/3DSnickerStream" style="color:var(--quote-border)">github.com/samaBR85/3DSnickerStream</a> — GPLv3, gratuito.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>
