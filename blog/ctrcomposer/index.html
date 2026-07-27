@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTRComposer: A Self-Rendered .3gx Overlay Engine for the 3DS — samaBR</title>
+  <meta name="description" content="A deep-dive into CTRComposer — a game-agnostic 3DS plugin engine that draws its own UI to the framebuffer with no game hooks: rendering, the shared font, pausing the game, memory tools, and the gotchas that cost real time. Built in collaboration with Claude." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/ctrcomposer/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/ctrcomposer/" />
+  <meta property="og:title"       content="CTRComposer: A Self-Rendered .3gx Overlay Engine for the 3DS" />
+  <meta property="og:description" content="A game-agnostic 3DS plugin engine that draws its own UI to the framebuffer with no game hooks — rendering, the shared font, pausing the game, memory tools, and the gotchas that cost real time." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/CTRComposer/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/CTRComposer/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "CTRComposer: A Self-Rendered .3gx Overlay Engine for the 3DS",
+    "description": "A game-agnostic 3DS plugin engine that draws its own UI to the framebuffer with no game hooks — rendering, the shared font, pausing the game, memory tools, and the gotchas that cost real time.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-07-27",
+    "dateModified": "2026-07-27",
+    "url": "https://samabr85.github.io/blog/ctrcomposer/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "Nintendo 3DS, Luma3DS, .3gx, plugin, framebuffer, homebrew, C, CTRComposer, PLGLDR, devkitARM"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#08201d;--quote-border:#2ec4b6;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#e6faf6;--quote-border:#12958a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2ec4b6;background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.3);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+    .article-screenshot{margin:0 0 40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center}
+    .article-screenshot img{width:100%;max-width:420px;height:auto;display:block;margin:24px auto}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">The CTRComposer Engine</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">🧩 <span data-i18n="tag">Engine · Nintendo 3DS · C</span></div>
+    <h1 class="article-title" data-i18n="title">CTRComposer: A Self-Rendered<br>.3gx Overlay Engine for the 3DS</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">July 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~11 min read</span>
+    </div>
+  </header>
+
+  <figure class="article-screenshot">
+    <img src="../../docs/screenshots/CTRComposer/og-image.png" alt="CTRComposer blank template running on a 3DS" loading="lazy" />
+  </figure>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: Every Plugin Reinvents the Same Hard Parts</h2>
+    <p data-i18n="s1-p1">After building a Pokémon plugin and then a Zelda one for the 3DS, a pattern was obvious: the genuinely game-specific work — the cheat codes, the art, the Title ID — is maybe 10% of a plugin. The other 90% is the same every time. Draw a menu over a running game. Get the system font on screen. Pause the game cleanly. Read the touch screen. Save settings to the SD card. Every plugin re-solves those, and most tie themselves to one plugin framework, which breaks when Luma3DS or the game updates.</p>
+    <p data-i18n="s1-p2">Older <code>.plg</code> and <code>.3gx</code> plugins die for exactly this reason: they depend on a particular framework build matching a particular game, and when that assumption slips, the plugin no longer loads. I wanted the opposite — an engine that draws everything itself, uses no game hooks, and therefore doesn't care which game or which Luma version it's running under.</p>
+    <p data-i18n="s1-p3">So I pulled all the reusable parts out into <strong>CTRComposer</strong>: a blank, buildable template that <em>is</em> the engine, with no game bolted on. Clone it, add a cheat table, some art and a Title ID, and you have a working plugin. Like everything on this site, it was built in collaboration with Claude — and this article is the write-up of how each piece actually works.</p>
+
+    <div class="pullquote" data-i18n="q1">"A plugin is cheats + art + Title ID. Everything else — rendering, the font, pausing, persistence, the menu, the tools — is the same from game to game, so it should be written once."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">What's in the Engine</h2>
+    <p data-i18n="s2-p1">CTRComposer is a C plugin that renders its own UI directly to the framebuffer and runs inside the game's process — so writing memory is just a pointer, and it draws everything with no dependency on any framework build. What ships in the box:</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">🖼️</div>
+        <div class="fi-title" data-i18n="feat1-title">Self-Rendered UI</div>
+        <div class="fi-desc" data-i18n="feat1-desc">A themeable window drawn to the framebuffer, the 3DS shared font, folder menus, and a layout-agnostic item model — list, grid, whatever fits.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🎨</div>
+        <div class="fi-title" data-i18n="feat2-title">Live Themes + Auto-Contrast</div>
+        <div class="fi-desc" data-i18n="feat2-desc">Recolor every menu instantly with no call-site changes; text picks dark-on-light or light-on-dark automatically so any theme stays readable.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔧</div>
+        <div class="fi-title" data-i18n="feat3-title">Memory Tools</div>
+        <div class="fi-desc" data-i18n="feat3-desc">Cheat Search (known/unknown, undo, region filter), RAM Dumper, Hex Editor, and an on-screen keypad — all running with the game paused.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🎯</div>
+        <div class="fi-title" data-i18n="feat4-title">Inline Button Glyphs</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Write <code>{A}</code> or <code>{D-Pad}</code> in any label and the real console icon renders — localizes cleanly, works in both font sizes.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📖</div>
+        <div class="fi-title" data-i18n="feat5-title">Guide Reader + i18n</div>
+        <div class="fi-desc" data-i18n="feat5-desc">A scrollable word-wrap reader with resume, and a <code>T("English")</code> localization system that loads languages from SD text files.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">💾</div>
+        <div class="fi-title" data-i18n="feat6-title">Persistence + Quick Menu</div>
+        <div class="fi-desc" data-i18n="feat6-desc">SD-card config with version migration, a favorites quick menu that doubles as a launcher, toasts, and rebindable in-game hotkeys.</div>
+      </div>
+    </div>
+
+    <p data-i18n="s2-p2">The template ships with <strong>zero game art and zero game addresses</strong> — the example cheats are inert placeholders that write nothing until you enable them. It also ships with one neutral monochrome theme on purpose, so a fresh plugin isn't born looking like Zelda.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">No Game Hooks — That's the Whole Point</h2>
+    <p data-i18n="s3-p1">The design decision everything else follows from: CTRComposer uses <strong>no game hooks</strong>. It doesn't patch the game's functions or install wrapper addresses. It draws its own UI and reads input from hardware registers directly, so there are no per-game hook addresses to line up and nothing that a game or Luma update can invalidate.</p>
+    <p data-i18n="s3-p2">Because it lives in the game's address space, applying a cheat is a pointer write and pausing is a system call — no cooperation from the game required. That portability is the reason the same engine runs unchanged across titles and Luma versions. Write it once; each new game only brings its own cheats, art and Title ID.</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">Drawing an Overlay Over a Running Game</h2>
+    <p data-i18n="s4-p1">There's no graphics library here — you talk to the LCD registers directly. The framebuffer is column-major, Y-flipped, with bytes in BGR order, and the physical mirror is slow (~18 ms for a full screen). Two techniques make it usable: draw everything into a normal cached RAM buffer first (which also enables real alpha-blending), then do a single blit; and double-buffer, drawing into the hidden buffer and flipping, so there's no flicker.</p>
+
+    <pre><code>// Framebuffer write: column-major + Y-flip, bytes in BGR.
+u32 off = x*stride + (H-1-y)*bpp;
+volatile u8 *px = (u8*)((fb + off) | (1u&lt;&lt;31));   // uncached physical mirror
+px[0]=b; px[1]=g; px[2]=r;</code></pre>
+
+    <p data-i18n="s4-p2">The visual key is the <strong>system font</strong> — the same anti-aliased shared font the console uses, fetched by IPC to the APT service without ever calling <code>aptInit()</code>. Small art (icons, keys) is embedded as RGBA4444 arrays and alpha-blended into the compose buffer, with a nearest-neighbour scaled blit so one small source tile can fill a large key.</p>
+
+    <div class="callout tip">
+      <strong>💡 8→4-bit packing brightens art</strong>
+      Packing an 8-bit PNG to 4-bit by truncating (<code>r&gt;&gt;4</code>) then decoding (<code>*17</code>) rounds most colors upward — the art reads lighter than the source. Pack with round-to-nearest (<code>clamp((r+8)/17, 0, 15)</code>), the true inverse of the decode, to remove the bias.
+    </div>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">Applying Cheats — the Only Game-Specific Part</h2>
+    <p data-i18n="s5-p1">Because the plugin shares the game's address space, a data cheat is a direct write, and a "base + offset" cheat follows a pointer. Code cheats — patching the game's own instructions — need the memory made writable-executable once, and you must always save the original bytes so the cheat can be turned off. Only the addresses change between games; the mechanism is universal.</p>
+
+    <pre><code>// Data cheat — direct, or via a base pointer:
+*(volatile u16*)&lt;addr&gt; = &lt;value&gt;;
+u32 base = *(volatile u32*)&lt;playerPtr&gt;;
+if (base) *(volatile u32*)(base + &lt;offset&gt;) = &lt;value&gt;;
+
+// Code cheat — patch instructions in R-X memory (the "how" is universal):
+svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_SET_MMU_TO_RWX, 0, 0); // once
+// ALWAYS save the original instructions so the cheat can be turned off!
+*(volatile u32*)&lt;codeAddr&gt; = &lt;newInstruction&gt;;
+svcFlushEntireDataCache();  svcInvalidateEntireInstructionCache();</code></pre>
+
+    <p data-i18n="s5-p2">Addresses come from an existing source (a <code>.plg</code>, an Action Replay code bank, a community plugin) or from the engine's own Cheat Search — and they're always region- and version-specific, so you re-anchor when you change region. A neat trick that comes up a lot: many effects that look like they need a function call are really just memory writes the game reads back on its own — set the fields a routine consumes, flip its "do it now" flag, and the game does the work next frame. That's how warps and respawns work with no hooks.</p>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">Save-Diffing: Mapping Packed Save Fields</h2>
+    <p data-i18n="s6-p1">Cheat Search finds a value by its magnitude — perfect for a rupee counter, useless for a packed bitfield where a dozen unrelated facts share one byte (which songs you know, which switches a dungeon flipped). Triggering each event live and diffing RAM is slow and ambiguous when a byte gains several bits at once. <strong>Progressive save files</strong> solve it cleanly, and many games have community "start-to-finish" save collections — a documented series of small steps.</p>
+    <p data-i18n="s6-p2">Anchor a save file to RAM by finding a field whose bytes you already know — that single match pins the whole file-offset ↔ RAM-address mapping, because a save is usually a raw serialization of the same in-memory struct, so bit order is identical in both. Then diff consecutive saves: the bits that flip on are exactly what that step gained, and the collection's written notes give each bit a name. A short Python script does all three in one pass, and the map self-validates against bits already confirmed on hardware. This is the technique behind the completion tracker in the Ocarina of Time plugin.</p>
+
+    <div class="pullquote" data-i18n="q2">"Cheat Search finds a number by how big it is. For a byte where every bit is a different fact, you don't search — you diff two saves and read off what changed."</div>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">Live Themes and Localization, the Same Trick Twice</h2>
+    <p data-i18n="s7-p1">Switching a theme without touching hundreds of draw calls uses one idea: the color macros are indirection into runtime arrays. <code>ApplyTheme(i)</code> copies one row of a theme table into those arrays, and every call site that already used the macro just picks up the new color on the next frame. An auto-contrast check reads the current background's luminance and chooses dark or light text, so every theme — even ones added later — stays readable with no per-theme tweaking.</p>
+    <p data-i18n="s7-p2">Localization is the same indirection, applied to text instead of color. Every string is written once in English and wrapped in <code>T("English source")</code>, which looks the English up in a runtime table and returns a translation — or the English unchanged if there's no entry, so a partial translation degrades gracefully instead of showing blanks.</p>
+
+    <pre><code>const char *T(const char *en) {        // table is empty until a language file loads
+    for (int i = 0; i &lt; g_langCount; ++i)
+        if (strcmp(g_enKey[i], en) == 0) return g_trVal[i];
+    return en;                          // no entry -> English fallback
+}</code></pre>
+
+    <p data-i18n="s7-p3">The table is filled by parsing a plain <code>lang/&lt;Name&gt;.txt</code> file from the SD card — one <code>English=Translation</code> per line. English needs no file; it <em>is</em> the key. Switching language is just re-parsing, so it's instant and needs no restart.</p>
+
+    <!-- SECTION 8 -->
+    <h2 data-i18n="s8-title">The Gotchas That Cost Real Time</h2>
+    <p data-i18n="s8-p1">A self-rendered plugin runs below most of the comforts of libctru, and a handful of traps each cost a debugging session. These are the ones worth knowing before you start:</p>
+
+    <div class="callout danger">
+      <strong>🚫 Never call hidInit()</strong>
+      On the New 3DS, <code>hidInit()</code> internally calls <code>irrstInit()</code>, and <code>ir:rst</code> conflicts with the running game — it freezes the game and locks the HOME button. Read buttons from the hardware register directly, and do a manual <code>hid:USER</code> init for the touch screen that never touches ir:rst.
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠️ ZL / ZR are unreachable</strong>
+      Only the 12 classic buttons live in the input register. ZL/ZR come from <code>ir:rst</code>, which games without Circle Pad Pro support don't have in their exheader — and a <code>.3gx</code> can't patch the exheader. Assume ZL/ZR are off-limits from a plugin; use L/R combos instead.
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠️ ThreadVars, spaces in paths, and the container version</strong>
+      A raw <code>svcCreateThread</code> has no libctru ThreadVars, so malloc/printf/fs will crash until you seed the TLS by hand. The devkitPro toolchain breaks on paths with spaces — build from a space-free path through the msys2 shell. And use 3gxtool 1.3: it writes the <code>3GX$0002</code> container Luma expects; the older <code>3GX$0001</code> is rejected.
+    </div>
+
+    <p data-i18n="s8-p2">There's also the overlay-flicker problem: the game erases your overlay every frame (~33 ms). Re-stamping the visible buffer every 4 ms drops the gap to about 12%, giving a stable overlay — and only the visible buffer, since the hidden one gets rewritten by the game before the flip.</p>
+
+    <!-- SECTION 9 -->
+    <h2 data-i18n="s9-title">Built with Claude</h2>
+    <p data-i18n="s9-p1">Same as every project here: I'm not a programmer. What this one needed was a lot of low-level 3DS knowledge that lives in ten-year-old forum posts and scattered decomp notes — hardware register maps, kernel syscalls, the exact IPC command to get the shared font. I described what the engine had to do; Claude wrote and rewrote the C against those constraints; and every piece got proven on real hardware before it counted as done.</p>
+    <p data-i18n="s9-p2">The payoff of doing it as a reusable engine is that the next plugin isn't a from-scratch fight with the framebuffer — it's a cheat table and some art. That's the difference between shipping one plugin and being able to ship a few.</p>
+
+    <div class="pullquote" data-i18n="q3">"The hard part — rendering, the font, pausing, persistence, the tools — is solved once and documented here. From game to game, it doesn't change."</div>
+
+    <!-- SECTION 10 -->
+    <hr class="divider">
+    <h2 data-i18n="s10-title">The Result</h2>
+    <p data-i18n="s10-p1">CTRComposer is a free, open-source (MIT) blank template for building 3DS overlay/cheat plugins. It builds to <code>CTRComposer-BlankTemplate.3gx</code> — the whole engine with no game attached — and works out of the box under any Title ID, reading its own install path at runtime. It's also a way to revive older <code>.plg</code>/<code>.3gx</code> plugins that no longer load on current Luma builds, by giving them a self-rendered foundation that doesn't depend on a framework matching the game. The <a href="/blog/ocarinactrcomposer/" style="color:var(--quote-border)">Ocarina of Time 3D plugin</a> is the reference build made with it.</p>
+    <p data-i18n="s10-p2">Source, the full engineering guide, and the template: <a href="https://github.com/samaBR85/CTRComposer" style="color:var(--quote-border)">github.com/samaBR85/CTRComposer</a> — MIT, free.</p>
+
+    <hr class="divider">
+    <!-- CREDITS -->
+    <h2 data-i18n="s11-title">Credits</h2>
+    <p data-i18n="s11-p1">CTRComposer owes a great deal to CTRPluginFramework and the earlier community <code>.plg</code> plugins — those projects made 3DS plugins possible and are the direct inspiration here.</p>
+    <ul>
+      <li data-i18n="cr1"><strong>Luma3DS (LumaTeam)</strong> — the plugin loader</li>
+      <li data-i18n="cr2"><strong>PabloMK7</strong> and <strong>Nanquitas</strong> — the <code>.3gx</code> format and 3gxtool</li>
+      <li data-i18n="cr3"><strong>PabloMK7/CTRPluginFramework-BlankTemplate</strong> — the repository structure model</li>
+      <li data-i18n="cr4"><strong>The Linux console font</strong> — the small 6×10 bitmap font; button glyphs are original, generated by a script</li>
+    </ul>
+    <p data-i18n="s11-p2">Game names and game content belong to their publishers. Plugins you build from this template are yours — the MIT license only covers the template itself.</p>
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'The CTRComposer Engine','tag':'Engine · Nintendo 3DS · C',
+    'title':'CTRComposer: A Self-Rendered<br>.3gx Overlay Engine for the 3DS',
+    'date':'July 2026','readtime':'⏱ ~11 min read',
+    's1-title':'The Problem: Every Plugin Reinvents the Same Hard Parts',
+    's1-p1':'After building a Pokémon plugin and then a Zelda one for the 3DS, a pattern was obvious: the genuinely game-specific work — the cheat codes, the art, the Title ID — is maybe 10% of a plugin. The other 90% is the same every time. Draw a menu over a running game. Get the system font on screen. Pause the game cleanly. Read the touch screen. Save settings to the SD card. Every plugin re-solves those, and most tie themselves to one plugin framework, which breaks when Luma3DS or the game updates.',
+    's1-p2':'Older <code>.plg</code> and <code>.3gx</code> plugins die for exactly this reason: they depend on a particular framework build matching a particular game, and when that assumption slips, the plugin no longer loads. I wanted the opposite — an engine that draws everything itself, uses no game hooks, and therefore doesn\'t care which game or which Luma version it\'s running under.',
+    's1-p3':'So I pulled all the reusable parts out into <strong>CTRComposer</strong>: a blank, buildable template that <em>is</em> the engine, with no game bolted on. Clone it, add a cheat table, some art and a Title ID, and you have a working plugin. Like everything on this site, it was built in collaboration with Claude — and this article is the write-up of how each piece actually works.',
+    'q1':'"A plugin is cheats + art + Title ID. Everything else — rendering, the font, pausing, persistence, the menu, the tools — is the same from game to game, so it should be written once."',
+    's2-title':'What\'s in the Engine',
+    's2-p1':'CTRComposer is a C plugin that renders its own UI directly to the framebuffer and runs inside the game\'s process — so writing memory is just a pointer, and it draws everything with no dependency on any framework build. What ships in the box:',
+    'feat1-title':'Self-Rendered UI','feat1-desc':'A themeable window drawn to the framebuffer, the 3DS shared font, folder menus, and a layout-agnostic item model — list, grid, whatever fits.',
+    'feat2-title':'Live Themes + Auto-Contrast','feat2-desc':'Recolor every menu instantly with no call-site changes; text picks dark-on-light or light-on-dark automatically so any theme stays readable.',
+    'feat3-title':'Memory Tools','feat3-desc':'Cheat Search (known/unknown, undo, region filter), RAM Dumper, Hex Editor, and an on-screen keypad — all running with the game paused.',
+    'feat4-title':'Inline Button Glyphs','feat4-desc':'Write <code>{A}</code> or <code>{D-Pad}</code> in any label and the real console icon renders — localizes cleanly, works in both font sizes.',
+    'feat5-title':'Guide Reader + i18n','feat5-desc':'A scrollable word-wrap reader with resume, and a <code>T("English")</code> localization system that loads languages from SD text files.',
+    'feat6-title':'Persistence + Quick Menu','feat6-desc':'SD-card config with version migration, a favorites quick menu that doubles as a launcher, toasts, and rebindable in-game hotkeys.',
+    's2-p2':'The template ships with <strong>zero game art and zero game addresses</strong> — the example cheats are inert placeholders that write nothing until you enable them. It also ships with one neutral monochrome theme on purpose, so a fresh plugin isn\'t born looking like Zelda.',
+    's3-title':'No Game Hooks — That\'s the Whole Point',
+    's3-p1':'The design decision everything else follows from: CTRComposer uses <strong>no game hooks</strong>. It doesn\'t patch the game\'s functions or install wrapper addresses. It draws its own UI and reads input from hardware registers directly, so there are no per-game hook addresses to line up and nothing that a game or Luma update can invalidate.',
+    's3-p2':'Because it lives in the game\'s address space, applying a cheat is a pointer write and pausing is a system call — no cooperation from the game required. That portability is the reason the same engine runs unchanged across titles and Luma versions. Write it once; each new game only brings its own cheats, art and Title ID.',
+    's4-title':'Drawing an Overlay Over a Running Game',
+    's4-p1':'There\'s no graphics library here — you talk to the LCD registers directly. The framebuffer is column-major, Y-flipped, with bytes in BGR order, and the physical mirror is slow (~18 ms for a full screen). Two techniques make it usable: draw everything into a normal cached RAM buffer first (which also enables real alpha-blending), then do a single blit; and double-buffer, drawing into the hidden buffer and flipping, so there\'s no flicker.',
+    's4-p2':'The visual key is the <strong>system font</strong> — the same anti-aliased shared font the console uses, fetched by IPC to the APT service without ever calling <code>aptInit()</code>. Small art (icons, keys) is embedded as RGBA4444 arrays and alpha-blended into the compose buffer, with a nearest-neighbour scaled blit so one small source tile can fill a large key.',
+    's5-title':'Applying Cheats — the Only Game-Specific Part',
+    's5-p1':'Because the plugin shares the game\'s address space, a data cheat is a direct write, and a "base + offset" cheat follows a pointer. Code cheats — patching the game\'s own instructions — need the memory made writable-executable once, and you must always save the original bytes so the cheat can be turned off. Only the addresses change between games; the mechanism is universal.',
+    's5-p2':'Addresses come from an existing source (a <code>.plg</code>, an Action Replay code bank, a community plugin) or from the engine\'s own Cheat Search — and they\'re always region- and version-specific, so you re-anchor when you change region. A neat trick that comes up a lot: many effects that look like they need a function call are really just memory writes the game reads back on its own — set the fields a routine consumes, flip its "do it now" flag, and the game does the work next frame. That\'s how warps and respawns work with no hooks.',
+    's6-title':'Save-Diffing: Mapping Packed Save Fields',
+    's6-p1':'Cheat Search finds a value by its magnitude — perfect for a rupee counter, useless for a packed bitfield where a dozen unrelated facts share one byte (which songs you know, which switches a dungeon flipped). Triggering each event live and diffing RAM is slow and ambiguous when a byte gains several bits at once. <strong>Progressive save files</strong> solve it cleanly, and many games have community "start-to-finish" save collections — a documented series of small steps.',
+    's6-p2':'Anchor a save file to RAM by finding a field whose bytes you already know — that single match pins the whole file-offset ↔ RAM-address mapping, because a save is usually a raw serialization of the same in-memory struct, so bit order is identical in both. Then diff consecutive saves: the bits that flip on are exactly what that step gained, and the collection\'s written notes give each bit a name. A short Python script does all three in one pass, and the map self-validates against bits already confirmed on hardware. This is the technique behind the completion tracker in the Ocarina of Time plugin.',
+    'q2':'"Cheat Search finds a number by how big it is. For a byte where every bit is a different fact, you don\'t search — you diff two saves and read off what changed."',
+    's7-title':'Live Themes and Localization, the Same Trick Twice',
+    's7-p1':'Switching a theme without touching hundreds of draw calls uses one idea: the color macros are indirection into runtime arrays. <code>ApplyTheme(i)</code> copies one row of a theme table into those arrays, and every call site that already used the macro just picks up the new color on the next frame. An auto-contrast check reads the current background\'s luminance and chooses dark or light text, so every theme — even ones added later — stays readable with no per-theme tweaking.',
+    's7-p2':'Localization is the same indirection, applied to text instead of color. Every string is written once in English and wrapped in <code>T("English source")</code>, which looks the English up in a runtime table and returns a translation — or the English unchanged if there\'s no entry, so a partial translation degrades gracefully instead of showing blanks.',
+    's7-p3':'The table is filled by parsing a plain <code>lang/&lt;Name&gt;.txt</code> file from the SD card — one <code>English=Translation</code> per line. English needs no file; it <em>is</em> the key. Switching language is just re-parsing, so it\'s instant and needs no restart.',
+    's8-title':'The Gotchas That Cost Real Time',
+    's8-p1':'A self-rendered plugin runs below most of the comforts of libctru, and a handful of traps each cost a debugging session. These are the ones worth knowing before you start:',
+    's8-p2':'There\'s also the overlay-flicker problem: the game erases your overlay every frame (~33 ms). Re-stamping the visible buffer every 4 ms drops the gap to about 12%, giving a stable overlay — and only the visible buffer, since the hidden one gets rewritten by the game before the flip.',
+    's9-title':'Built with Claude',
+    's9-p1':'Same as every project here: I\'m not a programmer. What this one needed was a lot of low-level 3DS knowledge that lives in ten-year-old forum posts and scattered decomp notes — hardware register maps, kernel syscalls, the exact IPC command to get the shared font. I described what the engine had to do; Claude wrote and rewrote the C against those constraints; and every piece got proven on real hardware before it counted as done.',
+    's9-p2':'The payoff of doing it as a reusable engine is that the next plugin isn\'t a from-scratch fight with the framebuffer — it\'s a cheat table and some art. That\'s the difference between shipping one plugin and being able to ship a few.',
+    'q3':'"The hard part — rendering, the font, pausing, persistence, the tools — is solved once and documented here. From game to game, it doesn\'t change."',
+    's10-title':'The Result',
+    's10-p1':'CTRComposer is a free, open-source (MIT) blank template for building 3DS overlay/cheat plugins. It builds to <code>CTRComposer-BlankTemplate.3gx</code> — the whole engine with no game attached — and works out of the box under any Title ID, reading its own install path at runtime. It\'s also a way to revive older <code>.plg</code>/<code>.3gx</code> plugins that no longer load on current Luma builds, by giving them a self-rendered foundation that doesn\'t depend on a framework matching the game. The <a href="/blog/ocarinactrcomposer/" style="color:var(--quote-border)">Ocarina of Time 3D plugin</a> is the reference build made with it.',
+    's10-p2':'Source, the full engineering guide, and the template: <a href="https://github.com/samaBR85/CTRComposer" style="color:var(--quote-border)">github.com/samaBR85/CTRComposer</a> — MIT, free.',
+    's11-title':'Credits',
+    's11-p1':'CTRComposer owes a great deal to CTRPluginFramework and the earlier community <code>.plg</code> plugins — those projects made 3DS plugins possible and are the direct inspiration here.',
+    'cr1':'<strong>Luma3DS (LumaTeam)</strong> — the plugin loader',
+    'cr2':'<strong>PabloMK7</strong> and <strong>Nanquitas</strong> — the <code>.3gx</code> format and 3gxtool',
+    'cr3':'<strong>PabloMK7/CTRPluginFramework-BlankTemplate</strong> — the repository structure model',
+    'cr4':'<strong>The Linux console font</strong> — the small 6×10 bitmap font; button glyphs are original, generated by a script',
+    's11-p2':'Game names and game content belong to their publishers. Plugins you build from this template are yours — the MIT license only covers the template itself.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'O Motor CTRComposer','tag':'Motor · Nintendo 3DS · C',
+    'title':'CTRComposer: Um Motor de Overlay<br>.3gx Auto-Renderizado para o 3DS',
+    'date':'Julho de 2026','readtime':'⏱ ~11 min de leitura',
+    's1-title':'O Problema: Todo Plugin Reinventa as Mesmas Partes Difíceis',
+    's1-p1':'Depois de construir um plugin de Pokémon e depois um de Zelda pro 3DS, um padrão ficou óbvio: o trabalho genuinamente específico do jogo — os códigos de cheat, a arte, o Title ID — é talvez 10% de um plugin. Os outros 90% são iguais toda vez. Desenhar um menu por cima de um jogo rodando. Colocar a fonte do sistema na tela. Pausar o jogo direito. Ler a tela de toque. Salvar configurações no SD. Todo plugin re-resolve isso, e a maioria se amarra a um framework de plugin, que quebra quando o Luma3DS ou o jogo atualiza.',
+    's1-p2':'Plugins <code>.plg</code> e <code>.3gx</code> antigos morrem exatamente por isso: dependem de uma build específica de framework casar com um jogo específico, e quando essa suposição escorrega, o plugin não carrega mais. Eu queria o oposto — um motor que desenha tudo sozinho, não usa hooks do jogo, e por isso não liga pra qual jogo ou qual versão do Luma está rodando.',
+    's1-p3':'Então tirei todas as partes reaproveitáveis pro <strong>CTRComposer</strong>: um template em branco e compilável que <em>é</em> o motor, sem nenhum jogo grudado. Clone, adicione uma tabela de cheats, alguma arte e um Title ID, e você tem um plugin funcionando. Como tudo neste site, foi construído em colaboração com o Claude — e este artigo é a documentação de como cada peça realmente funciona.',
+    'q1':'"Um plugin é cheats + arte + Title ID. Todo o resto — renderização, a fonte, pausar, persistência, o menu, as ferramentas — é igual de jogo pra jogo, então deveria ser escrito uma vez só."',
+    's2-title':'O Que Tem no Motor',
+    's2-p1':'O CTRComposer é um plugin em C que renderiza a própria UI direto no framebuffer e roda dentro do processo do jogo — então escrever memória é só um ponteiro, e ele desenha tudo sem depender de nenhuma build de framework. O que vem na caixa:',
+    'feat1-title':'UI Auto-Renderizada','feat1-desc':'Uma janela com temas desenhada no framebuffer, a fonte compartilhada do 3DS, menus em pasta e um modelo de item agnóstico de layout — lista, grid, o que couber.',
+    'feat2-title':'Temas ao Vivo + Auto-Contraste','feat2-desc':'Recolora cada menu na hora sem mudar os call sites; o texto escolhe escuro-no-claro ou claro-no-escuro sozinho, então qualquer tema fica legível.',
+    'feat3-title':'Ferramentas de Memória','feat3-desc':'Cheat Search (conhecido/desconhecido, undo, filtro de região), RAM Dumper, Editor Hex e um teclado on-screen — tudo rodando com o jogo pausado.',
+    'feat4-title':'Glyphs de Botão Inline','feat4-desc':'Escreva <code>{A}</code> ou <code>{D-Pad}</code> em qualquer label e o ícone real do console é renderizado — localiza limpo, funciona nos dois tamanhos de fonte.',
+    'feat5-title':'Leitor de Guia + i18n','feat5-desc':'Um leitor com quebra de linha e resume rolável, e um sistema de localização <code>T("English")</code> que carrega idiomas de arquivos de texto do SD.',
+    'feat6-title':'Persistência + Menu Rápido','feat6-desc':'Config no SD com migração de versão, um menu rápido de favoritos que também é launcher, toasts e hotkeys in-game remapeáveis.',
+    's2-p2':'O template vem com <strong>zero arte de jogo e zero endereços de jogo</strong> — os cheats de exemplo são placeholders inertes que não escrevem nada até você habilitá-los. Também vem com um tema monocromático neutro de propósito, pra um plugin novo não nascer com a cara de Zelda.',
+    's3-title':'Sem Hooks no Jogo — Esse é o Ponto Inteiro',
+    's3-p1':'A decisão de design da qual tudo o resto decorre: o CTRComposer não usa <strong>nenhum hook do jogo</strong>. Ele não faz patch nas funções do jogo nem instala endereços de wrapper. Ele desenha a própria UI e lê input dos registradores de hardware diretamente, então não há endereços de hook por jogo pra alinhar e nada que uma atualização de jogo ou Luma possa invalidar.',
+    's3-p2':'Como vive no espaço de endereços do jogo, aplicar um cheat é uma escrita de ponteiro e pausar é uma syscall — sem cooperação do jogo. Essa portabilidade é a razão do mesmo motor rodar sem mudanças entre títulos e versões do Luma. Escreva uma vez; cada jogo novo só traz os próprios cheats, arte e Title ID.',
+    's4-title':'Desenhando um Overlay Sobre um Jogo Rodando',
+    's4-p1':'Não há biblioteca gráfica aqui — você fala com os registradores do LCD diretamente. O framebuffer é column-major, Y-flipped, com bytes em ordem BGR, e o mirror físico é lento (~18 ms pra uma tela cheia). Duas técnicas o tornam usável: desenhe tudo primeiro num buffer de RAM cacheado normal (o que também habilita alpha-blending de verdade), depois faça um único blit; e faça double-buffer, desenhando no buffer escondido e trocando, pra não ter flicker.',
+    's4-p2':'A chave visual é a <strong>fonte do sistema</strong> — a mesma fonte compartilhada anti-aliased que o console usa, obtida por IPC ao serviço APT sem nunca chamar <code>aptInit()</code>. Arte pequena (ícones, teclas) é embutida como arrays RGBA4444 e alpha-blended no buffer de composição, com um blit escalado nearest-neighbour pra que um tile de origem pequeno preencha uma tecla grande.',
+    's5-title':'Aplicando Cheats — a Única Parte Específica do Jogo',
+    's5-p1':'Como o plugin compartilha o espaço de endereços do jogo, um cheat de dados é uma escrita direta, e um cheat "base + offset" segue um ponteiro. Cheats de código — patchear as próprias instruções do jogo — precisam da memória tornada gravável-executável uma vez, e você sempre tem que salvar os bytes originais pra poder desligar o cheat. Só os endereços mudam entre jogos; o mecanismo é universal.',
+    's5-p2':'Os endereços vêm de uma fonte existente (um <code>.plg</code>, um banco de códigos Action Replay, um plugin da comunidade) ou do próprio Cheat Search do motor — e são sempre específicos de região e versão, então você re-ancora ao trocar de região. Um truque legal que aparece muito: muitos efeitos que parecem precisar de uma chamada de função são só escritas de memória que o jogo lê de volta sozinho — preencha os campos que uma rotina consome, vire a flag de "faça agora", e o jogo faz o trabalho no frame seguinte. É assim que warps e respawns funcionam sem hooks.',
+    's6-title':'Save-Diffing: Mapeando Campos de Save Compactados',
+    's6-p1':'O Cheat Search acha um valor pela magnitude — perfeito pra um contador de rupees, inútil pra um bitfield compactado onde uma dúzia de fatos sem relação divide um byte (quais músicas você sabe, quais switches uma dungeon virou). Disparar cada evento ao vivo e fazer diff da RAM é lento e ambíguo quando um byte ganha vários bits de uma vez. <strong>Arquivos de save progressivos</strong> resolvem isso limpo, e muitos jogos têm coleções "start-to-finish" da comunidade — uma série documentada de pequenos passos.',
+    's6-p2':'Ancore um arquivo de save na RAM achando um campo cujos bytes você já conhece — esse único match fixa todo o mapeamento offset-do-arquivo ↔ endereço-de-RAM, porque um save é geralmente uma serialização crua da mesma struct em memória, então a ordem dos bits é idêntica nos dois. Depois faça o diff de saves consecutivos: os bits que ligam são exatamente o que aquele passo ganhou, e as notas escritas da coleção dão nome a cada bit. Um script Python curto faz tudo numa passada, e o mapa se autovalida contra bits já confirmados no hardware. É a técnica por trás do rastreador de conclusão no plugin de Ocarina of Time.',
+    'q2':'"O Cheat Search acha um número pelo tamanho dele. Pra um byte onde cada bit é um fato diferente, você não busca — faz o diff de dois saves e lê o que mudou."',
+    's7-title':'Temas ao Vivo e Localização, o Mesmo Truque Duas Vezes',
+    's7-p1':'Trocar um tema sem tocar em centenas de draw calls usa uma ideia: os macros de cor são indireção pra arrays em runtime. <code>ApplyTheme(i)</code> copia uma linha de uma tabela de temas pra esses arrays, e cada call site que já usava o macro simplesmente pega a nova cor no frame seguinte. Um check de auto-contraste lê a luminância do fundo atual e escolhe texto escuro ou claro, então cada tema — até os adicionados depois — fica legível sem ajuste por tema.',
+    's7-p2':'A localização é a mesma indireção, aplicada a texto em vez de cor. Cada string é escrita uma vez em inglês e envolvida em <code>T("English source")</code>, que busca o inglês numa tabela em runtime e retorna uma tradução — ou o inglês inalterado se não houver entrada, então uma tradução parcial degrada com elegância em vez de mostrar espaços em branco.',
+    's7-p3':'A tabela é preenchida parseando um arquivo <code>lang/&lt;Name&gt;.txt</code> simples do SD — um <code>Inglês=Tradução</code> por linha. O inglês não precisa de arquivo; ele <em>é</em> a chave. Trocar de idioma é só re-parsear, então é instantâneo e não precisa reiniciar.',
+    's8-title':'As Pegadinhas que Custaram Tempo de Verdade',
+    's8-p1':'Um plugin auto-renderizado roda abaixo da maioria dos confortos do libctru, e um punhado de armadilhas custou uma sessão de debug cada. Estas são as que vale conhecer antes de começar:',
+    's8-p2':'Tem também o problema de flicker do overlay: o jogo apaga o seu overlay a cada frame (~33 ms). Re-carimbar o buffer visível a cada 4 ms derruba a lacuna pra cerca de 12%, dando um overlay estável — e só o buffer visível, já que o escondido é reescrito pelo jogo antes da troca.',
+    's9-title':'Construído com o Claude',
+    's9-p1':'Igual a todo projeto aqui: não sou programador. O que este precisou foi muito conhecimento de baixo nível do 3DS que mora em posts de fórum de dez anos atrás e notas de decomp espalhadas — mapas de registradores de hardware, syscalls de kernel, o comando IPC exato pra pegar a fonte compartilhada. Eu descrevi o que o motor tinha que fazer; o Claude escreveu e reescreveu o C contra essas restrições; e cada peça foi provada em hardware real antes de contar como pronta.',
+    's9-p2':'A recompensa de fazer como um motor reaproveitável é que o próximo plugin não é uma briga do zero com o framebuffer — é uma tabela de cheats e alguma arte. Essa é a diferença entre lançar um plugin e conseguir lançar vários.',
+    'q3':'"A parte difícil — renderização, a fonte, pausar, persistência, as ferramentas — é resolvida uma vez e documentada aqui. De jogo pra jogo, não muda."',
+    's10-title':'O Resultado',
+    's10-p1':'O CTRComposer é um template em branco gratuito e open source (MIT) pra construir plugins de overlay/cheat de 3DS. Ele compila pra <code>CTRComposer-BlankTemplate.3gx</code> — o motor inteiro sem jogo grudado — e funciona out of the box sob qualquer Title ID, lendo o próprio caminho de instalação em runtime. Também é um jeito de reviver plugins <code>.plg</code>/<code>.3gx</code> antigos que não carregam mais em builds atuais do Luma, dando a eles uma base auto-renderizada que não depende de um framework casar com o jogo. O <a href="/blog/ocarinactrcomposer/" style="color:var(--quote-border)">plugin de Ocarina of Time 3D</a> é a build de referência feita com ele.',
+    's10-p2':'Código-fonte, o guia de engenharia completo e o template: <a href="https://github.com/samaBR85/CTRComposer" style="color:var(--quote-border)">github.com/samaBR85/CTRComposer</a> — MIT, gratuito.',
+    's11-title':'Créditos',
+    's11-p1':'O CTRComposer deve muito ao CTRPluginFramework e aos plugins <code>.plg</code> antigos da comunidade — esses projetos tornaram os plugins de 3DS possíveis e são a inspiração direta aqui.',
+    'cr1':'<strong>Luma3DS (LumaTeam)</strong> — o plugin loader',
+    'cr2':'<strong>PabloMK7</strong> e <strong>Nanquitas</strong> — o formato <code>.3gx</code> e o 3gxtool',
+    'cr3':'<strong>PabloMK7/CTRPluginFramework-BlankTemplate</strong> — o modelo de estrutura do repositório',
+    'cr4':'<strong>A fonte de console do Linux</strong> — a fonte bitmap pequena 6×10; os glyphs de botão são originais, gerados por um script',
+    's11-p2':'Nomes e conteúdo de jogos pertencem aos seus publishers. Plugins que você construir a partir deste template são seus — a licença MIT cobre só o template em si.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>

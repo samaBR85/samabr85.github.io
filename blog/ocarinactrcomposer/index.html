@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building an Ocarina of Time 3D Cheat Overlay for the 3DS — samaBR</title>
+  <meta name="description" content="How a self-rendered .3gx overlay for Zelda: Ocarina of Time 3D came together — ~60 cheats, teleport, a save-reading 100% checklist, and on-device memory tools, built on the CTRComposer engine in collaboration with Claude." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/ocarinactrcomposer/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/ocarinactrcomposer/" />
+  <meta property="og:title"       content="Building an Ocarina of Time 3D Cheat Overlay for the 3DS" />
+  <meta property="og:description" content="A self-rendered .3gx overlay for Zelda: Ocarina of Time 3D — cheats, teleport, a save-reading 100% checklist, and on-device memory tools. Built in collaboration with Claude." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/OcarinaCTRComposer/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/OcarinaCTRComposer/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Building an Ocarina of Time 3D Cheat Overlay for the 3DS",
+    "description": "A self-rendered .3gx overlay for Zelda: Ocarina of Time 3D — cheats, teleport, a save-reading 100% checklist, and on-device memory tools. Built in collaboration with Claude.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-07-24",
+    "dateModified": "2026-07-24",
+    "url": "https://samabr85.github.io/blog/ocarinactrcomposer/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "Nintendo 3DS, Luma3DS, .3gx, Ocarina of Time, Zelda, plugin, cheats, homebrew, C, CTRComposer"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#20190a;--quote-border:#e6b53a;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#fdf6e3;--quote-border:#b8860b;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#e6b53a;background:rgba(230,181,58,.12);border:1px solid rgba(230,181,58,.3);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+    .article-screenshot{margin:0 0 40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center}
+    .article-screenshot img{width:100%;max-width:420px;height:auto;display:block;margin:24px auto}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">Ocarina of Time 3D Overlay</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">🗡️ <span data-i18n="tag">Plugin · Nintendo 3DS · C</span></div>
+    <h1 class="article-title" data-i18n="title">Building an Ocarina of Time 3D<br>Cheat Overlay for the 3DS</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">July 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~9 min read</span>
+    </div>
+  </header>
+
+  <figure class="article-screenshot">
+    <img src="../../docs/screenshots/OcarinaCTRComposer/og-image.png" alt="OcarinaCTRComposer running on a 3DS" loading="lazy" />
+  </figure>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: I Wanted to Play With OoT3D, Not Fight the Tools</h2>
+    <p data-i18n="s1-p1">I went back to <em>The Legend of Zelda: Ocarina of Time 3D</em> not for a clean run but to mess around — teleport across Hyrule, test items, chase a 100% file without redoing everything by hand. The 3DS can do all of that: Luma3DS loads plugins that run alongside the game and can read and write its memory live. The scene that makes this possible is impressive and generous.</p>
+    <p data-i18n="s1-p2">But the tooling assumes you already speak its language. Cheats are hex codes you paste from a forum. Warps are entrance indices. There's no in-game explanation of what anything does, and nothing tells you whether a code even matches your version of the game. For someone who just wants to jump to the Water Temple and keep playing, that's a lot of friction for a little fun.</p>
+    <p data-i18n="s1-p3">So I built <strong>OcarinaCTRComposer</strong>: a plugin that opens with <strong>SELECT</strong> and shows a themed menu where every cheat has a name, teleport destinations are places (not numbers), and a 100% checklist reads your save file to fill itself in. It's built on top of a small engine I made called CTRComposer, and — like everything else on this site — it was written in back-and-forth collaboration with Claude.</p>
+
+    <div class="pullquote" data-i18n="q1">"The console could already do all of this. It just spoke in hex codes and entrance indices instead of place names and checkboxes."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">What It Does</h2>
+    <p data-i18n="s2-p1">Press SELECT and the plugin draws its own menu over the game — no game assets, just the console's shared font and shapes drawn by the plugin itself. Every section is named in plain language.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">🎮</div>
+        <div class="fi-title" data-i18n="feat1-title">~60 Cheats in Folders</div>
+        <div class="fi-desc" data-i18n="feat1-desc">Movement, Battle, Inventory, Time, Quest, Misc — data cheats and code patches, with item pickers using the real inventory sprites.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🗺️</div>
+        <div class="fi-title" data-i18n="feat2-title">Teleport</div>
+        <div class="fi-desc" data-i18n="feat2-desc">30 mapped destinations — overworld and every dungeon — filterable, reliable in towns and dungeons, for both child and adult Link.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📍</div>
+        <div class="fi-title" data-i18n="feat3-title">Self-Naming Waypoints</div>
+        <div class="fi-desc" data-i18n="feat3-desc">9 save/warp slots that name themselves after the area ("3. Water Temple R2"), persist across sessions, and survive age changes.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">✅</div>
+        <div class="fi-title" data-i18n="feat4-title">100% Checklist</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Track completion by area; auto-fill reads your save and stays in sync — it adds what you have and drops what you don't.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🔍</div>
+        <div class="fi-title" data-i18n="feat5-title">Cheat Search + Hex Editor</div>
+        <div class="fi-desc" data-i18n="feat5-desc">Find any value's address (known or unknown), a RAM dumper, and a live hex grid — an OoT3D-styled on-screen keypad for input.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📖</div>
+        <div class="fi-title" data-i18n="feat6-title">Embedded Game Guide</div>
+        <div class="fi-desc" data-i18n="feat6-desc">A complete OoT3D walkthrough inside the plugin — Young/Adult Link, Master Quest, item locations, secrets, ocarina songs.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🎨</div>
+        <div class="fi-title" data-i18n="feat7-title">26 Color Themes</div>
+        <div class="fi-desc" data-i18n="feat7-desc">Live preview before applying — the classic Zelda parchment plus 25 more (Game Boy Classic, Synthwave, BotW, and others).</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">⚡</div>
+        <div class="fi-title" data-i18n="feat8-title">Quick Menu &amp; Hotkeys</div>
+        <div class="fi-desc" data-i18n="feat8-desc">Favorite cheats, warps, folders and tools into an L+SELECT quick menu; rebindable in-game hotkeys and toast notifications.</div>
+      </div>
+    </div>
+
+    <p data-i18n="s2-p2">SELECT always returns you to the game, and reopening resumes exactly where you left off — even mid-tool. The UI ships in English with a built-in system that loads more languages from plain SD text files, and the embedded guide is available in six.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">Built on CTRComposer, a Game-Agnostic Engine</h2>
+    <p data-i18n="s3-p1">This plugin is really two projects. Almost everything you see — the menu, the themes, the on-screen keypad, the memory tools, the guide reader, the way it draws its own window over the game — belongs to a separate, game-independent engine called <strong>CTRComposer</strong>. OcarinaCTRComposer is what you get when you point that engine at one specific game.</p>
+    <p data-i18n="s3-p2">The split matters because it means about 90% of the work isn't Zelda-specific at all. A new plugin for a different 3DS game is essentially a cheat table, some art, and a Title ID — everything else is reused as-is. I wrote up the engine itself, and every technique behind it, in its own article.</p>
+    <p data-i18n="s3-p3"><a href="/blog/ctrcomposer/" style="color:var(--quote-border)">→ Read the CTRComposer deep-dive</a> — the framebuffer rendering, the system font, pausing the game, and the memory tools, all documented.</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">The 100% Checklist That Reads Your Save</h2>
+    <p data-i18n="s4-p1">The feature I'm most attached to is the completion tracker. A normal checklist makes you tick 200 boxes by hand. This one reads your actual save data and fills itself in — and, crucially, it stays in sync: if you load a different file, it <em>adds</em> what that file has and <em>removes</em> auto-marks it no longer sees, while leaving anything you ticked by hand alone.</p>
+    <p data-i18n="s4-p2">Getting there meant mapping the game's save format — which bit means "learned Zelda's Lullaby," which byte tracks heart pieces. Cheat Search is great at finding a number by its magnitude, but useless for packed bitfields where a dozen unrelated facts share one byte. The trick that cracked it was <strong>save-diffing</strong>: OoT3D has community "start-to-finish" save collections — a series of saves, each one documented step further into the game.</p>
+    <p data-i18n="s4-p3">Anchor one save file to RAM by finding a field whose bytes you already know (an inventory array that matches a known cheat buffer), which pins the whole file-to-memory mapping. Then diff consecutive saves: the bits that flip on are exactly what that save gained — a song, a stone, a flag — and lining those diffs up against the collection's written notes gives each bit a name. A throwaway Python script does it in one pass, and the map is self-validating against bits already confirmed on hardware.</p>
+
+    <div class="pullquote" data-i18n="q2">"Auto-fill isn't a running tally — it's a live read of the save. The checklist always reflects the file you actually loaded, not a number it's been counting."</div>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">Teleport by Driving the Game's Own Load Routine</h2>
+    <p data-i18n="s5-p1">Warping looks like it should require calling one of the game's functions, but it's really just memory writes the game reads back on its own. The plugin shares the game's address space, so setting a value is a pointer write — no hooks, no injected code paths.</p>
+    <p data-i18n="s5-p2">Teleport works by populating the fields the load routine consumes — the destination entrance, the transition type — and then flipping the "load now" flag the game already checks each frame. Next frame, the game performs the warp itself. The same idea powers the self-naming waypoints: save the current entrance and position, and restoring is just writing them back and raising the flag.</p>
+
+    <pre><code>// The plugin runs inside the game's process, so a cheat is a memory write.
+// Data cheat — direct:
+*(volatile u16*)&lt;addr&gt; = &lt;value&gt;;
+
+// Base + offset (a value hanging off the player pointer):
+u32 base = *(volatile u32*)&lt;playerPtr&gt;;
+if (base) *(volatile u32*)(base + &lt;offset&gt;) = &lt;value&gt;;
+
+// Teleport = drive the game's own load: set destination, then raise its flag.
+*(volatile u16*)&lt;entranceField&gt; = destination;
+*(volatile u8*)&lt;loadFlag&gt;      = 1;   // the game loads it next frame</code></pre>
+
+    <div class="callout warn">
+      <strong>⚠️ Region-locked addresses</strong>
+      Every one of those addresses is specific to the USA version of the game (Title ID <code>0004000000033500</code>). On EUR/JPN they differ — enabling a mismatched cheat may do nothing or crash. The plugin ships anchored to the USA copy for that reason.
+    </div>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">A Curious Player, Again</h2>
+    <p data-i18n="s6-p1">The working style is the same as every project on this site: I'm not a programmer. I'm a player who is good at describing what's missing and testing whether a fix actually does what it should on real hardware. Every feature came from being deep in a playthrough and thinking "there should be a way to…" — and then building it in back-and-forth with Claude.</p>
+    <p data-i18n="s6-p2">What made this one interesting is that it sits on top of an engine I'd already built with the same method, so the game-specific work — the cheat table, the save format, the teleport destinations — was the whole job. The engine handled the hard parts (drawing over the game, the font, pausing, persistence); I handled knowing what an Ocarina of Time player actually wants at hand.</p>
+
+    <div class="pullquote" data-i18n="q3">"The engine draws the window. I decide what goes in it. That division of labor is the whole reason a non-programmer can ship a plugin like this."</div>
+
+    <!-- SECTION 7 -->
+    <hr class="divider">
+    <h2 data-i18n="s7-title">The Result</h2>
+    <p data-i18n="s7-p1">OcarinaCTRComposer is a free, open-source (MIT) Luma3DS plugin for Ocarina of Time 3D. Drop the <code>.3gx</code> into your game's Title ID folder, enable the plugin loader, press SELECT, and the menu is there — cheats by name, teleport by place, a checklist that reads your save, and memory tools when you want to go deeper. It also installs from the samaBR85 UniStore, straight to the SD card with no PC needed.</p>
+    <p data-i18n="s7-p2">Download, source and the full feature list: <a href="https://github.com/samaBR85/OcarinaCTRComposer" style="color:var(--quote-border)">github.com/samaBR85/OcarinaCTRComposer</a> — MIT, free, non-commercial fan project.</p>
+
+    <hr class="divider">
+    <!-- CREDITS -->
+    <h2 data-i18n="s8-title">Credits</h2>
+    <p data-i18n="s8-p1">This plugin stands on a lot of freely shared work:</p>
+    <ul>
+      <li data-i18n="cr1"><strong>Nanquitas</strong> — the original OoT3D cheats plugin &amp; cheat codes</li>
+      <li data-i18n="cr2"><strong>Luma3DS (LumaTeam)</strong> — the plugin loader</li>
+      <li data-i18n="cr3"><strong>PabloMK7</strong> — the 3GX plugin loader and 3gxtool</li>
+      <li data-i18n="cr4"><strong>z64central.com</strong> — the walkthrough text; packaged for the plugin by <strong>LowEndC</strong></li>
+      <li data-i18n="cr5"><strong>gamestabled</strong> and <strong>HylianFreddy</strong> — the OoT3D Practice Menu, reference for the entrance-warp mechanism behind Teleport</li>
+      <li data-i18n="cr6"><strong>HelpTheWretched (HTW)</strong> — the progressive "start-to-finish" saves used to map the 100% Checklist</li>
+      <li data-i18n="cr7"><strong>The Spriters Resource / Colbydude</strong> — item sprites; additional codes by <strong>Fort42</strong></li>
+    </ul>
+    <p data-i18n="s8-p2">Rendering techniques referenced from CTRPluginFramework. All game content is © Nintendo — this is a non-commercial fan tool that contains no game assets; it reads and modifies the running game's memory on the user's own console.</p>
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'Ocarina of Time 3D Overlay','tag':'Plugin · Nintendo 3DS · C',
+    'title':'Building an Ocarina of Time 3D<br>Cheat Overlay for the 3DS',
+    'date':'July 2026','readtime':'⏱ ~9 min read',
+    's1-title':'The Problem: I Wanted to Play With OoT3D, Not Fight the Tools',
+    's1-p1':'I went back to <em>The Legend of Zelda: Ocarina of Time 3D</em> not for a clean run but to mess around — teleport across Hyrule, test items, chase a 100% file without redoing everything by hand. The 3DS can do all of that: Luma3DS loads plugins that run alongside the game and can read and write its memory live. The scene that makes this possible is impressive and generous.',
+    's1-p2':'But the tooling assumes you already speak its language. Cheats are hex codes you paste from a forum. Warps are entrance indices. There\'s no in-game explanation of what anything does, and nothing tells you whether a code even matches your version of the game. For someone who just wants to jump to the Water Temple and keep playing, that\'s a lot of friction for a little fun.',
+    's1-p3':'So I built <strong>OcarinaCTRComposer</strong>: a plugin that opens with <strong>SELECT</strong> and shows a themed menu where every cheat has a name, teleport destinations are places (not numbers), and a 100% checklist reads your save file to fill itself in. It\'s built on top of a small engine I made called CTRComposer, and — like everything else on this site — it was written in back-and-forth collaboration with Claude.',
+    'q1':'"The console could already do all of this. It just spoke in hex codes and entrance indices instead of place names and checkboxes."',
+    's2-title':'What It Does',
+    's2-p1':'Press SELECT and the plugin draws its own menu over the game — no game assets, just the console\'s shared font and shapes drawn by the plugin itself. Every section is named in plain language.',
+    'feat1-title':'~60 Cheats in Folders','feat1-desc':'Movement, Battle, Inventory, Time, Quest, Misc — data cheats and code patches, with item pickers using the real inventory sprites.',
+    'feat2-title':'Teleport','feat2-desc':'30 mapped destinations — overworld and every dungeon — filterable, reliable in towns and dungeons, for both child and adult Link.',
+    'feat3-title':'Self-Naming Waypoints','feat3-desc':'9 save/warp slots that name themselves after the area ("3. Water Temple R2"), persist across sessions, and survive age changes.',
+    'feat4-title':'100% Checklist','feat4-desc':'Track completion by area; auto-fill reads your save and stays in sync — it adds what you have and drops what you don\'t.',
+    'feat5-title':'Cheat Search + Hex Editor','feat5-desc':'Find any value\'s address (known or unknown), a RAM dumper, and a live hex grid — an OoT3D-styled on-screen keypad for input.',
+    'feat6-title':'Embedded Game Guide','feat6-desc':'A complete OoT3D walkthrough inside the plugin — Young/Adult Link, Master Quest, item locations, secrets, ocarina songs.',
+    'feat7-title':'26 Color Themes','feat7-desc':'Live preview before applying — the classic Zelda parchment plus 25 more (Game Boy Classic, Synthwave, BotW, and others).',
+    'feat8-title':'Quick Menu & Hotkeys','feat8-desc':'Favorite cheats, warps, folders and tools into an L+SELECT quick menu; rebindable in-game hotkeys and toast notifications.',
+    's2-p2':'SELECT always returns you to the game, and reopening resumes exactly where you left off — even mid-tool. The UI ships in English with a built-in system that loads more languages from plain SD text files, and the embedded guide is available in six.',
+    's3-title':'Built on CTRComposer, a Game-Agnostic Engine',
+    's3-p1':'This plugin is really two projects. Almost everything you see — the menu, the themes, the on-screen keypad, the memory tools, the guide reader, the way it draws its own window over the game — belongs to a separate, game-independent engine called <strong>CTRComposer</strong>. OcarinaCTRComposer is what you get when you point that engine at one specific game.',
+    's3-p2':'The split matters because it means about 90% of the work isn\'t Zelda-specific at all. A new plugin for a different 3DS game is essentially a cheat table, some art, and a Title ID — everything else is reused as-is. I wrote up the engine itself, and every technique behind it, in its own article.',
+    's3-p3':'<a href="/blog/ctrcomposer/" style="color:var(--quote-border)">→ Read the CTRComposer deep-dive</a> — the framebuffer rendering, the system font, pausing the game, and the memory tools, all documented.',
+    's4-title':'The 100% Checklist That Reads Your Save',
+    's4-p1':'The feature I\'m most attached to is the completion tracker. A normal checklist makes you tick 200 boxes by hand. This one reads your actual save data and fills itself in — and, crucially, it stays in sync: if you load a different file, it <em>adds</em> what that file has and <em>removes</em> auto-marks it no longer sees, while leaving anything you ticked by hand alone.',
+    's4-p2':'Getting there meant mapping the game\'s save format — which bit means "learned Zelda\'s Lullaby," which byte tracks heart pieces. Cheat Search is great at finding a number by its magnitude, but useless for packed bitfields where a dozen unrelated facts share one byte. The trick that cracked it was <strong>save-diffing</strong>: OoT3D has community "start-to-finish" save collections — a series of saves, each one documented step further into the game.',
+    's4-p3':'Anchor one save file to RAM by finding a field whose bytes you already know (an inventory array that matches a known cheat buffer), which pins the whole file-to-memory mapping. Then diff consecutive saves: the bits that flip on are exactly what that save gained — a song, a stone, a flag — and lining those diffs up against the collection\'s written notes gives each bit a name. A throwaway Python script does it in one pass, and the map is self-validating against bits already confirmed on hardware.',
+    'q2':'"Auto-fill isn\'t a running tally — it\'s a live read of the save. The checklist always reflects the file you actually loaded, not a number it\'s been counting."',
+    's5-title':'Teleport by Driving the Game\'s Own Load Routine',
+    's5-p1':'Warping looks like it should require calling one of the game\'s functions, but it\'s really just memory writes the game reads back on its own. The plugin shares the game\'s address space, so setting a value is a pointer write — no hooks, no injected code paths.',
+    's5-p2':'Teleport works by populating the fields the load routine consumes — the destination entrance, the transition type — and then flipping the "load now" flag the game already checks each frame. Next frame, the game performs the warp itself. The same idea powers the self-naming waypoints: save the current entrance and position, and restoring is just writing them back and raising the flag.',
+    's6-title':'A Curious Player, Again',
+    's6-p1':'The working style is the same as every project on this site: I\'m not a programmer. I\'m a player who is good at describing what\'s missing and testing whether a fix actually does what it should on real hardware. Every feature came from being deep in a playthrough and thinking "there should be a way to…" — and then building it in back-and-forth with Claude.',
+    's6-p2':'What made this one interesting is that it sits on top of an engine I\'d already built with the same method, so the game-specific work — the cheat table, the save format, the teleport destinations — was the whole job. The engine handled the hard parts (drawing over the game, the font, pausing, persistence); I handled knowing what an Ocarina of Time player actually wants at hand.',
+    'q3':'"The engine draws the window. I decide what goes in it. That division of labor is the whole reason a non-programmer can ship a plugin like this."',
+    's7-title':'The Result',
+    's7-p1':'OcarinaCTRComposer is a free, open-source (MIT) Luma3DS plugin for Ocarina of Time 3D. Drop the <code>.3gx</code> into your game\'s Title ID folder, enable the plugin loader, press SELECT, and the menu is there — cheats by name, teleport by place, a checklist that reads your save, and memory tools when you want to go deeper. It also installs from the samaBR85 UniStore, straight to the SD card with no PC needed.',
+    's7-p2':'Download, source and the full feature list: <a href="https://github.com/samaBR85/OcarinaCTRComposer" style="color:var(--quote-border)">github.com/samaBR85/OcarinaCTRComposer</a> — MIT, free, non-commercial fan project.',
+    's8-title':'Credits',
+    's8-p1':'This plugin stands on a lot of freely shared work:',
+    'cr1':'<strong>Nanquitas</strong> — the original OoT3D cheats plugin & cheat codes',
+    'cr2':'<strong>Luma3DS (LumaTeam)</strong> — the plugin loader',
+    'cr3':'<strong>PabloMK7</strong> — the 3GX plugin loader and 3gxtool',
+    'cr4':'<strong>z64central.com</strong> — the walkthrough text; packaged for the plugin by <strong>LowEndC</strong>',
+    'cr5':'<strong>gamestabled</strong> and <strong>HylianFreddy</strong> — the OoT3D Practice Menu, reference for the entrance-warp mechanism behind Teleport',
+    'cr6':'<strong>HelpTheWretched (HTW)</strong> — the progressive "start-to-finish" saves used to map the 100% Checklist',
+    'cr7':'<strong>The Spriters Resource / Colbydude</strong> — item sprites; additional codes by <strong>Fort42</strong>',
+    's8-p2':'Rendering techniques referenced from CTRPluginFramework. All game content is © Nintendo — this is a non-commercial fan tool that contains no game assets; it reads and modifies the running game\'s memory on the user\'s own console.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'Overlay de Ocarina of Time 3D','tag':'Plugin · Nintendo 3DS · C',
+    'title':'Construindo um Overlay de Cheats de<br>Ocarina of Time 3D para o 3DS',
+    'date':'Julho de 2026','readtime':'⏱ ~9 min de leitura',
+    's1-title':'O Problema: Eu Queria Brincar com OoT3D, Não Brigar com as Ferramentas',
+    's1-p1':'Voltei a <em>The Legend of Zelda: Ocarina of Time 3D</em> não pra uma run limpa, mas pra brincar — teletransportar por Hyrule, testar itens, buscar um arquivo 100% sem refazer tudo na mão. O 3DS faz tudo isso: o Luma3DS carrega plugins que rodam junto com o jogo e podem ler e escrever a memória dele ao vivo. A cena que torna isso possível é impressionante e generosa.',
+    's1-p2':'Mas as ferramentas assumem que você já fala a língua delas. Cheats são códigos hexadecimais que você cola de um fórum. Warps são índices de entrada. Não há explicação in-game do que cada coisa faz, e nada te diz se um código sequer combina com a sua versão do jogo. Pra quem só quer pular pro Templo da Água e continuar jogando, é muito atrito pra pouca diversão.',
+    's1-p3':'Então construí o <strong>OcarinaCTRComposer</strong>: um plugin que abre com <strong>SELECT</strong> e mostra um menu com temas onde cada cheat tem nome, destinos de teletransporte são lugares (não números), e uma checklist de 100% lê o seu arquivo de save pra se preencher. Ele é construído sobre um pequeno motor que fiz chamado CTRComposer e — como tudo neste site — foi escrito em colaboração de bate-bola com o Claude.',
+    'q1':'"O console já conseguia fazer tudo isso. Só falava em códigos hex e índices de entrada em vez de nomes de lugares e caixinhas de marcar."',
+    's2-title':'O Que Ele Faz',
+    's2-p1':'Pressione SELECT e o plugin desenha o próprio menu por cima do jogo — sem assets do jogo, só a fonte compartilhada do console e formas desenhadas pelo próprio plugin. Cada seção tem nome em linguagem simples.',
+    'feat1-title':'~60 Cheats em Pastas','feat1-desc':'Movimento, Batalha, Inventário, Tempo, Quest, Diversos — cheats de dados e patches de código, com seletores de item usando os sprites reais do inventário.',
+    'feat2-title':'Teletransporte','feat2-desc':'30 destinos mapeados — overworld e cada dungeon — filtráveis, confiáveis em cidades e dungeons, pro Link criança e adulto.',
+    'feat3-title':'Waypoints Auto-Nomeados','feat3-desc':'9 slots de save/warp que se nomeiam pela área ("3. Templo da Água R2"), persistem entre sessões e sobrevivem a mudanças de idade.',
+    'feat4-title':'Checklist de 100%','feat4-desc':'Acompanhe a conclusão por área; o auto-preenchimento lê seu save e fica em sincronia — adiciona o que você tem e tira o que não tem.',
+    'feat5-title':'Cheat Search + Editor Hex','feat5-desc':'Ache o endereço de qualquer valor (conhecido ou desconhecido), um RAM dumper e um grid hex ao vivo — com teclado on-screen no estilo OoT3D.',
+    'feat6-title':'Guia do Jogo Embutido','feat6-desc':'Um walkthrough completo de OoT3D dentro do plugin — Link jovem/adulto, Master Quest, locais de itens, segredos, músicas da ocarina.',
+    'feat7-title':'26 Temas de Cor','feat7-desc':'Prévia ao vivo antes de aplicar — o pergaminho clássico de Zelda mais 25 outros (Game Boy Classic, Synthwave, BotW e outros).',
+    'feat8-title':'Menu Rápido e Hotkeys','feat8-desc':'Favorite cheats, warps, pastas e ferramentas num menu rápido (L+SELECT); hotkeys in-game remapeáveis e notificações toast.',
+    's2-p2':'SELECT sempre te devolve ao jogo, e reabrir retoma exatamente de onde você parou — até no meio de uma ferramenta. A interface vem em inglês com um sistema que carrega mais idiomas de arquivos de texto do SD, e o guia embutido está disponível em seis.',
+    's3-title':'Construído sobre o CTRComposer, um Motor Agnóstico de Jogo',
+    's3-p1':'Este plugin são na verdade dois projetos. Quase tudo o que você vê — o menu, os temas, o teclado on-screen, as ferramentas de memória, o leitor de guia, o jeito como ele desenha a própria janela por cima do jogo — pertence a um motor separado e independente de jogo chamado <strong>CTRComposer</strong>. O OcarinaCTRComposer é o que você obtém quando aponta esse motor pra um jogo específico.',
+    's3-p2':'A divisão importa porque significa que cerca de 90% do trabalho não é específico de Zelda. Um plugin novo pra outro jogo de 3DS é essencialmente uma tabela de cheats, alguma arte e um Title ID — todo o resto é reaproveitado como está. Escrevi sobre o motor em si, e cada técnica por trás dele, num artigo próprio.',
+    's3-p3':'<a href="/blog/ctrcomposer/" style="color:var(--quote-border)">→ Leia o deep-dive do CTRComposer</a> — a renderização no framebuffer, a fonte do sistema, pausar o jogo e as ferramentas de memória, tudo documentado.',
+    's4-title':'A Checklist de 100% que Lê o Seu Save',
+    's4-p1':'A funcionalidade que mais gosto é o rastreador de conclusão. Uma checklist normal te faz marcar 200 caixinhas na mão. Esta lê os dados reais do seu save e se preenche — e, o mais importante, fica em sincronia: se você carrega outro arquivo, ela <em>adiciona</em> o que aquele arquivo tem e <em>remove</em> as marcas automáticas que não vê mais, deixando intacto o que você marcou na mão.',
+    's4-p2':'Chegar lá exigiu mapear o formato de save do jogo — qual bit significa "aprendeu a Canção de Ninar da Zelda", qual byte rastreia pedaços de coração. O Cheat Search é ótimo pra achar um número pela magnitude, mas inútil pra bitfields compactados onde uma dúzia de fatos sem relação divide um byte. O truque que resolveu foi o <strong>save-diffing</strong>: OoT3D tem coleções de saves "start-to-finish" da comunidade — uma série de saves, cada um um passo documentado mais fundo no jogo.',
+    's4-p3':'Ancore um arquivo de save na RAM achando um campo cujos bytes você já conhece (um array de inventário que bate com um buffer de cheat conhecido), o que fixa todo o mapeamento arquivo↔memória. Depois faça o diff de saves consecutivos: os bits que ligam são exatamente o que aquele save ganhou — uma música, uma pedra, uma flag — e alinhar esses diffs com as notas escritas da coleção dá nome a cada bit. Um script Python descartável faz tudo numa passada, e o mapa se autovalida contra bits já confirmados no hardware.',
+    'q2':'"O auto-preenchimento não é uma contagem acumulada — é uma leitura ao vivo do save. A checklist sempre reflete o arquivo que você realmente carregou, não um número que ela vinha contando."',
+    's5-title':'Teletransporte Dirigindo a Própria Rotina de Load do Jogo',
+    's5-p1':'Warpar parece que deveria exigir chamar uma das funções do jogo, mas é só escrita de memória que o próprio jogo lê de volta. O plugin compartilha o espaço de endereços do jogo, então definir um valor é uma escrita de ponteiro — sem hooks, sem caminhos de código injetados.',
+    's5-p2':'O teletransporte funciona preenchendo os campos que a rotina de load consome — a entrada de destino, o tipo de transição — e depois virando a flag de "carregar agora" que o jogo já checa a cada frame. No frame seguinte, o jogo faz o warp sozinho. A mesma ideia move os waypoints auto-nomeados: salve a entrada e a posição atuais, e restaurar é só escrevê-las de volta e levantar a flag.',
+    's6-title':'Um Jogador Curioso, de Novo',
+    's6-p1':'O jeito de trabalhar é o mesmo de todo projeto neste site: não sou programador. Sou um jogador bom em descrever o que falta e testar se um fix realmente faz o que deveria no hardware real. Cada funcionalidade veio de estar fundo numa jogatina e pensar "devia ter um jeito de…" — e então construir em bate-bola com o Claude.',
+    's6-p2':'O que tornou este interessante é que ele senta sobre um motor que eu já tinha construído com o mesmo método, então o trabalho específico do jogo — a tabela de cheats, o formato de save, os destinos de teletransporte — era o serviço inteiro. O motor cuidou das partes difíceis (desenhar por cima do jogo, a fonte, pausar, persistência); eu cuidei de saber o que um jogador de Ocarina of Time realmente quer à mão.',
+    'q3':'"O motor desenha a janela. Eu decido o que vai nela. Essa divisão de trabalho é a razão inteira de um não-programador conseguir lançar um plugin assim."',
+    's7-title':'O Resultado',
+    's7-p1':'O OcarinaCTRComposer é um plugin Luma3DS gratuito e open source (MIT) pra Ocarina of Time 3D. Coloque o <code>.3gx</code> na pasta do Title ID do seu jogo, ative o plugin loader, pressione SELECT, e o menu está lá — cheats por nome, teletransporte por lugar, uma checklist que lê seu save, e ferramentas de memória quando quiser ir mais fundo. Também instala pela UniStore da samaBR85, direto no SD sem precisar de PC.',
+    's7-p2':'Download, código-fonte e a lista completa de funcionalidades: <a href="https://github.com/samaBR85/OcarinaCTRComposer" style="color:var(--quote-border)">github.com/samaBR85/OcarinaCTRComposer</a> — MIT, gratuito, projeto de fã não-comercial.',
+    's8-title':'Créditos',
+    's8-p1':'Este plugin se apoia em muito trabalho compartilhado livremente:',
+    'cr1':'<strong>Nanquitas</strong> — o plugin original de cheats de OoT3D e os códigos',
+    'cr2':'<strong>Luma3DS (LumaTeam)</strong> — o plugin loader',
+    'cr3':'<strong>PabloMK7</strong> — o plugin loader 3GX e o 3gxtool',
+    'cr4':'<strong>z64central.com</strong> — o texto do walkthrough; empacotado pro plugin por <strong>LowEndC</strong>',
+    'cr5':'<strong>gamestabled</strong> e <strong>HylianFreddy</strong> — o OoT3D Practice Menu, referência do mecanismo de warp por entrada por trás do Teletransporte',
+    'cr6':'<strong>HelpTheWretched (HTW)</strong> — os saves progressivos "start-to-finish" usados pra mapear a Checklist de 100%',
+    'cr7':'<strong>The Spriters Resource / Colbydude</strong> — sprites de itens; códigos adicionais por <strong>Fort42</strong>',
+    's8-p2':'Técnicas de renderização referenciadas do CTRPluginFramework. Todo o conteúdo do jogo é © Nintendo — esta é uma ferramenta de fã não-comercial que não contém assets do jogo; ela lê e modifica a memória do jogo em execução no console do próprio usuário.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>
