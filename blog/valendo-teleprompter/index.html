@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>Building Valendo: A Teleprompter You Rewrite Live, On Air — samaBR</title>
+  <meta name="description" content="How Valendo, a Windows/macOS teleprompter, lets the operator rewrite the script while the show is on air — built on a semantic reading anchor instead of a pixel scroll position, in collaboration with Claude." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/valendo-teleprompter/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/valendo-teleprompter/" />
+  <meta property="og:title"       content="Building Valendo: A Teleprompter You Rewrite Live, On Air" />
+  <meta property="og:description" content="A Windows/macOS teleprompter that lets the operator rewrite the script while the show is on air — built on a semantic reading anchor instead of a pixel scroll position. Built in collaboration with Claude." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/Valendo-TeleprompterSuite/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/Valendo-TeleprompterSuite/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Building Valendo: A Teleprompter You Rewrite Live, On Air",
+    "description": "A Windows/macOS teleprompter that lets the operator rewrite the script while the show is on air — built on a semantic reading anchor instead of a pixel scroll position.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-08-03",
+    "dateModified": "2026-08-03",
+    "url": "https://samabr85.github.io/blog/valendo-teleprompter/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "teleprompter, Electron, React, TypeScript, broadcast, live production, multi-monitor, ffmpeg, Windows, macOS, open source"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#210f18;--quote-border:#e0457b;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#fdeaf2;--quote-border:#c53072;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#f07aa9;background:rgba(224,69,123,.12);border:1px solid rgba(224,69,123,.3);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+    .article-screenshot{margin:0 0 40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)}
+    .article-screenshot img{width:100%;height:auto;display:block}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#1e1e2e}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">Valendo Teleprompter</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">🎬 <span data-i18n="tag">App · Windows · macOS · Electron</span></div>
+    <h1 class="article-title" data-i18n="title">Building Valendo: A Teleprompter<br>You Rewrite Live, On Air</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">August 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~10 min read</span>
+    </div>
+  </header>
+
+  <figure class="article-screenshot">
+    <img src="../../docs/screenshots/Valendo-TeleprompterSuite/og-image.png" alt="The Valendo operator window: editor on the left, an exact replica of the presenter's screen on the right" loading="lazy" />
+  </figure>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: Every Teleprompter Makes You Stop Editing to Go On Air</h2>
+    <p data-i18n="s1-p1">A teleprompter is a simple-sounding thing — scroll text past a presenter at a readable pace. But the moment a live show starts, the ordinary ones fall apart in the same way: the script is frozen. A guest says something that changes the next line, a segment gets cut, a name is wrong — and you can't fix it, because editing the text would move the presenter's place in it.</p>
+    <p data-i18n="s1-p2">The reason is technical. Ordinary teleprompters store the scroll position <strong>in pixels</strong>. Change the text, the typeface or the margin and the whole layout reflows — pixel 4,200 is suddenly a different sentence, and the words jump in the presenter's face mid-read. That's why those apps make you leave the presentation screen to edit at all.</p>
+    <p data-i18n="s1-p3">Valendo is my answer to that. It's a teleprompter for Windows and macOS where the operator <strong>rewrites the script while the show is on the air</strong>, watching the editor and an exact replica of the presenter's screen side by side. Like everything on this site, it was built in back-and-forth with Claude — and it all hangs off one idea.</p>
+
+    <div class="pullquote" data-i18n="q1">"The reading position is an anchor in the text, not a pixel on the screen."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">The One Idea: A Semantic Reading Anchor</h2>
+    <p data-i18n="s2-p1">Instead of remembering "we're 4,200 pixels down," Valendo remembers <em>which word</em> is being read: a semantic anchor of <code>{ blockId, wordOffset }</code>. The pixel position is recomputed from that anchor after every layout change, not stored.</p>
+    <p data-i18n="s2-p2">That one decision is what makes live editing possible. Insert three paragraphs above the reading point, bump the font size, widen the margin, switch the typeface — the pixel math changes completely, but the anchor still points at the same word, so the presenter's line never moves. Editing above the read head is free; the read head is glued to meaning, not to a coordinate.</p>
+
+    <pre><code>// Not this — a pixel position that any reflow invalidates:
+scrollTop = 4200;
+
+// This — an anchor in the text; the pixel is derived, never stored:
+anchor = { blockId: "b12", wordOffset: 37 };
+scrollTop = measurePixelForWord(anchor);  // recomputed after every reflow</code></pre>
+
+    <p data-i18n="s2-p3">A few things follow from it that are easy to miss. The two screens are drawn by <strong>one component</strong>, so the operator's replica is the presenter's screen, not a lookalike — they can't drift. Scrolling is driven by <strong>a clock</strong>, not by a stream of position messages, so there's nothing to buffer or fall behind. And lines are composed <strong>by words</strong>, on Valendo's own rules, rather than left to the browser — because the anchor needs to know where every word sits.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">What It Does</h2>
+    <p data-i18n="s3-p1">The left panel is the script; the right panel is what the presenter sees, at the output's real resolution. <code>##</code> opens a chapter, <code>[square brackets]</code> mark a stage direction. From there it grows into a small live-production desk.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">✍️</div>
+        <div class="fi-title" data-i18n="feat1-title">Live Editing, On Air</div>
+        <div class="fi-desc" data-i18n="feat1-desc">Rewrite the script while it's being read; the presenter's line stays put through any reflow, font or margin change.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🃏</div>
+        <div class="fi-title" data-i18n="feat2-title">Cards Over or Under</div>
+        <div class="fi-desc" data-i18n="feat2-desc">Images, video and messages go to the presenter's screen with a key. Each card replaces the script or rides over it.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🖥️</div>
+        <div class="fi-title" data-i18n="feat3-title">The Presenter's Screen</div>
+        <div class="fi-desc" data-i18n="feat3-desc">Any monitor, identified before you send to it. Mirror X/Y, rotate, blackout, freeze — survives a monitor unplugged mid-show.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📐</div>
+        <div class="fi-title" data-i18n="feat4-title">Three Ways to Work</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Split shows both screens, Focus hides everything but the script, Desk turns it into a rundown with a timeline.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📱</div>
+        <div class="fi-title" data-i18n="feat5-title">Follow on the Wi-Fi</div>
+        <div class="fi-desc" data-i18n="feat5-desc">One switch publishes the reading to a local page; a phone scans the QR and follows the same scroll, cards included.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">⏱️</div>
+        <div class="fi-title" data-i18n="feat6-title">Pacing &amp; Transport</div>
+        <div class="fi-desc" data-i18n="feat6-desc">WPM ruler, seek by words, loop with delay, auto-pause at the end; elapsed, remaining and target duration.</div>
+      </div>
+    </div>
+
+    <p data-i18n="s3-p2">It also imports and exports <code>txt</code>, <code>md</code>, <code>docx</code> and <code>pdf</code>, keeps its own <code>.valendo</code> projects with autosave, has infinite undo that persists across sessions, a command palette with remappable keys, and ships in six languages.</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">Cards: How a Lower Third and a Caption Share One Screen</h2>
+    <p data-i18n="s4-p1">A card is anything you push to the presenter's screen on top of — or instead of — the script: an image, a video, a message. The distinction that makes them useful is that each card either <strong>replaces</strong> the script or <strong>rides over it</strong>. That's how a lower third (over) and a full graphic (replace) live in the same deck, triggered by a click or a number key. Legibility over a card is a three-way choice per card: a dark band behind the text, a per-letter shadow, or nothing.</p>
+    <p data-i18n="s4-p2">Video is where a broadcast tool usually forces a slow import step. Valendo plays the file <em>as it arrived</em> whenever the browser can handle it — no wait. When it can't, ffmpeg first tries to change only the container (a remux — seconds, no pixel re-encoded) and only falls back to a real re-encode when the content genuinely won't fit an mp4. Most files are on screen in seconds instead of minutes.</p>
+
+    <div class="pullquote" data-i18n="q2">"The fastest transcode is the one you don't do. Try a remux first; re-encode only when the file truly won't play."</div>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">It Doesn't Open Your Work For You</h2>
+    <p data-i18n="s5-p1">One small decision I'm oddly proud of: Valendo never restores the last script by itself. It starts on a blank welcome screen, and reopening your show is a deliberate <strong>Pick up where I left off</strong> click.</p>
+    <p data-i18n="s5-p2">The reason is the room it runs in. Open a teleprompter in someone else's studio, or on a machine already mirrored to a wall, and auto-restoring the previous project would put the last client's script on a screen in front of people who were never meant to see it. A script is a client's material. Starting blank is a privacy default, not laziness — the app waits to be asked.</p>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">The Stack, and Why Electron Earned Its Place</h2>
+    <p data-i18n="s6-p1">Valendo is an Electron app with a React/TypeScript front end, and for once the "it's a browser in a box" tradeoff is exactly right. The presenter's screen is a second window drawn by the same React component as the operator's replica, so keeping them identical is free — they're literally the same code. Text layout, reflow measurement and the word-by-word line composition all lean on the browser's mature text engine, which is precisely the hard part I didn't want to reinvent.</p>
+    <p data-i18n="s6-p2">Native gets pulled in exactly where the web platform stops: multi-monitor placement and hot-plug survival through Electron's screen APIs, the local follow-along page served off the machine, and ffmpeg shelled out for the remux-first video path. It's a clean seam — browser for everything about text and layout, native for everything about the room and the hardware.</p>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">Built with Claude</h2>
+    <p data-i18n="s7-p1">Same as every project on this site: I'm not a programmer. I know what a live show needs at the operator's hands because I've been on that side of it — the panic of a script that can't change while you're reading it. What I did was describe those needs precisely, and build Valendo with Claude, testing each piece against the way a real show actually breaks.</p>
+    <p data-i18n="s7-p2">The anchor was the conversation that mattered. Once the reading position was a word instead of a pixel, feature after feature that seemed hard became easy — live editing, font changes on air, the phone follow-along — because none of them could move the presenter's place anymore. Getting that one abstraction right is most of what this project is.</p>
+
+    <div class="pullquote" data-i18n="q3">"Pick the right thing to remember — the word, not the pixel — and half the features stop being hard."</div>
+
+    <!-- SECTION 8 -->
+    <hr class="divider">
+    <h2 data-i18n="s8-title">The Result</h2>
+    <p data-i18n="s8-p1">Valendo is a free, open-source (GPL-3.0) teleprompter for Windows and macOS. It installs per user with no administrator password, opens blank on purpose, and lets the operator keep rewriting the script for as long as the show is on the air. The full feature list — appearance controls, output options, the card deck, the network page, file formats — is on the site and in the wiki.</p>
+    <p data-i18n="s8-p2">Download, source and documentation: <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite" style="color:var(--quote-border)">github.com/samaBR85/Valendo-TeleprompterSuite</a> — GPL-3.0, free. It was born to stay free: the licence doesn't stop a studio from charging for the work, only from closing the source.</p>
+
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'Valendo Teleprompter','tag':'App · Windows · macOS · Electron',
+    'title':'Building Valendo: A Teleprompter<br>You Rewrite Live, On Air',
+    'date':'August 2026','readtime':'⏱ ~10 min read',
+    's1-title':'The Problem: Every Teleprompter Makes You Stop Editing to Go On Air',
+    's1-p1':'A teleprompter is a simple-sounding thing — scroll text past a presenter at a readable pace. But the moment a live show starts, the ordinary ones fall apart in the same way: the script is frozen. A guest says something that changes the next line, a segment gets cut, a name is wrong — and you can\'t fix it, because editing the text would move the presenter\'s place in it.',
+    's1-p2':'The reason is technical. Ordinary teleprompters store the scroll position <strong>in pixels</strong>. Change the text, the typeface or the margin and the whole layout reflows — pixel 4,200 is suddenly a different sentence, and the words jump in the presenter\'s face mid-read. That\'s why those apps make you leave the presentation screen to edit at all.',
+    's1-p3':'Valendo is my answer to that. It\'s a teleprompter for Windows and macOS where the operator <strong>rewrites the script while the show is on the air</strong>, watching the editor and an exact replica of the presenter\'s screen side by side. Like everything on this site, it was built in back-and-forth with Claude — and it all hangs off one idea.',
+    'q1':'"The reading position is an anchor in the text, not a pixel on the screen."',
+    's2-title':'The One Idea: A Semantic Reading Anchor',
+    's2-p1':'Instead of remembering "we\'re 4,200 pixels down," Valendo remembers <em>which word</em> is being read: a semantic anchor of <code>{ blockId, wordOffset }</code>. The pixel position is recomputed from that anchor after every layout change, not stored.',
+    's2-p2':'That one decision is what makes live editing possible. Insert three paragraphs above the reading point, bump the font size, widen the margin, switch the typeface — the pixel math changes completely, but the anchor still points at the same word, so the presenter\'s line never moves. Editing above the read head is free; the read head is glued to meaning, not to a coordinate.',
+    's2-p3':'A few things follow from it that are easy to miss. The two screens are drawn by <strong>one component</strong>, so the operator\'s replica is the presenter\'s screen, not a lookalike — they can\'t drift. Scrolling is driven by <strong>a clock</strong>, not by a stream of position messages, so there\'s nothing to buffer or fall behind. And lines are composed <strong>by words</strong>, on Valendo\'s own rules, rather than left to the browser — because the anchor needs to know where every word sits.',
+    's3-title':'What It Does',
+    's3-p1':'The left panel is the script; the right panel is what the presenter sees, at the output\'s real resolution. <code>##</code> opens a chapter, <code>[square brackets]</code> mark a stage direction. From there it grows into a small live-production desk.',
+    'feat1-title':'Live Editing, On Air','feat1-desc':'Rewrite the script while it\'s being read; the presenter\'s line stays put through any reflow, font or margin change.',
+    'feat2-title':'Cards Over or Under','feat2-desc':'Images, video and messages go to the presenter\'s screen with a key. Each card replaces the script or rides over it.',
+    'feat3-title':'The Presenter\'s Screen','feat3-desc':'Any monitor, identified before you send to it. Mirror X/Y, rotate, blackout, freeze — survives a monitor unplugged mid-show.',
+    'feat4-title':'Three Ways to Work','feat4-desc':'Split shows both screens, Focus hides everything but the script, Desk turns it into a rundown with a timeline.',
+    'feat5-title':'Follow on the Wi-Fi','feat5-desc':'One switch publishes the reading to a local page; a phone scans the QR and follows the same scroll, cards included.',
+    'feat6-title':'Pacing & Transport','feat6-desc':'WPM ruler, seek by words, loop with delay, auto-pause at the end; elapsed, remaining and target duration.',
+    's3-p2':'It also imports and exports <code>txt</code>, <code>md</code>, <code>docx</code> and <code>pdf</code>, keeps its own <code>.valendo</code> projects with autosave, has infinite undo that persists across sessions, a command palette with remappable keys, and ships in six languages.',
+    's4-title':'Cards: How a Lower Third and a Caption Share One Screen',
+    's4-p1':'A card is anything you push to the presenter\'s screen on top of — or instead of — the script: an image, a video, a message. The distinction that makes them useful is that each card either <strong>replaces</strong> the script or <strong>rides over it</strong>. That\'s how a lower third (over) and a full graphic (replace) live in the same deck, triggered by a click or a number key. Legibility over a card is a three-way choice per card: a dark band behind the text, a per-letter shadow, or nothing.',
+    's4-p2':'Video is where a broadcast tool usually forces a slow import step. Valendo plays the file <em>as it arrived</em> whenever the browser can handle it — no wait. When it can\'t, ffmpeg first tries to change only the container (a remux — seconds, no pixel re-encoded) and only falls back to a real re-encode when the content genuinely won\'t fit an mp4. Most files are on screen in seconds instead of minutes.',
+    'q2':'"The fastest transcode is the one you don\'t do. Try a remux first; re-encode only when the file truly won\'t play."',
+    's5-title':'It Doesn\'t Open Your Work For You',
+    's5-p1':'One small decision I\'m oddly proud of: Valendo never restores the last script by itself. It starts on a blank welcome screen, and reopening your show is a deliberate <strong>Pick up where I left off</strong> click.',
+    's5-p2':'The reason is the room it runs in. Open a teleprompter in someone else\'s studio, or on a machine already mirrored to a wall, and auto-restoring the previous project would put the last client\'s script on a screen in front of people who were never meant to see it. A script is a client\'s material. Starting blank is a privacy default, not laziness — the app waits to be asked.',
+    's6-title':'The Stack, and Why Electron Earned Its Place',
+    's6-p1':'Valendo is an Electron app with a React/TypeScript front end, and for once the "it\'s a browser in a box" tradeoff is exactly right. The presenter\'s screen is a second window drawn by the same React component as the operator\'s replica, so keeping them identical is free — they\'re literally the same code. Text layout, reflow measurement and the word-by-word line composition all lean on the browser\'s mature text engine, which is precisely the hard part I didn\'t want to reinvent.',
+    's6-p2':'Native gets pulled in exactly where the web platform stops: multi-monitor placement and hot-plug survival through Electron\'s screen APIs, the local follow-along page served off the machine, and ffmpeg shelled out for the remux-first video path. It\'s a clean seam — browser for everything about text and layout, native for everything about the room and the hardware.',
+    's7-title':'Built with Claude',
+    's7-p1':'Same as every project on this site: I\'m not a programmer. I know what a live show needs at the operator\'s hands because I\'ve been on that side of it — the panic of a script that can\'t change while you\'re reading it. What I did was describe those needs precisely, and build Valendo with Claude, testing each piece against the way a real show actually breaks.',
+    's7-p2':'The anchor was the conversation that mattered. Once the reading position was a word instead of a pixel, feature after feature that seemed hard became easy — live editing, font changes on air, the phone follow-along — because none of them could move the presenter\'s place anymore. Getting that one abstraction right is most of what this project is.',
+    'q3':'"Pick the right thing to remember — the word, not the pixel — and half the features stop being hard."',
+    's8-title':'The Result',
+    's8-p1':'Valendo is a free, open-source (GPL-3.0) teleprompter for Windows and macOS. It installs per user with no administrator password, opens blank on purpose, and lets the operator keep rewriting the script for as long as the show is on the air. The full feature list — appearance controls, output options, the card deck, the network page, file formats — is on the site and in the wiki.',
+    's8-p2':'Download, source and documentation: <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite" style="color:var(--quote-border)">github.com/samaBR85/Valendo-TeleprompterSuite</a> — GPL-3.0, free. It was born to stay free: the licence doesn\'t stop a studio from charging for the work, only from closing the source.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'Teleprompter Valendo','tag':'App · Windows · macOS · Electron',
+    'title':'Construindo o Valendo: Um Teleprompter<br>Que Você Reescreve ao Vivo, no Ar',
+    'date':'Agosto de 2026','readtime':'⏱ ~10 min de leitura',
+    's1-title':'O Problema: Todo Teleprompter Faz Você Parar de Editar Pra Entrar no Ar',
+    's1-p1':'Um teleprompter parece uma coisa simples — rolar texto na frente de um apresentador num ritmo legível. Mas no momento em que um programa ao vivo começa, os comuns quebram do mesmo jeito: o roteiro fica congelado. Um convidado fala algo que muda a próxima linha, um quadro é cortado, um nome está errado — e você não consegue corrigir, porque editar o texto moveria o ponto de leitura do apresentador.',
+    's1-p2':'O motivo é técnico. Teleprompters comuns guardam a posição de rolagem <strong>em pixels</strong>. Mude o texto, a fonte ou a margem e todo o layout reflui — o pixel 4.200 de repente é outra frase, e as palavras pulam na cara do apresentador no meio da leitura. É por isso que esses apps te obrigam a sair da tela de apresentação só pra editar.',
+    's1-p3':'O Valendo é a minha resposta pra isso. É um teleprompter para Windows e macOS onde o operador <strong>reescreve o roteiro enquanto o programa está no ar</strong>, olhando o editor e uma réplica exata da tela do apresentador lado a lado. Como tudo neste site, foi construído em bate-bola com o Claude — e tudo se apoia numa única ideia.',
+    'q1':'"A posição de leitura é uma âncora no texto, não um pixel na tela."',
+    's2-title':'A Única Ideia: Uma Âncora Semântica de Leitura',
+    's2-p1':'Em vez de lembrar "estamos 4.200 pixels abaixo", o Valendo lembra <em>qual palavra</em> está sendo lida: uma âncora semântica de <code>{ blockId, wordOffset }</code>. A posição em pixel é recalculada a partir dessa âncora depois de cada mudança de layout, não armazenada.',
+    's2-p2':'Essa única decisão é o que torna a edição ao vivo possível. Insira três parágrafos acima do ponto de leitura, aumente o tamanho da fonte, alargue a margem, troque a fonte — a matemática do pixel muda por completo, mas a âncora continua apontando pra mesma palavra, então a linha do apresentador nunca se move. Editar acima do ponto de leitura é de graça; o ponto de leitura está colado ao significado, não a uma coordenada.',
+    's2-p3':'Algumas coisas decorrem disso e são fáceis de não perceber. As duas telas são desenhadas por <strong>um único componente</strong>, então a réplica do operador é a tela do apresentador, não uma parecida — elas não podem divergir. A rolagem é dirigida por <strong>um relógio</strong>, não por um fluxo de mensagens de posição, então não há nada pra bufferizar ou atrasar. E as linhas são compostas <strong>por palavras</strong>, pelas regras do próprio Valendo, em vez de deixadas a cargo do navegador — porque a âncora precisa saber onde cada palavra fica.',
+    's3-title':'O Que Ele Faz',
+    's3-p1':'O painel da esquerda é o roteiro; o da direita é o que o apresentador vê, na resolução real da saída. <code>##</code> abre um capítulo, <code>[colchetes]</code> marcam uma indicação de cena. A partir daí ele cresce numa pequena mesa de produção ao vivo.',
+    'feat1-title':'Edição ao Vivo, no Ar','feat1-desc':'Reescreva o roteiro enquanto ele é lido; a linha do apresentador fica no lugar através de qualquer refluxo, fonte ou margem.',
+    'feat2-title':'Cards Por Cima ou no Lugar','feat2-desc':'Imagens, vídeo e mensagens vão pra tela do apresentador com uma tecla. Cada card substitui o roteiro ou passa por cima dele.',
+    'feat3-title':'A Tela do Apresentador','feat3-desc':'Qualquer monitor, identificado antes de você enviar. Espelhar X/Y, girar, blackout, freeze — sobrevive a um monitor desconectado no meio.',
+    'feat4-title':'Três Modos de Trabalhar','feat4-desc':'Split mostra as duas telas, Focus esconde tudo menos o roteiro, Desk vira um rundown com uma timeline.',
+    'feat5-title':'Acompanhe pelo Wi-Fi','feat5-desc':'Um botão publica a leitura numa página local; um celular lê o QR e segue a mesma rolagem, cards inclusos.',
+    'feat6-title':'Ritmo e Transporte','feat6-desc':'Régua de WPM, busca por palavras, loop com delay, auto-pausa no fim; tempo decorrido, restante e duração-alvo.',
+    's3-p2':'Ele também importa e exporta <code>txt</code>, <code>md</code>, <code>docx</code> e <code>pdf</code>, mantém seus próprios projetos <code>.valendo</code> com autosave, tem undo infinito que persiste entre sessões, uma paleta de comandos com teclas remapeáveis, e vem em seis idiomas.',
+    's4-title':'Cards: Como um Lower Third e uma Legenda Dividem Uma Tela',
+    's4-p1':'Um card é qualquer coisa que você joga na tela do apresentador por cima — ou no lugar — do roteiro: uma imagem, um vídeo, uma mensagem. A distinção que os torna úteis é que cada card ou <strong>substitui</strong> o roteiro ou <strong>passa por cima dele</strong>. É assim que um lower third (por cima) e um gráfico cheio (substitui) vivem no mesmo deck, disparados por um clique ou uma tecla numérica. A legibilidade sobre um card é uma escolha de três vias por card: uma faixa escura atrás do texto, uma sombra por letra, ou nada.',
+    's4-p2':'Vídeo é onde uma ferramenta de broadcast normalmente força um passo lento de importação. O Valendo toca o arquivo <em>como ele chegou</em> sempre que o navegador dá conta — sem espera. Quando não dá, o ffmpeg primeiro tenta mudar só o container (um remux — segundos, sem reencodar pixel) e só cai num reencode de verdade quando o conteúdo genuinamente não cabe num mp4. A maioria dos arquivos está na tela em segundos em vez de minutos.',
+    'q2':'"O transcode mais rápido é o que você não faz. Tente um remux primeiro; reencode só quando o arquivo realmente não tocar."',
+    's5-title':'Ele Não Abre o Seu Trabalho Por Você',
+    's5-p1':'Uma decisão pequena da qual me orgulho estranhamente: o Valendo nunca restaura o último roteiro sozinho. Ele começa numa tela de boas-vindas em branco, e reabrir o seu programa é um clique deliberado em <strong>Continuar de onde parei</strong>.',
+    's5-p2':'O motivo é a sala onde ele roda. Abra um teleprompter no estúdio de outra pessoa, ou numa máquina já espelhada numa parede, e auto-restaurar o projeto anterior colocaria o roteiro do último cliente numa tela na frente de gente que nunca deveria vê-lo. Um roteiro é material de um cliente. Começar em branco é um padrão de privacidade, não preguiça — o app espera ser chamado.',
+    's6-title':'A Stack, e Por Que o Electron Mereceu o Lugar',
+    's6-p1':'O Valendo é um app Electron com front-end React/TypeScript, e pela primeira vez a troca do "é um navegador numa caixa" é exatamente a certa. A tela do apresentador é uma segunda janela desenhada pelo mesmo componente React da réplica do operador, então mantê-las idênticas é de graça — elas são literalmente o mesmo código. Layout de texto, medição de refluxo e a composição de linha palavra por palavra se apoiam no motor de texto maduro do navegador, que é justamente a parte difícil que eu não queria reinventar.',
+    's6-p2':'O nativo entra exatamente onde a plataforma web para: posicionamento multi-monitor e sobrevivência a hot-plug via as APIs de tela do Electron, a página local de acompanhamento servida da máquina, e o ffmpeg chamado por fora pro caminho de vídeo remux-first. É uma costura limpa — navegador pra tudo que é texto e layout, nativo pra tudo que é a sala e o hardware.',
+    's7-title':'Construído com o Claude',
+    's7-p1':'Igual a todo projeto neste site: não sou programador. Sei o que um programa ao vivo precisa nas mãos do operador porque já estive desse lado — o pânico de um roteiro que não pode mudar enquanto você o lê. O que eu fiz foi descrever essas necessidades com precisão e construir o Valendo com o Claude, testando cada parte contra o jeito que um programa de verdade realmente quebra.',
+    's7-p2':'A âncora foi a conversa que importou. Assim que a posição de leitura virou uma palavra em vez de um pixel, funcionalidade após funcionalidade que parecia difícil ficou fácil — edição ao vivo, mudança de fonte no ar, o acompanhamento pelo celular — porque nenhuma delas podia mais mover o ponto do apresentador. Acertar essa única abstração é a maior parte do que este projeto é.',
+    'q3':'"Escolha a coisa certa pra lembrar — a palavra, não o pixel — e metade das funcionalidades deixa de ser difícil."',
+    's8-title':'O Resultado',
+    's8-p1':'O Valendo é um teleprompter gratuito e open source (GPL-3.0) para Windows e macOS. Instala por usuário sem senha de administrador, abre em branco de propósito, e deixa o operador continuar reescrevendo o roteiro pelo tempo que o programa estiver no ar. A lista completa de funcionalidades — controles de aparência, opções de saída, o deck de cards, a página de rede, formatos de arquivo — está no site e na wiki.',
+    's8-p2':'Download, código-fonte e documentação: <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite" style="color:var(--quote-border)">github.com/samaBR85/Valendo-TeleprompterSuite</a> — GPL-3.0, gratuito. Nasceu pra continuar livre: a licença não impede um estúdio de cobrar pelo trabalho, só de fechar o código-fonte.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>
