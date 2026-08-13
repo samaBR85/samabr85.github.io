@@ -253,6 +253,16 @@
       font-size: 15px; color: var(--muted);
       max-width: 460px;
     }
+    .total-downloads {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 6px;
+      margin-top: 18px;
+      font-size: 13px; color: var(--muted);
+    }
+    .total-downloads svg { opacity: .7; flex-shrink: 0; }
+    .total-downloads strong {
+      color: var(--text); font-weight: 800;
+    }
 
     /* ── FILTER TABS ── */
     .filter-tabs {
@@ -450,6 +460,7 @@
       .nav-actions { gap: 12px; }
       .hero { padding: 48px 20px 8px; }
       .hero h1 { white-space: normal; }
+      .total-downloads { justify-content: flex-start; }
       .projects { grid-template-columns: 1fr; padding: 24px 20px 56px; }
       .blog-grid { grid-template-columns: 1fr; }
       .blog-section { padding: 24px 20px 56px; }
@@ -499,6 +510,11 @@
       <button data-filter="3ds" data-i18n="tab-3ds">Nintendo 3DS</button>
       <button data-filter="windows" data-i18n="tab-windows">Windows</button>
     </div>
+  </div>
+  <div class="total-downloads" id="totalDownloads">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <strong id="totalDownloadsNum">—</strong>
+    <span data-i18n="total-downloads-label">total downloads</span>
   </div>
 </div>
 
@@ -999,6 +1015,7 @@
       'tab-adobe':        'Adobe',
       'tab-3ds':          'Nintendo 3DS',
       'tab-windows':      'Windows',
+      'total-downloads-label': 'total downloads',
       'desc-valendo-short':  'A teleprompter where you rewrite the script live, on air.',
       'desc-premiere-short': 'Auto beat markers for music-synced editing in Premiere Pro.',
       'desc-ae-short':       'Beat detection and colored markers for After Effects.',
@@ -1062,6 +1079,7 @@
       'tab-adobe':        'Adobe',
       'tab-3ds':          'Nintendo 3DS',
       'tab-windows':      'Windows',
+      'total-downloads-label': 'downloads no total',
       'desc-valendo-short':  'Um teleprompter onde você reescreve o roteiro ao vivo, no ar.',
       'desc-premiere-short': 'Marcadores de batida automáticos para edição musical no Premiere Pro.',
       'desc-ae-short':       'Detecção de batidas e marcadores coloridos para o After Effects.',
@@ -1144,6 +1162,11 @@
       const dlWord    = downloads === 1 ? t.download : t.downloads;
       starsEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> ${stars} ${starWord}`;
       dlEl.innerHTML    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ${downloads.toLocaleString()} ${dlWord}`;
+    }
+    const totalEl = document.getElementById('totalDownloadsNum');
+    if (totalEl) {
+      const total = Object.values(cache).reduce((sum, d) => sum + (d.downloads || 0), 0);
+      totalEl.textContent = total.toLocaleString();
     }
   }
 
