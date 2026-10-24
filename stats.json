@@ -5,23 +5,23 @@
   },
   "BeatMarker-PremierePlugin": {
     "stars": 12,
-    "downloads": 3419
+    "downloads": 3428
   },
   "BeatMarker-AEPlugin": {
     "stars": 4,
-    "downloads": 2079
+    "downloads": 2084
   },
   "MonoStereoToggle": {
     "stars": 1,
-    "downloads": 70
+    "downloads": 71
   },
   "Gen6CTRPFrameworkOverhauled": {
     "stars": 18,
-    "downloads": 2223
+    "downloads": 2229
   },
   "OcarinaCTRComposer": {
     "stars": 8,
-    "downloads": 560
+    "downloads": 561
   },
   "CTRComposer": {
     "stars": 2,
@@ -33,6 +33,6 @@
   },
   "1clicktransfer": {
     "stars": 1,
-    "downloads": 8
+    "downloads": 10
   }
 }
