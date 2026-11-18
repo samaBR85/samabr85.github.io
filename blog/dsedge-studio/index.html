@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>Building DualSense Edge Studio: Editing Controller Profiles Without a PS5 — samaBR</title>
+  <meta name="description" content="How DualSense Edge Studio, a native macOS app, reads and writes DualSense Edge profiles over USB — 64-byte feature reports, two CRC32s, byte-exact round trips and a native layer that refuses anything it doesn't recognize. Built in collaboration with Claude." />
+  <meta name="author" content="samaBR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://samabr85.github.io/blog/dsedge-studio/" />
+
+  <meta property="og:type"        content="article" />
+  <meta property="og:url"         content="https://samabr85.github.io/blog/dsedge-studio/" />
+  <meta property="og:title"       content="Building DualSense Edge Studio: Editing Controller Profiles Without a PS5" />
+  <meta property="og:description" content="A native macOS app that reads and writes DualSense Edge profiles over USB — reverse-engineered feature reports, two CRC32s, byte-exact round trips. Built in collaboration with Claude." />
+  <meta property="og:image"       content="https://samabr85.github.io/docs/screenshots/DSEdge-Studio/buttons.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://samabr85.github.io/docs/screenshots/DSEdge-Studio/buttons.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Building DualSense Edge Studio: Editing Controller Profiles Without a PS5",
+    "description": "A native macOS app that reads and writes DualSense Edge profiles over USB — reverse-engineered feature reports, two CRC32s, byte-exact round trips and a native layer that refuses anything it doesn't recognize.",
+    "author": { "@type": "Person", "name": "samaBR", "url": "https://github.com/samaBR85" },
+    "publisher": { "@type": "Person", "name": "samaBR", "url": "https://samabr85.github.io/" },
+    "datePublished": "2026-11-18",
+    "dateModified": "2026-11-18",
+    "url": "https://samabr85.github.io/blog/dsedge-studio/",
+    "inLanguage": ["en", "pt-BR"],
+    "keywords": "DualSense Edge, PS5, controller profiles, macOS, Objective-C, IOKit, HID, feature reports, CRC32, WKWebView"
+  }
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg:#0e0e0e;--bg2:#161616;--bg3:#1e1e1e;--border:#2a2a2a;
+      --text:#e8e8e8;--muted:#888;--green:#34c759;--shadow:rgba(0,0,0,.4);
+      --code-bg:#111;--quote-bg:#0f1729;--quote-border:#4b8bff;
+    }
+    :root[data-theme="light"] {
+      --bg:#f4f4f5;--bg2:#ffffff;--bg3:#e8e8eb;--border:#d4d4d8;
+      --text:#18181b;--muted:#71717a;--green:#16a34a;--shadow:rgba(0,0,0,.08);
+      --code-bg:#1e1e2e;--quote-bg:#e8f0ff;--quote-border:#2563eb;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.7;min-height:100vh;display:flex;flex-direction:column;transition:background .25s,color .25s}
+    a{color:inherit;text-decoration:none}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:background .25s,border-color .25s}
+    :root[data-theme="light"] nav{background:rgba(244,244,245,.92)}
+    .nav-logo{font-size:17px;font-weight:800;letter-spacing:.02em}
+    .nav-logo span{color:var(--muted);font-weight:400}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .lang-toggle{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;transition:color .2s,border-color .2s}
+    .lang-toggle:hover{color:var(--text);border-color:#555}
+    .theme-toggle{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s}
+    .theme-toggle:hover{color:var(--text);border-color:#555}
+    .icon-sun,.icon-moon{width:16px;height:16px}
+    :root[data-theme="dark"] .icon-sun{display:none}
+    :root[data-theme="light"] .icon-moon{display:none}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 14px;transition:color .2s,border-color .2s}
+    .nav-back:hover{color:var(--text);border-color:#555}
+
+    .wrap{flex:1;max-width:760px;margin:0 auto;width:100%;padding:56px 24px 80px}
+    .breadcrumb{font-size:12px;color:var(--muted);margin-bottom:32px;display:flex;align-items:center;gap:6px}
+    .breadcrumb a:hover{color:var(--text)}
+    .breadcrumb span{opacity:.5}
+
+    .article-header{margin-bottom:48px}
+    .article-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7aa7ff;background:rgba(75,139,255,.12);border:1px solid rgba(75,139,255,.3);border-radius:20px;padding:4px 12px;margin-bottom:16px}
+    :root[data-theme="light"] .article-tag{color:#2563eb}
+    .article-title{font-size:clamp(24px,4.5vw,38px);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--muted)}
+    .article-screenshot{margin:0 0 40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)}
+    .article-screenshot img{width:100%;height:auto;display:block}
+    .article-screenshot figcaption{font-size:12px;color:var(--muted);padding:10px 14px;border-top:1px solid var(--border)}
+    article .article-screenshot{margin:28px 0}
+
+    article h2{font-size:22px;font-weight:800;margin:48px 0 16px;letter-spacing:-.01em;line-height:1.3}
+    article h3{font-size:16px;font-weight:700;margin:28px 0 10px;color:var(--muted)}
+    article p{margin-bottom:16px}
+    article ul,article ol{margin:0 0 16px 24px}
+    article li{margin-bottom:6px}
+    article strong{font-weight:700}
+    article code{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+    article a.inline{color:var(--quote-border)}
+    article a.inline:hover{text-decoration:underline}
+
+    pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:20px 24px;overflow-x:auto;margin:24px 0;font-size:13px;line-height:1.6}
+    pre code{background:none;border:none;padding:0;font-size:inherit;color:#e8e8e8}
+    :root[data-theme="light"] pre code{color:#e8e8e8}
+
+    .table-wrap{overflow-x:auto;margin:24px 0}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border)}
+    th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+
+    .pullquote{border-left:3px solid var(--quote-border);background:var(--quote-bg);border-radius:0 10px 10px 0;padding:20px 24px;margin:36px 0;font-size:18px;font-style:italic;line-height:1.5;color:var(--text)}
+
+    .callout{border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;line-height:1.6}
+    .callout.warn{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.25)}
+    .callout.tip{background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.25)}
+    .callout strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+
+    .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+    .feature-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+    .feature-item .fi-icon{font-size:20px;margin-bottom:6px}
+    .feature-item .fi-title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .feature-item .fi-desc{font-size:13px;color:var(--muted);line-height:1.4}
+    @media(max-width:500px){.feature-grid{grid-template-columns:1fr}}
+
+    .divider{border:none;border-top:1px solid var(--border);margin:48px 0}
+    footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;font-size:13px;color:var(--muted)}
+    footer a:hover{color:var(--text)}
+    .footer-links{display:flex;justify-content:center;gap:24px;margin-top:10px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">samaBR <span>/ blog</span></a>
+  <div class="nav-actions">
+    <a href="/" class="nav-back">← <span data-i18n="nav-back">Portfolio</span></a>
+    <button class="lang-toggle" id="langBtn" aria-label="Toggle language">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">PT</span>
+    </button>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <a href="/">samaBR</a><span>/</span>
+    <a href="/blog/">Blog</a><span>/</span>
+    <span data-i18n="breadcrumb">DualSense Edge Studio</span>
+  </div>
+
+  <header class="article-header">
+    <div class="article-tag">🎮 <span data-i18n="tag">App · macOS · Objective-C · USB HID</span></div>
+    <h1 class="article-title" data-i18n="title">Building DualSense Edge Studio:<br>Editing Controller Profiles Without a PS5</h1>
+    <div class="article-meta">
+      <span>samaBR</span>
+      <span>·</span>
+      <span data-i18n="date">November 2026</span>
+      <span>·</span>
+      <span data-i18n="readtime">⏱ ~9 min read</span>
+    </div>
+  </header>
+
+  <figure class="article-screenshot">
+    <img src="../../docs/screenshots/DSEdge-Studio/buttons.png" alt="DualSense Edge Studio's button editor: a drawing of the controller with a line from each button to its function" loading="lazy" />
+  </figure>
+
+  <article>
+
+    <!-- SECTION 1 -->
+    <h2 data-i18n="s1-title">The Problem: A Pro Controller Whose Settings Live on a Console</h2>
+    <p data-i18n="s1-p1">The DualSense Edge is Sony's "pro" controller: back paddles, swappable stick modules, adjustable trigger travel — and four on-board profiles you switch with <strong>FN + △ / □ / ✕ / ○</strong>. Each profile remaps buttons, reshapes the stick response curves and cuts the trigger range. The catch is where you edit them: on a PS5. The profiles are stored <em>in the controller</em>, but the only official editor is a menu on the console.</p>
+    <p data-i18n="s1-p2">That's fine if the controller lives next to a PS5. Use it with a Mac, though, and there was no native way to touch those profiles at all. You could play with the controller, you just couldn't change how it played.</p>
+    <p data-i18n="s1-p3">DualSense Edge Studio is the fix: a native macOS app that reads all four slots over a USB cable, lets you edit buttons, sticks and triggers in a proper UI, and writes the result back to the controller. No PS5, no browser. Like everything on this site, it was built in back-and-forth with Claude.</p>
+
+    <div class="pullquote" data-i18n="q1">"The profiles already live in the controller. The console is just one way of talking to it — USB is another."</div>
+
+    <!-- SECTION 2 -->
+    <h2 data-i18n="s2-title">What It Does</h2>
+    <p data-i18n="s2-p1">Plug the controller in, open the app, and the sidebar fills with the four slots. Everything you change is a <strong>draft</strong>: nothing reaches the controller until you click <strong>Write to □ / ✕ / ○</strong>.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon">🕹️</div>
+        <div class="fi-title" data-i18n="feat1-title">Buttons</div>
+        <div class="fi-desc" data-i18n="feat1-desc">All 16 buttons remappable, back paddles included. Click the drawing, or press the target button on the controller itself.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📈</div>
+        <div class="fi-title" data-i18n="feat2-title">Sticks &amp; Triggers</div>
+        <div class="fi-desc" data-i18n="feat2-desc">The 6 PS5 curves, intensity, dead zone, a free-form curve you drag by hand, and the usable range of L2/R2.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">📡</div>
+        <div class="fi-title" data-i18n="feat3-title">Live Monitor</div>
+        <div class="fi-desc" data-i18n="feat3-desc">Gyro with a 3D controller, touchpad with two fingers and trails, every button, the raw input report and rumble.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🩺</div>
+        <div class="fi-title" data-i18n="feat4-title">Diagnostics</div>
+        <div class="fi-desc" data-i18n="feat4-desc">Measures stick drift and suggests a dead zone, tests circularity, shows the real trigger range, the 1000 Hz USB rate and firmware.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">🗂️</div>
+        <div class="fi-title" data-i18n="feat5-title">Library, Backup &amp; History</div>
+        <div class="fi-desc" data-i18n="feat5-desc">Profiles on the Mac, full 4-slot backups, and an automatic copy of every slot before it's overwritten — undo in one click.</div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon">💡</div>
+        <div class="fi-title" data-i18n="feat6-title">Hardware</div>
+        <div class="fi-desc" data-i18n="feat6-desc">Light bar, player LEDs, mute LED, each rumble motor and the adaptive-trigger effects, live while connected.</div>
+      </div>
+    </div>
+
+    <p data-i18n="s2-p2">There's also a preset gallery (FPS, Battle Royale, Racing, Fighting, Sports, Accessibility), side-by-side profile comparison, a menu-bar icon with battery and the active profile, and JSON import/export compatible with the <a class="inline" href="https://edge-config.com" target="_blank" rel="noopener">edge-config.com</a> web editor, so libraries move freely between the two.</p>
+
+    <!-- SECTION 3 -->
+    <h2 data-i18n="s3-title">Talking to the Controller: 64-Byte Feature Reports</h2>
+    <p data-i18n="s3-p1">Over USB the Edge is a HID device (Sony's vendor ID <code>0x054C</code>, product <code>0x0DF2</code>), and the profiles travel as <strong>feature reports</strong> — fixed 64-byte packets where byte 0 is the report ID. One profile doesn't fit in 64 bytes, so each slot is split across three of them:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th data-i18n="th-slot">Slot</th><th data-i18n="th-read">Read</th><th data-i18n="th-write">Write</th><th data-i18n="th-clear">Clear (0x68)</th></tr></thead>
+        <tbody>
+          <tr><td data-i18n="td-default">△ Default</td><td><code>0x70</code>–<code>0x72</code></td><td data-i18n="td-never">never</td><td>–</td></tr>
+          <tr><td>□</td><td><code>0x73</code>–<code>0x75</code></td><td><code>0x60</code></td><td><code>2</code></td></tr>
+          <tr><td>✕</td><td><code>0x76</code>–<code>0x78</code></td><td><code>0x61</code></td><td><code>3</code></td></tr>
+          <tr><td>○</td><td><code>0x79</code>–<code>0x7B</code></td><td><code>0x62</code></td><td><code>4</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p data-i18n="s3-p2">Inside those three parts the layout is wonderfully awkward. The profile name is UTF-16LE and doesn't fit in one part, so it starts in part 0 and spills into part 1 (40 code units in total). Part 1 also holds a 16-byte profile ID and the stick curves — except the right stick's curve is 6 bytes and only 4 fit, so the last two continue at the top of part 2. Part 2 has the trigger ranges, the 16-entry button table, the curve types, and the time the profile was saved, as a 48-bit millisecond timestamp.</p>
+    <p data-i18n="s3-p3">The button table is the elegant bit: 16 positions, one per physical button, and each value says which function that button now performs. Identity (<code>0, 1, 2 … 15</code>) means "nothing remapped". Making the right paddle act as ○ is a single byte.</p>
+
+    <!-- SECTION 4 -->
+    <h2 data-i18n="s4-title">Two CRC32s, and a Magic Seed</h2>
+    <p data-i18n="s4-p1">The controller won't accept a profile unless it's checksummed — twice. There's a <strong>profile CRC</strong> covering the content of all three parts stitched together (170 bytes), and then each 64-byte report carries its <strong>own CRC</strong> in its last four bytes. That second one has a twist: it isn't computed over the report alone, but over the report with an extra byte, <code>0xA3</code>, in front of it. Both have to be right for the controller to take the profile.</p>
+
+    <pre><code>// Profile CRC: parts 0 and 1 (bytes 2–59) + part 2 (bytes 2–55) = 170 bytes
+function profileCrc(parts) {
+  const r = new Uint8Array(170);
+  r.set(parts[0].slice(2, 60), 0);
+  r.set(parts[1].slice(2, 60), 58);
+  r.set(parts[2].slice(2, 56), 116);
+  return crc32(r);
+}
+
+t[2].set(le32(profileCrc(t)), 56);
+
+// Per-report CRC: seed byte 0xA3, then the report, stored in bytes 60–63
+for (const a of t) a.set(le32(crc32(new Uint8Array([0xa3, ...a]))), 60);</code></pre>
+
+    <p data-i18n="s4-p2">Both are plain IEEE CRC32, little-endian. The whole protocol layer — slots, curves, CRCs, the input report — lives in one dependency-free file, <code>proto.js</code>, and the byte-by-byte map is written up in the repo's <a class="inline" href="https://github.com/samaBR85/DSEdge-Studio/blob/main/docs/PROTOCOL.md" target="_blank" rel="noopener">PROTOCOL.md</a>.</p>
+
+    <!-- SECTION 5 -->
+    <h2 data-i18n="s5-title">Byte-Exact or It Doesn't Ship</h2>
+    <p data-i18n="s5-p1">Not every byte in those reports is understood. So the encoder never builds a profile from zeros: it starts from the <strong>original bytes read from the controller</strong> (kept as <code>profile.raw</code>), overwrites only the fields the app actually edits, stamps the time, and recomputes the CRCs. Anything unknown passes through untouched.</p>
+    <p data-i18n="s5-p2">That made a strict test possible, and it became the bar for the whole protocol: read a profile the PS5 saved, re-encode it without changes, and compare. The result has to be <strong>the exact same bytes, with the same CRC</strong>. Then write a profile and read it back — again, identical. Only once both round trips matched on a real controller did writing go in.</p>
+
+    <div class="pullquote" data-i18n="q2">"If you don't understand a byte, don't rewrite it. Carry it through, and prove the round trip is lossless."</div>
+
+    <!-- SECTION 6 -->
+    <h2 data-i18n="s6-title">A Native Layer That Says No</h2>
+    <p data-i18n="s6-p1">Writing to a controller's memory deserves guard rails, and the most important one isn't in the UI — it's in the native code. The Objective-C side only forwards feature reports <code>0x60</code>–<code>0x63</code> (the slot writes) and <code>0x68</code> (clear a slot); any other report ID is rejected before it reaches the device. The only output report allowed is <code>0x02</code> — lights, rumble and trigger effects, none of which are stored. Even if the UI had a bug, it couldn't talk the controller into anything else.</p>
+    <ul>
+      <li data-i18n="s6-li1">The △ slot — the default profile — is read but never written or cleared.</li>
+      <li data-i18n="s6-li2">Before every write, clear or restore, the slot's current contents go into a history (up to 60 copies), so any change is one click from undone.</li>
+      <li data-i18n="s6-li3">After a write, the app reads the slots back to confirm what actually landed.</li>
+    </ul>
+
+    <figure class="article-screenshot">
+      <img src="../../docs/screenshots/DSEdge-Studio/diag.png" alt="The Diagnostics tab: stick drift, circularity, trigger range, USB report rate and controller info" loading="lazy" />
+      <figcaption data-i18n="cap-diag">Diagnostics: drift with a suggested dead zone, circularity, the real L2/R2 range, the 1000 Hz USB rate and firmware info.</figcaption>
+    </figure>
+
+    <!-- SECTION 7 -->
+    <h2 data-i18n="s7-title">The Stack: Objective-C Underneath, a Web UI on Top</h2>
+    <p data-i18n="s7-p1">The app is two layers. <code>src/main.m</code> is a single Objective-C file: it opens the controller with IOKit HID, streams the input report up to the UI, performs the feature-report reads and writes, and owns the window, the menu-bar item, battery notifications and files. Everything else — the profile logic, the protocol, every screen — is plain HTML, CSS and JavaScript loaded in a <code>WKWebView</code>. No bundler, no npm, no dependencies. Building takes Apple's Command Line Tools and one <code>./build.sh</code>, which produces a universal app for Apple Silicon and Intel.</p>
+    <p data-i18n="s7-p2">The seam between them is a small message bridge: the UI calls <code>Native.call(cmd, args)</code> and gets a Promise back, the native side pushes events (<code>status</code>, <code>input</code>, <code>error</code>). And because that bridge is the only door, it's easy to fake: open <code>web/index.html</code> in a normal browser and <code>native.js</code> swaps in a simulator with sample slots and synthetic input. This is how the UI can be worked on without a controller on the desk — and every screenshot in the README was taken in simulator mode.</p>
+
+    <figure class="article-screenshot">
+      <img src="../../docs/screenshots/DSEdge-Studio/monitor.png" alt="The live monitor: controller drawing, sticks, triggers, gyroscope with a 3D controller and touchpad" loading="lazy" />
+      <figcaption data-i18n="cap-monitor">The live monitor, here running on the simulator's synthetic input.</figcaption>
+    </figure>
+
+    <p data-i18n="s7-p3">Version 1.1 added nine languages — English, Portuguese, Spanish, French, German, Italian, Russian, Simplified Chinese and Japanese. The source strings are Portuguese and act as their own keys (<code>T("…")</code> in JS, <code>L(@"…")</code> in Objective-C), and the native side reads the very same translation files as the web UI, so menus, notifications and screens never disagree. A small script, <code>i18n_check.py</code>, flags any missing translation or mismatched placeholder. The release build is signed with a Developer ID and notarized by Apple, so it opens like any other Mac app.</p>
+
+    <!-- SECTION 8 -->
+    <h2 data-i18n="s8-title">Built with Claude</h2>
+    <p data-i18n="s8-p1">Same as every project here: I'm not a programmer. I'm someone who owns the controller, wanted to tune it from a Mac, and could describe exactly what the app should do. Claude did the heavy lifting on the code; I did the testing with a real controller on the desk — which, for a project that writes to hardware, is the part that can't be skipped.</p>
+    <p data-i18n="s8-p2">The byte-exact round trip was the conversation that mattered. It turned "I think the protocol works" into a yes-or-no test, and every change to the encoder after that had to pass it again.</p>
+
+    <div class="pullquote" data-i18n="q3">"When the target is hardware, 'it looks right' isn't a test. Same bytes in, same bytes out, is."</div>
+
+    <!-- SECTION 9 -->
+    <hr class="divider">
+    <h2 data-i18n="s9-title">The Result</h2>
+    <p data-i18n="s9-p1">DualSense Edge Studio is free and open source (MIT), for macOS 12 Monterey or later on Apple Silicon and Intel. Download the notarized <code>.dmg</code>, drag the app to Applications, connect the controller with a USB cable and open it. Profiles can't be edited over Bluetooth — same as on the PS5.</p>
+    <p data-i18n="s9-p2">Download and details: <a class="inline" href="https://samabr85.github.io/DSEdge-Studio/" target="_blank" rel="noopener">the project page</a> · source and docs on <a class="inline" href="https://github.com/samaBR85/DSEdge-Studio" target="_blank" rel="noopener">GitHub</a>.</p>
+
+    <div class="callout warn" data-i18n="disclaimer"><strong>Disclaimer</strong>An independent project, not affiliated with Sony Interactive Entertainment. "PlayStation", "DualSense" and "DualSense Edge" are trademarks of Sony. Writing profiles changes the controller's memory; the △ slot and the firmware are never touched.</div>
+
+  </article>
+</div>
+
+<footer>
+  <div>© 2026 samaBR · <a href="https://github.com/samaBR85">GitHub</a></div>
+  <div class="footer-links">
+    <a href="/">Portfolio</a>
+    <a href="/blog/">Blog</a>
+    <a href="/about/">About</a>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  en: {
+    'nav-back':'Portfolio','breadcrumb':'DualSense Edge Studio','tag':'App · macOS · Objective-C · USB HID',
+    'title':'Building DualSense Edge Studio:<br>Editing Controller Profiles Without a PS5',
+    'date':'November 2026','readtime':'⏱ ~9 min read',
+    's1-title':'The Problem: A Pro Controller Whose Settings Live on a Console',
+    's1-p1':'The DualSense Edge is Sony\'s "pro" controller: back paddles, swappable stick modules, adjustable trigger travel — and four on-board profiles you switch with <strong>FN + △ / □ / ✕ / ○</strong>. Each profile remaps buttons, reshapes the stick response curves and cuts the trigger range. The catch is where you edit them: on a PS5. The profiles are stored <em>in the controller</em>, but the only official editor is a menu on the console.',
+    's1-p2':'That\'s fine if the controller lives next to a PS5. Use it with a Mac, though, and there was no native way to touch those profiles at all. You could play with the controller, you just couldn\'t change how it played.',
+    's1-p3':'DualSense Edge Studio is the fix: a native macOS app that reads all four slots over a USB cable, lets you edit buttons, sticks and triggers in a proper UI, and writes the result back to the controller. No PS5, no browser. Like everything on this site, it was built in back-and-forth with Claude.',
+    'q1':'"The profiles already live in the controller. The console is just one way of talking to it — USB is another."',
+    's2-title':'What It Does',
+    's2-p1':'Plug the controller in, open the app, and the sidebar fills with the four slots. Everything you change is a <strong>draft</strong>: nothing reaches the controller until you click <strong>Write to □ / ✕ / ○</strong>.',
+    'feat1-title':'Buttons','feat1-desc':'All 16 buttons remappable, back paddles included. Click the drawing, or press the target button on the controller itself.',
+    'feat2-title':'Sticks & Triggers','feat2-desc':'The 6 PS5 curves, intensity, dead zone, a free-form curve you drag by hand, and the usable range of L2/R2.',
+    'feat3-title':'Live Monitor','feat3-desc':'Gyro with a 3D controller, touchpad with two fingers and trails, every button, the raw input report and rumble.',
+    'feat4-title':'Diagnostics','feat4-desc':'Measures stick drift and suggests a dead zone, tests circularity, shows the real trigger range, the 1000 Hz USB rate and firmware.',
+    'feat5-title':'Library, Backup & History','feat5-desc':'Profiles on the Mac, full 4-slot backups, and an automatic copy of every slot before it\'s overwritten — undo in one click.',
+    'feat6-title':'Hardware','feat6-desc':'Light bar, player LEDs, mute LED, each rumble motor and the adaptive-trigger effects, live while connected.',
+    's2-p2':'There\'s also a preset gallery (FPS, Battle Royale, Racing, Fighting, Sports, Accessibility), side-by-side profile comparison, a menu-bar icon with battery and the active profile, and JSON import/export compatible with the <a class="inline" href="https://edge-config.com" target="_blank" rel="noopener">edge-config.com</a> web editor, so libraries move freely between the two.',
+    's3-title':'Talking to the Controller: 64-Byte Feature Reports',
+    's3-p1':'Over USB the Edge is a HID device (Sony\'s vendor ID <code>0x054C</code>, product <code>0x0DF2</code>), and the profiles travel as <strong>feature reports</strong> — fixed 64-byte packets where byte 0 is the report ID. One profile doesn\'t fit in 64 bytes, so each slot is split across three of them:',
+    'th-slot':'Slot','th-read':'Read','th-write':'Write','th-clear':'Clear (0x68)','td-default':'△ Default','td-never':'never',
+    's3-p2':'Inside those three parts the layout is wonderfully awkward. The profile name is UTF-16LE and doesn\'t fit in one part, so it starts in part 0 and spills into part 1 (40 code units in total). Part 1 also holds a 16-byte profile ID and the stick curves — except the right stick\'s curve is 6 bytes and only 4 fit, so the last two continue at the top of part 2. Part 2 has the trigger ranges, the 16-entry button table, the curve types, and the time the profile was saved, as a 48-bit millisecond timestamp.',
+    's3-p3':'The button table is the elegant bit: 16 positions, one per physical button, and each value says which function that button now performs. Identity (<code>0, 1, 2 … 15</code>) means "nothing remapped". Making the right paddle act as ○ is a single byte.',
+    's4-title':'Two CRC32s, and a Magic Seed',
+    's4-p1':'The controller won\'t accept a profile unless it\'s checksummed — twice. There\'s a <strong>profile CRC</strong> covering the content of all three parts stitched together (170 bytes), and then each 64-byte report carries its <strong>own CRC</strong> in its last four bytes. That second one has a twist: it isn\'t computed over the report alone, but over the report with an extra byte, <code>0xA3</code>, in front of it. Both have to be right for the controller to take the profile.',
+    's4-p2':'Both are plain IEEE CRC32, little-endian. The whole protocol layer — slots, curves, CRCs, the input report — lives in one dependency-free file, <code>proto.js</code>, and the byte-by-byte map is written up in the repo\'s <a class="inline" href="https://github.com/samaBR85/DSEdge-Studio/blob/main/docs/PROTOCOL.md" target="_blank" rel="noopener">PROTOCOL.md</a>.',
+    's5-title':'Byte-Exact or It Doesn\'t Ship',
+    's5-p1':'Not every byte in those reports is understood. So the encoder never builds a profile from zeros: it starts from the <strong>original bytes read from the controller</strong> (kept as <code>profile.raw</code>), overwrites only the fields the app actually edits, stamps the time, and recomputes the CRCs. Anything unknown passes through untouched.',
+    's5-p2':'That made a strict test possible, and it became the bar for the whole protocol: read a profile the PS5 saved, re-encode it without changes, and compare. The result has to be <strong>the exact same bytes, with the same CRC</strong>. Then write a profile and read it back — again, identical. Only once both round trips matched on a real controller did writing go in.',
+    'q2':'"If you don\'t understand a byte, don\'t rewrite it. Carry it through, and prove the round trip is lossless."',
+    's6-title':'A Native Layer That Says No',
+    's6-p1':'Writing to a controller\'s memory deserves guard rails, and the most important one isn\'t in the UI — it\'s in the native code. The Objective-C side only forwards feature reports <code>0x60</code>–<code>0x63</code> (the slot writes) and <code>0x68</code> (clear a slot); any other report ID is rejected before it reaches the device. The only output report allowed is <code>0x02</code> — lights, rumble and trigger effects, none of which are stored. Even if the UI had a bug, it couldn\'t talk the controller into anything else.',
+    's6-li1':'The △ slot — the default profile — is read but never written or cleared.',
+    's6-li2':'Before every write, clear or restore, the slot\'s current contents go into a history (up to 60 copies), so any change is one click from undone.',
+    's6-li3':'After a write, the app reads the slots back to confirm what actually landed.',
+    'cap-diag':'Diagnostics: drift with a suggested dead zone, circularity, the real L2/R2 range, the 1000 Hz USB rate and firmware info.',
+    's7-title':'The Stack: Objective-C Underneath, a Web UI on Top',
+    's7-p1':'The app is two layers. <code>src/main.m</code> is a single Objective-C file: it opens the controller with IOKit HID, streams the input report up to the UI, performs the feature-report reads and writes, and owns the window, the menu-bar item, battery notifications and files. Everything else — the profile logic, the protocol, every screen — is plain HTML, CSS and JavaScript loaded in a <code>WKWebView</code>. No bundler, no npm, no dependencies. Building takes Apple\'s Command Line Tools and one <code>./build.sh</code>, which produces a universal app for Apple Silicon and Intel.',
+    's7-p2':'The seam between them is a small message bridge: the UI calls <code>Native.call(cmd, args)</code> and gets a Promise back, the native side pushes events (<code>status</code>, <code>input</code>, <code>error</code>). And because that bridge is the only door, it\'s easy to fake: open <code>web/index.html</code> in a normal browser and <code>native.js</code> swaps in a simulator with sample slots and synthetic input. This is how the UI can be worked on without a controller on the desk — and every screenshot in the README was taken in simulator mode.',
+    'cap-monitor':'The live monitor, here running on the simulator\'s synthetic input.',
+    's7-p3':'Version 1.1 added nine languages — English, Portuguese, Spanish, French, German, Italian, Russian, Simplified Chinese and Japanese. The source strings are Portuguese and act as their own keys (<code>T("…")</code> in JS, <code>L(@"…")</code> in Objective-C), and the native side reads the very same translation files as the web UI, so menus, notifications and screens never disagree. A small script, <code>i18n_check.py</code>, flags any missing translation or mismatched placeholder. The release build is signed with a Developer ID and notarized by Apple, so it opens like any other Mac app.',
+    's8-title':'Built with Claude',
+    's8-p1':'Same as every project here: I\'m not a programmer. I\'m someone who owns the controller, wanted to tune it from a Mac, and could describe exactly what the app should do. Claude did the heavy lifting on the code; I did the testing with a real controller on the desk — which, for a project that writes to hardware, is the part that can\'t be skipped.',
+    's8-p2':'The byte-exact round trip was the conversation that mattered. It turned "I think the protocol works" into a yes-or-no test, and every change to the encoder after that had to pass it again.',
+    'q3':'"When the target is hardware, \'it looks right\' isn\'t a test. Same bytes in, same bytes out, is."',
+    's9-title':'The Result',
+    's9-p1':'DualSense Edge Studio is free and open source (MIT), for macOS 12 Monterey or later on Apple Silicon and Intel. Download the notarized <code>.dmg</code>, drag the app to Applications, connect the controller with a USB cable and open it. Profiles can\'t be edited over Bluetooth — same as on the PS5.',
+    's9-p2':'Download and details: <a class="inline" href="https://samabr85.github.io/DSEdge-Studio/" target="_blank" rel="noopener">the project page</a> · source and docs on <a class="inline" href="https://github.com/samaBR85/DSEdge-Studio" target="_blank" rel="noopener">GitHub</a>.',
+    'disclaimer':'<strong>Disclaimer</strong>An independent project, not affiliated with Sony Interactive Entertainment. "PlayStation", "DualSense" and "DualSense Edge" are trademarks of Sony. Writing profiles changes the controller\'s memory; the △ slot and the firmware are never touched.'
+  },
+  pt: {
+    'nav-back':'Portfólio','breadcrumb':'DualSense Edge Studio','tag':'App · macOS · Objective-C · USB HID',
+    'title':'Construindo o DualSense Edge Studio:<br>Editando Perfis do Controle Sem um PS5',
+    'date':'Novembro de 2026','readtime':'⏱ ~9 min de leitura',
+    's1-title':'O Problema: Um Controle Pro Cujas Configurações Moram num Console',
+    's1-p1':'O DualSense Edge é o controle "pro" da Sony: botões traseiros, módulos de analógico trocáveis, curso de gatilho ajustável — e quatro perfis gravados no próprio controle, trocados com <strong>FN + △ / □ / ✕ / ○</strong>. Cada perfil remapeia botões, muda as curvas de resposta dos analógicos e corta o curso dos gatilhos. O porém é onde você os edita: num PS5. Os perfis ficam <em>no controle</em>, mas o único editor oficial é um menu do console.',
+    's1-p2':'Tudo bem se o controle mora do lado de um PS5. Mas use-o com um Mac e não havia nenhum jeito nativo de mexer nesses perfis. Dava pra jogar com o controle, só não dava pra mudar como ele joga.',
+    's1-p3':'O DualSense Edge Studio é a solução: um app nativo de macOS que lê os quatro slots por um cabo USB, deixa você editar botões, analógicos e gatilhos numa interface de verdade, e grava o resultado de volta no controle. Sem PS5, sem navegador. Como tudo neste site, foi construído em bate-bola com o Claude.',
+    'q1':'"Os perfis já moram no controle. O console é só um jeito de falar com ele — o USB é outro."',
+    's2-title':'O Que Ele Faz',
+    's2-p1':'Conecte o controle, abra o app, e a barra lateral se enche com os quatro slots. Tudo o que você muda é um <strong>rascunho</strong>: nada chega ao controle até você clicar em <strong>Gravar no □ / ✕ / ○</strong>.',
+    'feat1-title':'Botões','feat1-desc':'Os 16 botões remapeáveis, botões traseiros inclusos. Clique no desenho, ou aperte o botão desejado no próprio controle.',
+    'feat2-title':'Analógicos e Gatilhos','feat2-desc':'As 6 curvas do PS5, intensidade, zona morta, uma curva livre que você arrasta na mão, e o curso útil de L2/R2.',
+    'feat3-title':'Monitor ao Vivo','feat3-desc':'Giroscópio com um controle 3D, touchpad com dois dedos e rastro, todos os botões, o report bruto de entrada e vibração.',
+    'feat4-title':'Diagnóstico','feat4-desc':'Mede o drift dos analógicos e sugere uma zona morta, testa a circularidade, mostra o curso real dos gatilhos, a taxa USB de 1000 Hz e o firmware.',
+    'feat5-title':'Biblioteca, Backup e Histórico','feat5-desc':'Perfis no Mac, backup completo dos 4 slots, e uma cópia automática de cada slot antes de ser sobrescrito — desfaz com um clique.',
+    'feat6-title':'Hardware','feat6-desc':'Light bar, LEDs de jogador, LED do mudo, cada motor de vibração e os efeitos dos gatilhos adaptáveis, ao vivo enquanto conectado.',
+    's2-p2':'Tem também uma galeria de presets (FPS, Battle Royale, Corrida, Luta, Esportes, Acessibilidade), comparação de perfis lado a lado, um ícone na barra de menus com bateria e o perfil ativo, e importação/exportação em JSON compatível com o editor web <a class="inline" href="https://edge-config.com" target="_blank" rel="noopener">edge-config.com</a>, então as bibliotecas transitam livremente entre os dois.',
+    's3-title':'Falando com o Controle: Feature Reports de 64 Bytes',
+    's3-p1':'Pelo USB o Edge é um dispositivo HID (vendor ID da Sony <code>0x054C</code>, produto <code>0x0DF2</code>), e os perfis trafegam como <strong>feature reports</strong> — pacotes fixos de 64 bytes onde o byte 0 é o ID do report. Um perfil não cabe em 64 bytes, então cada slot é dividido em três deles:',
+    'th-slot':'Slot','th-read':'Leitura','th-write':'Gravação','th-clear':'Limpar (0x68)','td-default':'△ Padrão','td-never':'nunca',
+    's3-p2':'Dentro dessas três partes o layout é maravilhosamente torto. O nome do perfil é UTF-16LE e não cabe numa parte só, então começa na parte 0 e transborda pra parte 1 (40 unidades no total). A parte 1 também guarda um ID de perfil de 16 bytes e as curvas dos analógicos — só que a curva do analógico direito tem 6 bytes e só cabem 4, então os dois últimos continuam no começo da parte 2. A parte 2 tem os cursos dos gatilhos, a tabela de 16 botões, os tipos de curva, e a hora em que o perfil foi salvo, como um timestamp de 48 bits em milissegundos.',
+    's3-p3':'A tabela de botões é a parte elegante: 16 posições, uma por botão físico, e cada valor diz qual função aquele botão executa agora. A identidade (<code>0, 1, 2 … 15</code>) significa "nada remapeado". Fazer o botão traseiro direito virar ○ é um único byte.',
+    's4-title':'Dois CRC32, e uma Semente Mágica',
+    's4-p1':'O controle não aceita um perfil sem checksum — duas vezes. Existe um <strong>CRC do perfil</strong> cobrindo o conteúdo das três partes costuradas juntas (170 bytes), e depois cada report de 64 bytes carrega o <strong>próprio CRC</strong> nos últimos quatro bytes. Esse segundo tem uma pegadinha: ele não é calculado só sobre o report, e sim sobre o report com um byte extra, <code>0xA3</code>, na frente. Os dois precisam estar certos para o controle aceitar o perfil.',
+    's4-p2':'Os dois são CRC32 IEEE comuns, little-endian. Toda a camada de protocolo — slots, curvas, CRCs, o report de entrada — mora num único arquivo sem dependências, <code>proto.js</code>, e o mapa byte a byte está documentado no <a class="inline" href="https://github.com/samaBR85/DSEdge-Studio/blob/main/docs/PROTOCOL.md" target="_blank" rel="noopener">PROTOCOL.md</a> do repositório.',
+    's5-title':'Byte a Byte ou Não Sai',
+    's5-p1':'Nem todo byte desses reports é entendido. Então o encoder nunca monta um perfil do zero: ele parte dos <strong>bytes originais lidos do controle</strong> (guardados em <code>profile.raw</code>), sobrescreve só os campos que o app realmente edita, carimba a hora e recalcula os CRCs. O que é desconhecido passa intacto.',
+    's5-p2':'Isso tornou possível um teste rigoroso, que virou a régua de todo o protocolo: ler um perfil que o PS5 salvou, recodificá-lo sem mudanças, e comparar. O resultado tem que ser <strong>exatamente os mesmos bytes, com o mesmo CRC</strong>. Depois gravar um perfil e lê-lo de volta — de novo, idêntico. Só quando as duas idas e voltas bateram num controle de verdade é que a gravação entrou.',
+    'q2':'"Se você não entende um byte, não reescreva. Carregue ele adiante, e prove que a ida e volta não perde nada."',
+    's6-title':'Uma Camada Nativa Que Diz Não',
+    's6-p1':'Gravar na memória de um controle merece grade de proteção, e a mais importante não está na interface — está no código nativo. O lado Objective-C só repassa os feature reports <code>0x60</code>–<code>0x63</code> (as gravações de slot) e <code>0x68</code> (limpar um slot); qualquer outro ID é rejeitado antes de chegar ao aparelho. O único report de saída permitido é o <code>0x02</code> — luzes, vibração e efeitos de gatilho, nada disso fica gravado. Mesmo que a interface tivesse um bug, ela não conseguiria convencer o controle a fazer outra coisa.',
+    's6-li1':'O slot △ — o perfil padrão — é lido mas nunca gravado nem limpo.',
+    's6-li2':'Antes de toda gravação, limpeza ou restauração, o conteúdo atual do slot vai pro histórico (até 60 cópias), então qualquer mudança está a um clique de ser desfeita.',
+    's6-li3':'Depois de gravar, o app lê os slots de novo pra confirmar o que realmente ficou.',
+    'cap-diag':'Diagnóstico: drift com zona morta sugerida, circularidade, o curso real de L2/R2, a taxa USB de 1000 Hz e as informações de firmware.',
+    's7-title':'A Stack: Objective-C Por Baixo, uma Interface Web Por Cima',
+    's7-p1':'O app tem duas camadas. <code>src/main.m</code> é um único arquivo Objective-C: abre o controle com IOKit HID, manda o report de entrada pra interface, faz as leituras e gravações de feature reports, e cuida da janela, do item na barra de menus, das notificações de bateria e dos arquivos. Todo o resto — a lógica dos perfis, o protocolo, cada tela — é HTML, CSS e JavaScript puro carregado num <code>WKWebView</code>. Sem bundler, sem npm, sem dependências. Compilar pede só as Command Line Tools da Apple e um <code>./build.sh</code>, que gera um app universal para Apple Silicon e Intel.',
+    's7-p2':'A costura entre as duas é uma pequena ponte de mensagens: a interface chama <code>Native.call(cmd, args)</code> e recebe uma Promise de volta, e o lado nativo empurra eventos (<code>status</code>, <code>input</code>, <code>error</code>). E como essa ponte é a única porta, é fácil de simular: abra o <code>web/index.html</code> num navegador comum e o <code>native.js</code> troca a ponte por um simulador com slots de exemplo e entrada sintética. É assim que dá pra trabalhar na interface sem um controle na mesa — e todas as capturas do README foram feitas no modo simulador.',
+    'cap-monitor':'O monitor ao vivo, aqui rodando com a entrada sintética do simulador.',
+    's7-p3':'A versão 1.1 trouxe nove idiomas — inglês, português, espanhol, francês, alemão, italiano, russo, chinês simplificado e japonês. Os textos de origem são em português e servem como a própria chave (<code>T("…")</code> no JS, <code>L(@"…")</code> no Objective-C), e o lado nativo lê exatamente os mesmos arquivos de tradução da interface web, então menus, notificações e telas nunca discordam. Um scriptzinho, <code>i18n_check.py</code>, aponta qualquer tradução faltando ou placeholder diferente. A build de release é assinada com um Developer ID e notarizada pela Apple, então abre como qualquer outro app de Mac.',
+    's8-title':'Construído com o Claude',
+    's8-p1':'Igual a todo projeto aqui: não sou programador. Sou alguém que tem o controle, queria ajustá-lo pelo Mac, e sabia descrever exatamente o que o app tinha que fazer. O Claude fez o trabalho pesado no código; eu fiz os testes com um controle de verdade na mesa — que, num projeto que grava em hardware, é a parte que não dá pra pular.',
+    's8-p2':'A ida e volta byte a byte foi a conversa que importou. Ela transformou "acho que o protocolo funciona" num teste de sim ou não, e toda mudança no encoder depois disso teve que passar nele de novo.',
+    'q3':'"Quando o alvo é hardware, \'parece certo\' não é teste. Os mesmos bytes que entram, saem — isso é."',
+    's9-title':'O Resultado',
+    's9-p1':'O DualSense Edge Studio é gratuito e de código aberto (MIT), para macOS 12 Monterey ou mais novo, em Apple Silicon e Intel. Baixe o <code>.dmg</code> notarizado, arraste o app para Aplicativos, conecte o controle com um cabo USB e abra. Os perfis não podem ser editados via Bluetooth — igual no PS5.',
+    's9-p2':'Download e detalhes: <a class="inline" href="https://samabr85.github.io/DSEdge-Studio/" target="_blank" rel="noopener">a página do projeto</a> · código e documentação no <a class="inline" href="https://github.com/samaBR85/DSEdge-Studio" target="_blank" rel="noopener">GitHub</a>.',
+    'disclaimer':'<strong>Aviso</strong>Projeto independente, sem afiliação com a Sony Interactive Entertainment. "PlayStation", "DualSense" e "DualSense Edge" são marcas registradas da Sony. Gravar perfis altera a memória do controle; o slot △ e o firmware nunca são tocados.'
+  }
+};
+
+let currentLang = localStorage.getItem('lang') ||
+  (navigator.language.toLowerCase().startsWith('pt') ? 'pt' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langLabel').textContent = lang === 'en' ? 'PT' : 'EN';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang] && i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+  });
+}
+
+document.getElementById('langBtn').addEventListener('click', () =>
+  applyLang(currentLang === 'en' ? 'pt' : 'en'));
+applyLang(currentLang);
+
+const themeBtn = document.getElementById('themeBtn');
+const root = document.documentElement;
+root.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+themeBtn.addEventListener('click', () => {
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+});
+</script>
+</body>
+</html>
